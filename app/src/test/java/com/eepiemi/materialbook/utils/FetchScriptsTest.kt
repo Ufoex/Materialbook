@@ -81,11 +81,9 @@ class FetchScriptsTest {
 
         val result = fetchScripts(listOf(scriptA), ::fallbackFor, client)
 
-        // With the sequential, unbounded fetch there is no timeout, so a slow
-        // response still succeeds and returns the network content.
         assertEquals(
-            "a fetch that exceeds FETCH_TIMEOUT_MS should still return network content (no timeout in this version)",
-            "network-a",
+            "a fetch that exceeds FETCH_TIMEOUT_MS must fall back, not hang or throw",
+            fallbackFor(1),
             result
         )
     }

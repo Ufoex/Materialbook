@@ -43,18 +43,14 @@ suspend fun fetchScripts(
     fallbackContent: (Int) -> String,
     httpClient: HttpClient = HttpClient(OkHttp)
 ): String {
-    val builder = StringBuilder()
-    for (script in scripts.filter { it.isEnabled }) {
-        try {
+    return scripts.filter { it.isEnabled }.joinToString("") { script ->
+        runCatching {
             val res = httpClient.get(SCRIPT_SRC + script.scriptTitle)
             if (res.status == HttpStatusCode.OK) {
-                builder.append(res.body() as String)
+                res.body() as String
             } else {
-                builder.append(fallbackContent(script.resourceId))
+                throw Exception()
             }
-        } catch (e: Exception) {
-            builder.append(fallbackContent(script.resourceId))
-        }
+        }.getOrElse { fallbackContent(script.resourceId) }
     }
-    return builder.toString()
 }
