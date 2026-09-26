@@ -6,6 +6,9 @@ import io.ktor.client.call.body
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withTimeoutOrNull
 
 
 const val SCRIPT_SRC = "https://raw.githubusercontent.com/ofirc73/AstryxBook/refs/heads/main/app/src/main/res/raw/"
@@ -29,28 +32,30 @@ data class Script(
     val scriptTitle: String
 )
 
-// TEMP DIAGNOSTIC REVERT: back to the original sequential, unbounded fetch —
-// testing whether the timeout+concurrency change itself (not the timing gap
-// it was meant to fix) is what's producing a garbled non-PiP reel layout in
-// production. If this fixes the layout, the fix needs a different approach
-// (later network availability without a hard timeout cutting scripts off
-// mid-hydration); if it doesn't, this reverts back to the timeout+concurrent
-// version. NOTE: with this reverted, FetchScriptsTest's
-// fallsBackToBundled_whenFetchExceedsTimeout will fail — expected/temporary,
-// there's no timeout to trigger it right now.
 suspend fun fetchScripts(
     scripts: List<Script>,
     fallbackContent: (Int) -> String,
     httpClient: HttpClient = HttpClient(OkHttp)
-): String {
-    return scripts.filter { it.isEnabled }.joinToString("") { script ->
-        runCatching {
-            val res = httpClient.get(SCRIPT_SRC + script.scriptTitle)
-            if (res.status == HttpStatusCode.OK) {
-                res.body() as String
-            } else {
-                throw Exception()
+): String = coroutineScope {
+    val deferredContents = scripts.filter { it.isEnabled }.map { script ->
+        async {
+            val fetched = withTimeoutOrNull(FETCH_TIMEOUT_MS) {
+                runCatching {
+                    val res = httpClient.get(SCRIPT_SRC + script.scriptTitle)
+                    if (res.status == HttpStatusCode.OK) {
+                        res.body() as String
+                    } else {
+                        throw Exception()
+                    }
+                }.getOrNull()
             }
-        }.getOrElse { fallbackContent(script.resourceId) }
+            fetched ?: fallbackContent(script.resourceId)
+        }
+    }
+    // async preserves list order regardless of completion order, so the
+    // concatenated script content still evaluates in the same order the
+    // caller specified.
+    buildString {
+        deferredContents.forEach { append(it.await()) }
     }
 }
