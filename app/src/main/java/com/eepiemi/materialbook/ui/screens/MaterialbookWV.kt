@@ -120,10 +120,106 @@ internal const val PIP_FOCUS_MODE_JS = """
   var el = best;
   while (el && el !== document.body) {
     el.setAttribute('data-astryx-pip-keep', 'true');
+    // Confirmed via live DevTools: Facebook's own screen-navigation system
+    // (the data-comp-id="MScreen" structure) can set display:none directly
+    // on an ancestor of the current video when the app backgrounds - treating
+    // PiP entry the same as "user left this screen", independent of anything
+    // this script does. display:none on ANY ancestor removes the whole
+    // subtree from rendering; position:fixed on a descendant doesn't escape
+    // that, it only affects positioning once an element is actually in the
+    // render tree. This actively fights that, forcing kept ancestors back to
+    // a renderable display - risk: unlike the other fixes here, this pushes
+    // back against an ongoing Facebook process, not just passive residue, so
+    // it may have side effects we haven't seen yet.
+    if (getComputedStyle(el).display === 'none') {
+      if (!el.hasAttribute('data-astryx-orig-style')) {
+        el.setAttribute('data-astryx-orig-style', el.getAttribute('style') || '');
+      }
+      el.style.setProperty('display', 'block', 'important');
+    }
     el = el.parentElement;
+  }
+
+  // A one-time override above wasn't enough - Facebook's own teardown can
+  // re-apply display:none after we've already forced it back, same pattern
+  // as the reels controller repeatedly re-pausing a resumed video elsewhere
+  // in this file. Keep re-asserting for as long as we're in PiP instead of
+  // setting it once; disconnected in PIP_RESTORE_MODE_JS on exit.
+  if (!window.__astryxKeepVisibleObserver) {
+    window.__astryxKeepVisibleObserver = new MutationObserver(function(mutations) {
+      for (var mi = 0; mi < mutations.length; mi++) {
+        var t = mutations[mi].target;
+        if (t.hasAttribute && t.hasAttribute('data-astryx-pip-keep') && getComputedStyle(t).display === 'none') {
+          t.style.setProperty('display', 'block', 'important');
+        }
+      }
+    });
+  }
+  window.__astryxKeepVisibleObserver.disconnect();
+  var keptNow = document.querySelectorAll('[data-astryx-pip-keep]');
+  for (var m = 0; m < keptNow.length; m++) {
+    window.__astryxKeepVisibleObserver.observe(keptNow[m], { attributes: true, attributeFilter: ['style', 'class'] });
   }
   best.setAttribute('data-astryx-pip-video', 'true');
   document.body.setAttribute('data-astryx-pip-active', 'true');
+
+  // Root cause found via live DevTools mid-bug (two separate rounds): the
+  // stylesheet rule below sets position/width/height/etc together, but a
+  // live check showed computed position had won (fixed, top/left 0) while
+  // width/height had NOT - Facebook's own !important rule was winning the
+  // specificity fight for just those two properties (see the button-hiding
+  // comments below for the same pattern). Fixed by setting sizing directly
+  // as inline !important styles, which always wins regardless of
+  // specificity. A LATER round found a second, different issue even with
+  // that fix in place: position:fixed with top:0 correctly applied, but the
+  // element rendered at boundingRect.top roughly -(its own height), while
+  // window.scrollY was non-zero at that exact moment - a Chromium quirk
+  // where a position:fixed mutation applied via script while the page has
+  // non-zero scroll can render one paint cycle behind, still anchored to the
+  // stale scrolled position, before the fixed-position layer tree catches
+  // up. Resetting scroll to 0,0 as part of applying the fixed positioning
+  // removes the stale offset, so there's nothing left for the render to lag
+  // behind. Regression found in the field: on the main feed wall (not the
+  // Reels tab), scrollY is the user's actual reading position, not
+  // incidental state - zeroing it outright threw that away, so returning
+  // from PiP always landed back at the top of the feed. Save it first and
+  // restore it in PIP_RESTORE_MODE_JS instead of leaving it at zero.
+  // Root cause found in the field: PIP_RESTORE_MODE_JS below used to remove
+  // our overridden properties one at a time (position/width/height/etc) via
+  // style.removeProperty. That doesn't "restore" anything - inline style is
+  // one flat collection, not layers, so removing a property we overwrote
+  // deletes it outright rather than bringing back whatever Facebook's own
+  // inline style had there before us (confirmed via live DevTools: Facebook
+  // sets its own inline position/object-fit/width/height on this element).
+  // Landscape reels showing "out of scale" on return from PiP was that data
+  // loss. Save the entire original inline style string here instead, and
+  // restore that exact string on exit.
+  if (!best.hasAttribute('data-astryx-orig-style')) {
+    best.setAttribute('data-astryx-orig-style', best.getAttribute('style') || '');
+  }
+
+  if (window.__astryxPreScrollX === undefined) {
+    window.__astryxPreScrollX = window.scrollX;
+    window.__astryxPreScrollY = window.scrollY;
+  }
+  window.scrollTo(0, 0);
+  best.style.setProperty('position', 'fixed', 'important');
+  best.style.setProperty('top', '0', 'important');
+  best.style.setProperty('left', '0', 'important');
+  best.style.setProperty('width', '100vw', 'important');
+  best.style.setProperty('height', '100vh', 'important');
+  best.style.setProperty('object-fit', 'cover', 'important');
+  best.style.setProperty('z-index', '2147483647', 'important');
+  best.style.setProperty('background', '#000', 'important');
+  // Belt-and-suspenders re-assertion on the next frame, in case the first
+  // application still landed mid-paint-cycle despite the scroll reset above.
+  requestAnimationFrame(function() {
+    if (window.scrollY !== 0 || document.documentElement.scrollTop !== 0) {
+      window.scrollTo(0, 0);
+    }
+    best.style.setProperty('top', '0', 'important');
+    best.style.setProperty('left', '0', 'important');
+  });
 
   // download_content.js's own download button (#materialbook-global-downloader)
   // is a direct child of <body>, so our "hide everything not kept" stylesheet
@@ -210,16 +306,54 @@ internal const val PIP_RESTORE_MODE_JS = """
   var style = document.getElementById('astryx-pip-style');
   if (style) style.remove();
   document.body.removeAttribute('data-astryx-pip-active');
+  if (window.__astryxKeepVisibleObserver) window.__astryxKeepVisibleObserver.disconnect();
   var kept = document.querySelectorAll('[data-astryx-pip-keep]');
-  for (var i = 0; i < kept.length; i++) { kept[i].removeAttribute('data-astryx-pip-keep'); }
+  for (var i = 0; i < kept.length; i++) {
+    var k = kept[i];
+    k.removeAttribute('data-astryx-pip-keep');
+    // Undo the display:none override above, same save/restore-exact-string
+    // pattern as the video element below (see its comment).
+    if (k.hasAttribute('data-astryx-orig-style')) {
+      var kOrigStyle = k.getAttribute('data-astryx-orig-style');
+      if (kOrigStyle) {
+        k.setAttribute('style', kOrigStyle);
+      } else {
+        k.removeAttribute('style');
+      }
+      k.removeAttribute('data-astryx-orig-style');
+    }
+  }
   var vids = document.querySelectorAll('[data-astryx-pip-video]');
-  for (var j = 0; j < vids.length; j++) { vids[j].removeAttribute('data-astryx-pip-video'); }
+  for (var j = 0; j < vids.length; j++) {
+    var v = vids[j];
+    v.removeAttribute('data-astryx-pip-video');
+    // Restore Facebook's own original inline style exactly as it was, saved
+    // by PIP_FOCUS_MODE_JS before we touched anything (see its comment for
+    // why removeProperty alone silently destroyed it instead).
+    if (v.hasAttribute('data-astryx-orig-style')) {
+      var origStyle = v.getAttribute('data-astryx-orig-style');
+      if (origStyle) {
+        v.setAttribute('style', origStyle);
+      } else {
+        v.removeAttribute('style');
+      }
+      v.removeAttribute('data-astryx-orig-style');
+    }
+  }
   // Let download_content.js's own .visible class control this again, now
   // that we're back in the normal view where it's a wanted control.
   var dlBtn = document.getElementById('materialbook-global-downloader');
   if (dlBtn) dlBtn.style.removeProperty('display');
   var cpBtn = document.getElementById('materialbook-clipboard-copier');
   if (cpBtn) cpBtn.style.removeProperty('display');
+  // Restore whatever scroll position PIP_FOCUS_MODE_JS saved before
+  // resetting it to 0,0 (see that comment) - on the main feed wall this is
+  // the user's actual reading position, not incidental state.
+  if (window.__astryxPreScrollX !== undefined) {
+    window.scrollTo(window.__astryxPreScrollX, window.__astryxPreScrollY);
+    window.__astryxPreScrollX = undefined;
+    window.__astryxPreScrollY = undefined;
+  }
   // Resume normal live tracking now that we're back in the foreground.
   if (window.__astryxSetPipFreeze) window.__astryxSetPipFreeze(false);
 })();
@@ -248,6 +382,33 @@ internal const val PIP_FREEZE_ACTIVE_VIDEO_JS = """
     window.__astryxSetPipFreeze = function(v) { frozen = !!v; };
   }
   window.__astryxSetPipFreeze(true);
+})();
+"""
+
+// Second attempt at the black-pip-with-audio-playing bug (see
+// setLayerType(LAYER_TYPE_NONE/HARDWARE) below, the first attempt) - that one
+// operates on the Android View's own bitmap cache, which doesn't necessarily
+// touch Chromium's independent internal GPU compositor (video decoding/
+// painting lives in Chromium's own rendering engine, not the hosting
+// Android View system), and field testing after that fix showed the black
+// screen could still happen, just less often. This operates one level lower,
+// directly on the video element from inside the page: a temporary 3D
+// transform forces Chromium to allocate a fresh compositing layer for the
+// element (discarding whatever stale one it was holding), a synchronous
+// reflow (reading offsetHeight) forces layout to actually happen before the
+// transform is reverted, and the revert itself happens on the next animation
+// frame so the new layer has a chance to actually paint first. Applied to
+// the same element PIP_FOCUS_MODE_JS already selected, not re-derived.
+internal const val PIP_NUDGE_COMPOSITOR_JS = """
+(function() {
+  var el = document.querySelector('[data-astryx-pip-video]') || window.__astryxLastActiveVideo;
+  if (!el || !document.documentElement.contains(el)) return;
+  var originalTransform = el.style.transform;
+  el.style.transform = 'translateZ(0.001px)';
+  void el.offsetHeight;
+  requestAnimationFrame(function() {
+    el.style.transform = originalTransform;
+  });
 })();
 """
 
@@ -313,6 +474,40 @@ fun MaterialbookWebView(
             navigator.evaluateJavaScript(
                 if (isInPipMode) PIP_FOCUS_MODE_JS else PIP_RESTORE_MODE_JS
             ) {}
+        }
+    }
+
+    // Native rendering workaround, not a page/JS issue: confirmed live via
+    // DevTools that the video element is correctly selected, actively
+    // playing, and has real decoded frame data (readyState 4 / HAVE_ENOUGH_
+    // DATA) at the exact moment the PiP window shows solid black with audio
+    // still playing. Correct data, wrong pixels - that's WebView's
+    // hardware-accelerated video compositor layer (see setLayerType
+    // LAYER_TYPE_HARDWARE below) holding a stale/blank buffer across the
+    // window resize the system performs when PiP engages, a known class of
+    // Android bug for hardware-accelerated video surfaces. Discarding and
+    // rebuilding the layer forces a fresh composite instead of reusing
+    // whatever stale buffer survived the resize. The short delay gives
+    // Android's own PiP enter/exit transition animation (roughly 200-300ms)
+    // a moment to finish before we act, since forcing this mid-transition is
+    // unlikely to stick.
+    LaunchedEffect(isInPipMode) {
+        delay(150)
+        val webView = state.nativeWebView
+        webView.setLayerType(View.LAYER_TYPE_NONE, null)
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        webView.invalidate()
+    }
+
+    // Second, complementary attempt at the same black-pip bug (see
+    // PIP_NUDGE_COMPOSITOR_JS's comment) - runs after the native invalidate
+    // above (same 150ms settle delay, then immediately follows it) since we
+    // don't have certainty about which layer is actually responsible; no real
+    // cost to running both.
+    LaunchedEffect(isInPipMode) {
+        if (isInPipMode) {
+            delay(150)
+            navigator.evaluateJavaScript(PIP_NUDGE_COMPOSITOR_JS) {}
         }
     }
 
@@ -398,6 +593,23 @@ fun MaterialbookWebView(
 
     val userScripts by viewModel.scripts
     val loadingState = state.loadingState
+
+    val pipEnabled by settingsVM.pipEnabled.collectAsState()
+
+    // Loaded directly from the bundled resource, deliberately skipping
+    // fetchScripts' network-fetch-with-GitHub-hotfix path that the rest of
+    // userScripts go through (see MainViewModel.kt's loadScripts for why).
+    // Confirmed via field reports: without this, the very first PiP attempt
+    // right after a fresh install or app-cache clear - forcing every other
+    // script back onto a cold network fetch - would not trigger PiP at all,
+    // since PipBridge never got a chance to report isVideoPlaying in time.
+    LaunchedEffect(loadingState, pipEnabled) {
+        if (loadingState is LoadingState.Finished && pipEnabled) {
+            val detectorScript = context.resources.openRawResource(R.raw.pip_video_detector)
+                .bufferedReader().use { it.readText() }
+            navigator.evaluateJavaScript(detectorScript) {}
+        }
+    }
 
     LaunchedEffect(loadingState, userScripts) {
         if (loadingState is LoadingState.Finished) {
