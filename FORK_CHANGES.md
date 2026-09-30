@@ -139,5 +139,20 @@ leaving the app while a Facebook video or Reel is playing.
   player enforces which single video is allowed to play at a time on its own
   side, independent of anything this app does, so this isn't something we
   can override from here.
+- Opening a video from the feed wall via Facebook's own tap-to-fullscreen
+  viewer (as opposed to a Reel, or a video playing inline in the feed) can
+  show a black PiP window: Facebook's own screen-navigation system hides an
+  ancestor of the video (`display:none`) when the app backgrounds, treating
+  it the same as the user leaving that screen. Forcing that ancestor back to
+  a renderable display works only briefly - the video shows correctly for a
+  moment, then goes black again, most likely because Facebook replaces the
+  element with a fresh DOM node during its own teardown rather than mutating
+  the one we're holding onto, which a style/class-attribute-watching
+  `MutationObserver` can't catch. Chasing DOM node replacement itself would
+  mean broad `childList`/subtree observation and re-running detection on
+  every hit, with no guarantee of actually winning against Facebook's own
+  process - not attempted, for the same reason as the Reels re-pause above.
+  Reels playing from the Reels tab, and videos playing inline in the feed
+  wall, are unaffected.
 - Store listing screenshots (`fastlane/metadata/.../phoneScreenshots/`)
   removed as stale; not replaced yet (need real device captures).

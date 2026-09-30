@@ -104,7 +104,27 @@
     scanForVideos();
     reportState();
   });
-  observer.observe(document.body, { childList: true, subtree: true });
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    // Facebook's reels player likely reuses the same <video> element across
+    // swipes rather than creating a fresh one each time (consistent with its
+    // MSE/DASH-based internals), swapping the underlying content without
+    // necessarily firing a real pause/play transition on the element - our
+    // EVENTS listeners never fire for that, so childList alone (new nodes
+    // only) can miss a reel swap entirely, leaving detection to fall back to
+    // the slow poll below. Watching src changes on existing elements too
+    // catches that content-swap case directly, near-instantly.
+    attributes: true,
+    attributeFilter: ['src']
+  });
 
-  setInterval(reportState, 3000);
+  // Backstop for whatever the event listeners and the src-attribute watch
+  // above still miss. Was 3000ms - field-tested and found to directly
+  // explain a multi-second lag before PiP would trigger on a freshly
+  // scrolled-to reel (immediate PiP attempt failed, but worked "after a few
+  // seconds", matching the poll interval). Tightened significantly; a
+  // getBoundingClientRect() + a few property reads over 1-3 videos is cheap
+  // enough to run this often.
+  setInterval(reportState, 300);
 })();
