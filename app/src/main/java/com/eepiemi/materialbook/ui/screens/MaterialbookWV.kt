@@ -3,7 +3,11 @@ package com.eepiemi.materialbook.ui.screens
 import android.content.Intent
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.WindowManager
 import android.webkit.CookieManager
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
@@ -15,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,7 +48,8 @@ import com.eepiemi.materialbook.ui.viewmodel.MainViewModel
 import com.eepiemi.materialbook.ui.viewmodel.SettingsViewModel
 import com.eepiemi.materialbook.utils.DESKTOP_USER_AGENT
 import com.eepiemi.materialbook.utils.ExternalRequestInterceptor
-import com.eepiemi.materialbook.utils.fileChooserWebViewParams
+import com.eepiemi.materialbook.utils.FullscreenController
+import com.eepiemi.materialbook.utils.appWebViewParams
 import com.eepiemi.materialbook.utils.jsBridge.ClipboardBridge
 import com.eepiemi.materialbook.utils.jsBridge.DownloadBridge
 import com.eepiemi.materialbook.utils.jsBridge.MaterialbookSettings
@@ -470,11 +476,24 @@ fun MaterialbookWebView(
         }
     }
 
+    // Set by FullscreenController's host below while an HTML5 fullscreen
+    // custom view is showing.
+    var isFullscreen by remember { mutableStateOf(false) }
+
+    // In HTML5 fullscreen the video renders in WebView's custom view, not the
+    // page layout, so PiP just shows that view and focus mode (hide page DOM,
+    // restyle the <video>) is skipped. Restore still always runs outside PiP:
+    // it also unfreezes the active-video tracker that PIP_FREEZE_ACTIVE_VIDEO_JS
+    // sets on every PiP attempt, fullscreen or not.
     LaunchedEffect(isInPipMode, state.loadingState) {
         if (state.loadingState is LoadingState.Finished) {
-            navigator.evaluateJavaScript(
-                if (isInPipMode) PIP_FOCUS_MODE_JS else PIP_RESTORE_MODE_JS
-            ) {}
+            if (!isInPipMode) {
+                navigator.evaluateJavaScript(PIP_RESTORE_MODE_JS) {}
+            } else if (isFullscreen) {
+                Log.d("AstryxbookPiP", "PiP entered while fullscreen: skipping focus mode")
+            } else {
+                navigator.evaluateJavaScript(PIP_FOCUS_MODE_JS) {}
+            }
         }
     }
 
@@ -579,6 +598,57 @@ fun MaterialbookWebView(
 
     LaunchedEffect(isImmersiveMode, themeColor.value) {
         setWindow(isImmersiveMode)
+    }
+
+    // HTML5 fullscreen video: the custom view goes into a black overlay on
+    // the window's decor view, above the Compose content. Rotation doesn't
+    // recreate the activity (configChanges), so the overlay just resizes;
+    // orientation is left to the system auto-rotate setting.
+    val fullscreen = remember(activity) {
+        var overlay: FrameLayout? = null
+        FullscreenController(object : FullscreenController.Host {
+            override fun attach(view: View) {
+                val window = activity?.window ?: return
+                val container = FrameLayout(activity).apply {
+                    setBackgroundColor(android.graphics.Color.BLACK)
+                    addView(view, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+                }
+                (window.decorView as FrameLayout).addView(
+                    container, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                )
+                overlay = container
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                WindowInsetsControllerCompat(window, window.decorView).apply {
+                    hide(WindowInsetsCompat.Type.systemBars())
+                    systemBarsBehavior =
+                        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                }
+                isFullscreen = true
+                Log.d("AstryxbookPiP", "HTML5 fullscreen: shown")
+            }
+
+            override fun detach(view: View) {
+                overlay?.let { container ->
+                    container.removeView(view)
+                    (container.parent as? ViewGroup)?.removeView(container)
+                }
+                overlay = null
+                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                setWindow(settingsVM.immersiveMode.value)
+                isFullscreen = false
+                Log.d("AstryxbookPiP", "HTML5 fullscreen: hidden")
+            }
+        })
+    }
+
+    // WebView/activity going away while fullscreen: detach and tell WebView.
+    DisposableEffect(fullscreen) {
+        onDispose { fullscreen.hide() }
+    }
+
+    // Declared after the page-level BackHandler above so it takes precedence.
+    BackHandler(enabled = isFullscreen) {
+        fullscreen.hide()
     }
 
     val userScripts by viewModel.scripts
@@ -695,7 +765,7 @@ fun MaterialbookWebView(
             ),
         state = state,
         navigator = navigator,
-        platformWebViewParams = fileChooserWebViewParams(),
+        platformWebViewParams = appWebViewParams(fullscreen),
         captureBackPresses = false,
         onCreated = { webView ->
 
