@@ -50,6 +50,7 @@ import com.eepiemi.materialbook.utils.jsBridge.MaterialbookSettings
 import com.eepiemi.materialbook.utils.jsBridge.ThemeChange
 import com.eepiemi.materialbook.utils.jsBridge.MaterialYouBridge
 import com.eepiemi.materialbook.utils.jsBridge.PipBridge
+import com.eepiemi.materialbook.utils.effectiveDesktop
 import com.eepiemi.materialbook.utils.rememberAutoDesktop
 import com.eepiemi.materialbook.utils.rememberImeHeight
 import kotlinx.coroutines.delay
@@ -542,19 +543,8 @@ fun MaterialbookWebView(
     }
 
     val isDesktop by settingsVM.desktopLayout.collectAsState()
-    val isAutoRevert by settingsVM.isRevertDesktop.collectAsState()
     val isAutoDesktop = rememberAutoDesktop()
-
-    LaunchedEffect(Unit) {
-        if (isAutoDesktop && !isDesktop) {
-            settingsVM.setRevertDesktop(true)
-            settingsVM.setDesktopLayout(true)
-        }
-        else if (!isAutoDesktop && isAutoRevert) {
-            settingsVM.setRevertDesktop(false)
-            settingsVM.setDesktopLayout(false)
-        }
-    }
+    val isEffectiveDesktop = effectiveDesktop(isDesktop, isAutoDesktop)
 
     var isLoading by rememberSaveable { mutableStateOf(true) }
     val isError = state.errorsForCurrentRequest.lastOrNull()?.isFromMainFrame == true
@@ -677,8 +667,8 @@ fun MaterialbookWebView(
     }
 
 
-    LaunchedEffect(isDesktop) {
-        val userAgent = if (isDesktop) DESKTOP_USER_AGENT else ""
+    LaunchedEffect(isEffectiveDesktop) {
+        val userAgent = if (isEffectiveDesktop) DESKTOP_USER_AGENT else ""
         state.nativeWebView.settings.userAgentString = userAgent
     }
 

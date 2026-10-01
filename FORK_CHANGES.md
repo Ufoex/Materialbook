@@ -43,6 +43,18 @@ would mostly be noise. See GitHub Releases for the actual per-version diffs.
 - Removed the obsolete pre-API 26 launcher-icon fallback; supported installs
   now resolve the adaptive icon from the base `mipmap-anydpi` resources.
 
+## Default behavior changes
+
+- Auto desktop layout now triggers only on genuinely large screens
+  (`smallestScreenWidthDp >= 600`), no longer on a phone that happens to be
+  in landscape at app start. The automatic decision is computed at runtime
+  and never persisted; only the user's own Desktop layout toggle is saved.
+  Previously a phone launched once while sideways could get stuck in the
+  desktop layout (desktop user agent, garbled Reels, broken PiP) until the
+  user turned it off manually. A one-time migration unsticks such installs:
+  a desktop setting that was written by the old auto logic is reset to off,
+  while one the user chose themselves is kept.
+
 ## CI/CD
 
 - `./gradlew test`, `:app:lintDebug`, and `connectedAndroidTest` now gate

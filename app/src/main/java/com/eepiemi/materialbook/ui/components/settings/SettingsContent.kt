@@ -49,6 +49,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.eepiemi.materialbook.R
 import com.eepiemi.materialbook.ui.viewmodel.SettingsViewModel
+import com.eepiemi.materialbook.utils.effectiveDesktop
 import com.eepiemi.materialbook.utils.rememberAutoDesktop
 
 @Composable
@@ -123,7 +124,9 @@ fun SettingsContent(
                     icon = Icons.Outlined.DesktopWindows,
                     title = stringResource(R.string.desktop_layout_title),
                     supportingText = stringResource(R.string.force_desktop_layout_may_not_be_suitable_for_smaller_display),
-                    isActive = desktopLayout.value,
+                    // Large screens are always desktop: shown on and locked.
+                    // On phones this is a plain toggle.
+                    isActive = effectiveDesktop(desktopLayout.value, isAutoDesktop),
                     onClick = { if (!isAutoDesktop) viewModel.setDesktopLayout(!desktopLayout.value) }
                 ),
                 SettingsItem(
@@ -265,7 +268,7 @@ private fun HideOptionsDialog(
                 )
             )
 
-            if (!viewModel.desktopLayout.collectAsState().value) {
+            if (!effectiveDesktop(viewModel.desktopLayout.collectAsState().value, rememberAutoDesktop())) {
                 HideDialogItem(
                     SettingsItem(
                         icon = Icons.Filled.EmojiPeople,

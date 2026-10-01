@@ -33,7 +33,12 @@ class SettingsViewModel(
 
     private val dataStore: SettingsDataStore = SettingsDataStore(application)
 
-    private val initialPrefs = runBlocking { dataStore.prefs.first() }
+    // Migrate before the first read so desktopLayout's initial value already
+    // reflects the unstuck state on installs hit by the old auto-desktop logic.
+    private val initialPrefs = runBlocking {
+        dataStore.migrateLegacyAutoDesktop()
+        dataStore.prefs.first()
+    }
 
     val removeAds = dataStore.removeAds.stateIn(
         scope = viewModelScope,
@@ -113,11 +118,6 @@ class SettingsViewModel(
     val pipPortraitRatio = dataStore.pipPortraitRatio.stateIn(
         scope = viewModelScope,
         initialValue = initialPrefs[PIP_PORTRAIT_RATIO] ?: "4:7",
-        started = SharingStarted.WhileSubscribed()
-    )
-    val isRevertDesktop = dataStore.revertDesktop.stateIn(
-        scope = viewModelScope,
-        initialValue = false,
         started = SharingStarted.WhileSubscribed()
     )
 
@@ -208,12 +208,6 @@ class SettingsViewModel(
     fun setPipEnabled(pipEnabled: Boolean) {
         viewModelScope.launch {
             dataStore.setPipEnabled(pipEnabled)
-        }
-    }
-
-    fun setRevertDesktop(revertDesktop: Boolean) {
-        viewModelScope.launch {
-            dataStore.setRevertDesktop(revertDesktop)
         }
     }
 

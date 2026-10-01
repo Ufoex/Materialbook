@@ -2,11 +2,13 @@ package com.eepiemi.materialbook.data.local
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "materialbook_prefs")
@@ -29,14 +31,30 @@ class SettingsDataStore(private val context: Context) {
         val HIDE_GROUPS = booleanPreferencesKey("hide_groups")
         val PIP_ENABLED = booleanPreferencesKey("pip_enabled")
         val PIP_PORTRAIT_RATIO = stringPreferencesKey("pip_portrait_ratio")
-        val isRevertDesktop = booleanPreferencesKey("is_revert_desktop")
+
+        // Legacy: set by the old auto-desktop logic when it wrote desktop_layout
+        // on the user's behalf. Only read by the migration below.
+        val LEGACY_REVERT_DESKTOP = booleanPreferencesKey("is_revert_desktop")
+
+        /**
+         * If the legacy revert flag is set, desktop_layout was written by the
+         * old auto logic, not the user: reset it and drop the flag. A
+         * desktop_layout without the flag is the user's own choice and stays.
+         */
+        fun migrateLegacyAutoDesktop(prefs: MutablePreferences) {
+            if (prefs[LEGACY_REVERT_DESKTOP] == true) {
+                prefs[DESKTOP_LAYOUT] = false
+            }
+            prefs.remove(LEGACY_REVERT_DESKTOP)
+        }
     }
 
     val prefs = context.dataStore.data
 
-    val revertDesktop = context.dataStore.data.map { it[isRevertDesktop] ?: false }
-    suspend fun setRevertDesktop(revertDesktop: Boolean) {
-        context.dataStore.edit { it[isRevertDesktop] = revertDesktop }
+    suspend fun migrateLegacyAutoDesktop() {
+        if (prefs.first().contains(LEGACY_REVERT_DESKTOP)) {
+            context.dataStore.edit { migrateLegacyAutoDesktop(it) }
+        }
     }
 
     val removeAds = context.dataStore.data.map { it[REMOVE_ADS] ?: true }
