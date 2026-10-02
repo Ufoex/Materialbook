@@ -207,8 +207,19 @@ internal const val PIP_FOCUS_MODE_JS = """
   best.style.setProperty('position', 'fixed', 'important');
   best.style.setProperty('top', '0', 'important');
   best.style.setProperty('left', '0', 'important');
-  best.style.setProperty('width', '100vw', 'important');
-  best.style.setProperty('height', '100vh', 'important');
+  // Sized against the fixed-position containing block (100%), not just the
+  // window (100vw/100vh). Found via live DevTools: Facebook's reel wrappers
+  // (the ancestors we leave untouched, see the stylesheet comment below) stay
+  // at their full-screen width inside the small PiP window, so Chromium zooms
+  // the whole page out to fit them (visualViewport.scale 0.31 seen) and
+  // enlarges the layout viewport to match. A 100vw video then covers only
+  // the window's top-left fraction; 100% of the enlarged layout viewport
+  // fills it at any zoom. max() keeps it at least window-sized in case some
+  // layout gives the video a transformed ancestor (which would make 100%
+  // relative to that ancestor instead). Resizing the wrappers themselves
+  // also fixed the zoom but made Facebook pause the reel.
+  best.style.setProperty('width', 'max(100vw, 100%)', 'important');
+  best.style.setProperty('height', 'max(100vh, 100%)', 'important');
   best.style.setProperty('object-fit', 'cover', 'important');
   best.style.setProperty('z-index', '2147483647', 'important');
   best.style.setProperty('background', '#000', 'important');
@@ -268,7 +279,7 @@ internal const val PIP_FOCUS_MODE_JS = """
       'body[data-astryx-pip-active] > *:not([data-astryx-pip-keep]), ' +
       'body[data-astryx-pip-active] [data-astryx-pip-keep] > *:not([data-astryx-pip-keep]) { display:none !important; }' +
       'video:not([data-astryx-pip-video]) { display:none !important; }' +
-      'video[data-astryx-pip-video] { position:fixed !important; top:0 !important; left:0 !important; width:100vw !important; height:100vh !important; object-fit:cover !important; z-index:2147483647 !important; background:#000 !important; }';
+      'video[data-astryx-pip-video] { position:fixed !important; top:0 !important; left:0 !important; width:max(100vw, 100%) !important; height:max(100vh, 100%) !important; object-fit:cover !important; z-index:2147483647 !important; background:#000 !important; }';
     document.head.appendChild(style);
   }
 

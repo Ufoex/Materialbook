@@ -150,6 +150,39 @@ class PipFocusModeJsTest {
         )
     }
 
+    // ── Video must fill the layout viewport, not just the window ────────────
+    // Facebook's reel wrappers keep their full-screen width inside the small
+    // PiP window, so Chromium zooms the page out and enlarges the layout
+    // viewport; a 100vw video then only covers the window's top-left corner.
+
+    @Test
+    fun focusMode_sizesVideoToFixedContainingBlock_notJustTheWindow() {
+        val h = Harness()
+        h.loadHtml(
+            """
+            <html><body>
+              <div id="wrapper" style="width:2000px;"><video id="myVideo" muted></video></div>
+            </body></html>
+            """.trimIndent()
+        )
+        h.eval("window.__astryxLastActiveVideo = document.getElementById('myVideo');")
+
+        h.eval(PIP_FOCUS_MODE_JS)
+
+        assertEquals(
+            "max(100vw, 100%)",
+            h.eval("document.getElementById('myVideo').style.width").unquoted()
+        )
+        assertEquals(
+            "max(100vh, 100%)",
+            h.eval("document.getElementById('myVideo').style.height").unquoted()
+        )
+        assertEquals(
+            "2000px",
+            h.eval("getComputedStyle(document.getElementById('wrapper')).width").unquoted()
+        )
+    }
+
     // ── download_content.js's button must hide only in PiP ──────────────────
 
     @Test
