@@ -481,6 +481,80 @@ class PipFocusModeJsTest {
         assertEquals("preExisting", h.eval("window.__astryxLastActiveVideo").unquoted())
     }
 
+    // ── Screen pin (rotation during PiP made Facebook drop the reel) ─────────
+    // The test WebView's screen can't actually rotate, so these check that the
+    // pin replaces the native getters with the values from pin time, and that
+    // unpinning puts the native getters back.
+
+    @Test
+    fun pinScreen_keepsScreenValuesFromPinTime() {
+        val h = Harness()
+        h.loadHtml("<html><body></body></html>")
+        val before = h.eval("JSON.stringify([screen.width, screen.height, screen.orientation.type, window.orientation])")
+
+        h.eval(PIP_PIN_SCREEN_JS)
+
+        assertEquals(
+            before,
+            h.eval("JSON.stringify([screen.width, screen.height, screen.orientation.type, window.orientation])")
+        )
+        assertTrue(
+            "width must now come from the pin, not the native getter",
+            !h.eval("Object.getOwnPropertyDescriptor(Screen.prototype, 'width').get.toString()")
+                .contains("native code")
+        )
+    }
+
+    @Test
+    fun pinScreen_isIdempotent() {
+        val h = Harness()
+        h.loadHtml("<html><body></body></html>")
+        h.eval(PIP_PIN_SCREEN_JS)
+        val first = h.eval("String(Object.getOwnPropertyDescriptor(Screen.prototype, 'width').get)")
+
+        h.eval(PIP_PIN_SCREEN_JS)
+
+        assertEquals(first, h.eval("String(Object.getOwnPropertyDescriptor(Screen.prototype, 'width').get)"))
+        assertEquals("true", h.eval("Array.isArray(window.__astryxScreenPin)"))
+    }
+
+    @Test
+    fun unpinScreen_restoresNativeGetters_andFiresOneResize() {
+        val h = Harness()
+        h.loadHtml("<html><body></body></html>")
+        val before = h.eval("JSON.stringify([screen.width, screen.height, screen.orientation.type, window.orientation])")
+        h.eval(PIP_PIN_SCREEN_JS)
+        h.eval("window.__resizes = 0; window.addEventListener('resize', function() { window.__resizes++; });")
+
+        h.eval(PIP_UNPIN_SCREEN_JS)
+
+        assertTrue(
+            h.eval("Object.getOwnPropertyDescriptor(Screen.prototype, 'width').get.toString()")
+                .contains("native code")
+        )
+        assertTrue(
+            h.eval("Object.getOwnPropertyDescriptor(ScreenOrientation.prototype, 'type').get.toString()")
+                .contains("native code")
+        )
+        assertEquals(
+            before,
+            h.eval("JSON.stringify([screen.width, screen.height, screen.orientation.type, window.orientation])")
+        )
+        assertEquals("1", h.eval("window.__resizes"))
+        assertEquals("null", h.eval("window.__astryxScreenPin"))
+    }
+
+    @Test
+    fun unpinScreen_withoutPin_isNoOp() {
+        val h = Harness()
+        h.loadHtml("<html><body></body></html>")
+        h.eval("window.__resizes = 0; window.addEventListener('resize', function() { window.__resizes++; });")
+
+        h.eval(PIP_UNPIN_SCREEN_JS)
+
+        assertEquals("0", h.eval("window.__resizes"))
+    }
+
     // ── Restore cleanup ───────────────────────────────────────────────────
 
     @Test
