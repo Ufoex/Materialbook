@@ -20,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -50,6 +51,7 @@ import com.eepiemi.materialbook.utils.jsBridge.MaterialbookSettings
 import com.eepiemi.materialbook.utils.jsBridge.ThemeChange
 import com.eepiemi.materialbook.utils.jsBridge.MaterialYouBridge
 import com.eepiemi.materialbook.utils.jsBridge.PipBridge
+import com.eepiemi.materialbook.audio.PipHandback
 import com.eepiemi.materialbook.utils.effectiveDesktop
 import com.eepiemi.materialbook.utils.rememberAutoDesktop
 import com.eepiemi.materialbook.utils.rememberImeHeight
@@ -413,6 +415,102 @@ internal const val PIP_NUDGE_COMPOSITOR_JS = """
 })();
 """
 
+// Lock-screen audio handoff (see LockScreenAudioService). Installed on PiP
+// entry when the setting is on. Observed on the device spike: at lock the
+// page first gets visibilitychange -> hidden, Facebook's own handler pauses
+// the video 25-60ms later, and ACTION_SCREEN_OFF reaches the app only ~0.5s
+// after that, so the live `paused` is always true by then. This capture-phase
+// listener snapshots the PiP target video (same selection as PIP_TOGGLE_JS)
+// at the moment the page is hidden. On the way back (visible) it reports to
+// PipBridge while a handoff is active, one of MainActivity's handback signals.
+internal const val PIP_HANDOFF_ARM_JS = """
+(function() {
+  if (window.__astryxHandoffListener) return;
+  var listener = function() {
+    if (document.visibilityState !== 'hidden') {
+      if (document.querySelector('[data-astryx-handoff-muted]')) {
+        try { PipBridge.onPageVisible(); } catch (e) {}
+      }
+      return;
+    }
+    var best = document.querySelector('[data-astryx-pip-video]');
+    if (!best) {
+      best = window.__astryxLastActiveVideo;
+      if (best && !document.documentElement.contains(best)) best = null;
+    }
+    if (!best) {
+      var videos = document.querySelectorAll('video');
+      var bestArea = 0;
+      for (var i = 0; i < videos.length; i++) {
+        var r = videos[i].getBoundingClientRect();
+        var area = Math.max(0, Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0)) *
+                   Math.max(0, Math.min(r.right, window.innerWidth) - Math.max(r.left, 0));
+        if (area > bestArea) { bestArea = area; best = videos[i]; }
+      }
+    }
+    window.__astryxHandoffVideo = best || null;
+    window.__astryxHandoffSnapshot = best
+      ? { src: String(best.currentSrc || ''), time: best.currentTime, wasPlaying: !best.paused }
+      : null;
+  };
+  window.__astryxHandoffListener = listener;
+  document.addEventListener('visibilitychange', listener, true);
+})();
+"""
+
+// Removes the listener and snapshot installed by PIP_HANDOFF_ARM_JS. Run on
+// PiP exit and after every handback.
+internal const val PIP_HANDOFF_DISARM_JS = """
+(function() {
+  if (window.__astryxHandoffListener) {
+    document.removeEventListener('visibilitychange', window.__astryxHandoffListener, true);
+  }
+  window.__astryxHandoffListener = null;
+  window.__astryxHandoffSnapshot = null;
+  window.__astryxHandoffVideo = null;
+})();
+"""
+
+// Runs at ACTION_SCREEN_OFF while in PiP. Returns the snapshot taken when the
+// page was hidden ({ src, time, wasPlaying }), then mutes and pauses that
+// video: Facebook restarts it by itself after unlock, so it must stay muted
+// until handback or there's double audio. The prior muted state is kept in
+// data-astryx-handoff-muted, which also marks the video for pipHandbackJs
+// (the PiP marker itself is removed by PIP_RESTORE_MODE_JS on PiP exit).
+internal const val PIP_HANDOFF_READ_JS = """
+(function() {
+  var snapshot = window.__astryxHandoffSnapshot;
+  var v = window.__astryxHandoffVideo;
+  if (!snapshot || !v || !document.documentElement.contains(v)) {
+    return JSON.stringify({ src: '', time: 0, wasPlaying: false });
+  }
+  if (!v.hasAttribute('data-astryx-handoff-muted')) {
+    v.setAttribute('data-astryx-handoff-muted', v.muted ? 'true' : 'false');
+  }
+  v.muted = true;
+  v.pause();
+  return JSON.stringify(snapshot);
+})();
+"""
+
+/**
+ * Hands playback back to the video PIP_HANDOFF_READ_JS muted: seeks to
+ * [positionMs] (skipped when null, e.g. an aborted handoff), restores its
+ * muted state, removes the marker, calls play() only if [play], then clears
+ * the handoff listener and snapshot, re-installing them if [rearm].
+ */
+internal fun pipHandbackJs(positionMs: Long?, play: Boolean, rearm: Boolean): String = """
+(function() {
+  var v = document.querySelector('[data-astryx-handoff-muted]');
+  if (!v) return 'none';
+  ${if (positionMs != null) "v.currentTime = ${positionMs / 1000.0};" else ""}
+  v.muted = v.getAttribute('data-astryx-handoff-muted') === 'true';
+  v.removeAttribute('data-astryx-handoff-muted');
+  ${if (play) "var p = v.play(); if (p && p.catch) p.catch(function() {});" else ""}
+  return 'ok';
+})();
+""" + PIP_HANDOFF_DISARM_JS + (if (rearm) PIP_HANDOFF_ARM_JS else "")
+
 @Composable
 fun MaterialbookWebView(
     url: String,
@@ -420,6 +518,10 @@ fun MaterialbookWebView(
     pipToggleTrigger: Int = 0,
     pipEnteringTrigger: Int = 0,
     isInPipMode: Boolean = false,
+    pipHandoffReadTrigger: Int = 0,
+    pipHandback: PipHandback? = null,
+    onPipHandoffRead: (String?) -> Unit = {},
+    onPipPageVisible: () -> Unit = {},
     onVideoPlayingChanged: (Boolean, Int, Int) -> Unit = { _, _, _ -> }
 ) {
     val context = LocalContext.current
@@ -509,6 +611,37 @@ fun MaterialbookWebView(
         if (isInPipMode) {
             delay(150)
             navigator.evaluateJavaScript(PIP_NUDGE_COMPOSITOR_JS) {}
+        }
+    }
+
+    // Lock-screen audio handoff/handback, driven from MainActivity (see
+    // LockScreenAudioService). Confirmed on device that these effects still
+    // run right after screen-off (the read answered within ~30ms).
+    val pipLockscreenAudio by settingsVM.pipLockscreenAudio.collectAsState()
+    // Only once the page has loaded, like the focus-mode effect above: the
+    // navigator replays just its last event to a WebView that isn't attached
+    // yet, so an unconditional evaluate at startup would replace the initial
+    // loadUrl and the page would never load.
+    LaunchedEffect(isInPipMode, pipLockscreenAudio, state.loadingState) {
+        if (state.loadingState is LoadingState.Finished) {
+            navigator.evaluateJavaScript(
+                if (isInPipMode && pipLockscreenAudio) PIP_HANDOFF_ARM_JS else PIP_HANDOFF_DISARM_JS
+            ) {}
+        }
+    }
+    val currentOnPipHandoffRead by rememberUpdatedState(onPipHandoffRead)
+    LaunchedEffect(pipHandoffReadTrigger) {
+        if (pipHandoffReadTrigger > 0) {
+            navigator.evaluateJavaScript(PIP_HANDOFF_READ_JS) { currentOnPipHandoffRead(it) }
+        }
+    }
+    LaunchedEffect(pipHandback) {
+        pipHandback?.let { request ->
+            navigator.evaluateJavaScript(
+                pipHandbackJs(request.positionMs, request.play, request.rearm)
+            ) {
+                Log.d("AstryxbookPiP", "handback JS: $request -> $it")
+            }
         }
     }
 
@@ -737,7 +870,7 @@ fun MaterialbookWebView(
                     "MaterialYouBridge"
                 )
                 addJavascriptInterface(
-                    PipBridge(onVideoPlayingChanged),
+                    PipBridge(onVideoPlayingChanged, onPipPageVisible),
                     "PipBridge"
                 )
 

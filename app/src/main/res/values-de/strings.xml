@@ -31,4 +31,7 @@
     <string name="pip_ratio_2_3">2:3</string>
     <string name="pip_ratio_3_4">3:4</string>
     <string name="pip_ratio_9_16">9:16 (kann auf einigen Geräten überstehen)</string>
+    <string name="pip_lockscreen_audio_title">Audio bei Bildschirmsperre weiterspielen</string>
+    <string name="pip_lockscreen_audio_summary">Im Bild-im-Bild-Modus läuft der Ton weiter, wenn sich der Bildschirm ausschaltet</string>
+    <string name="lockscreen_audio_media_title">Facebook-Video</string>
 </resources>

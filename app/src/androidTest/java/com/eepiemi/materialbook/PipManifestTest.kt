@@ -3,8 +3,13 @@ package com.eepiemi.materialbook
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.ActivityInfo
+import android.content.pm.ServiceInfo
+import android.os.Build
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.SdkSuppress
+import com.eepiemi.materialbook.audio.LockScreenAudioService
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,5 +36,22 @@ class PipManifestTest {
             "MainActivity must declare android:supportsPictureInPicture",
             supportsPip
         )
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = Build.VERSION_CODES.Q) // foregroundServiceType is API 29+
+    fun lockScreenAudioServiceIsMediaPlaybackForegroundService() {
+        // Android 14+ requires the mediaPlayback type for the service to be
+        // promoted to the foreground; without it lock-screen audio would
+        // crash at the first handoff rather than fail visibly here.
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val componentName = ComponentName(context, LockScreenAudioService::class.java)
+        val serviceInfo = context.packageManager.getServiceInfo(componentName, 0)
+
+        assertEquals(
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK,
+            serviceInfo.foregroundServiceType and ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+        )
+        assertTrue("Media3 controllers must be able to bind", serviceInfo.exported)
     }
 }

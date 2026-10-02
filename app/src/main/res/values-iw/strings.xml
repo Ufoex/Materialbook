@@ -43,4 +43,7 @@
     <string name="pip_ratio_2_3">2:3</string>
     <string name="pip_ratio_3_4">3:4</string>
     <string name="pip_ratio_9_16">9:16 (התצוגה עלולה לגלוש בחלק מהמכשירים)</string>
+    <string name="pip_lockscreen_audio_title">המשך השמעת אודיו כשהמסך ננעל</string>
+    <string name="pip_lockscreen_audio_summary">במצב תמונה בתוך תמונה, האודיו ימשיך להתנגן גם אחרי שהמסך נכבה</string>
+    <string name="lockscreen_audio_media_title">סרטון Facebook</string>
 </resources>

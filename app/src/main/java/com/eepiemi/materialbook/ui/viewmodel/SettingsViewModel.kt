@@ -18,6 +18,7 @@ import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.IMMERSIVE
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MATERIAL_YOU
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PINCH_TO_ZOOM
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_ENABLED
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_LOCKSCREEN_AUDIO
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_PORTRAIT_RATIO
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.REMOVE_ADS
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.STICKY_NAVBAR
@@ -115,6 +116,11 @@ class SettingsViewModel(
         initialValue = initialPrefs[PIP_ENABLED] ?: false,
         started = SharingStarted.WhileSubscribed()
     )
+    val pipLockscreenAudio = dataStore.pipLockscreenAudio.stateIn(
+        scope = viewModelScope,
+        initialValue = initialPrefs[PIP_LOCKSCREEN_AUDIO] ?: false,
+        started = SharingStarted.WhileSubscribed()
+    )
     val pipPortraitRatio = dataStore.pipPortraitRatio.stateIn(
         scope = viewModelScope,
         initialValue = initialPrefs[PIP_PORTRAIT_RATIO] ?: "4:7",
@@ -208,6 +214,12 @@ class SettingsViewModel(
     fun setPipEnabled(pipEnabled: Boolean) {
         viewModelScope.launch {
             dataStore.setPipEnabled(pipEnabled)
+        }
+    }
+
+    fun setPipLockscreenAudio(enabled: Boolean) {
+        viewModelScope.launch {
+            dataStore.setPipLockscreenAudio(enabled)
         }
     }
 

@@ -62,4 +62,16 @@ class SettingsDefaultsTest {
             viewModel.pipEnabled.value
         )
     }
+
+    @Test
+    fun pipLockscreenAudioIsOffByDefault() {
+        // Keeping audio going after the screen locks (with a media
+        // notification) is opt-in, same as PiP itself.
+        val app = ApplicationProvider.getApplicationContext<Application>()
+        val viewModel = SettingsViewModel(app)
+        assertFalse(
+            "pipLockscreenAudio should default to false",
+            viewModel.pipLockscreenAudio.value
+        )
+    }
 }

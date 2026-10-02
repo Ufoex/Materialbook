@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.DesktopWindows
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.Headphones
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PanoramaWideAngle
 import androidx.compose.material.icons.outlined.PictureInPictureAlt
@@ -70,6 +71,7 @@ fun SettingsContent(
     val materialYou = viewModel.materialYou.collectAsState()
     val amoledBlack = viewModel.amoledBlack.collectAsState()
     val pipEnabled = viewModel.pipEnabled.collectAsState()
+    val pipLockscreenAudio = viewModel.pipLockscreenAudio.collectAsState()
     val pipPortraitRatio = viewModel.pipPortraitRatio.collectAsState()
 
     val isAutoDesktop = rememberAutoDesktop()
@@ -183,6 +185,17 @@ fun SettingsContent(
                         supportingText = "$deviceLabel · ${pipPortraitRatio.value}",
                         isActive = null,
                         onClick = { isPipRatioDialog = true }
+                    ),
+                    // No POST_NOTIFICATIONS prompt here: notifications for a
+                    // media session are exempt from that permission on API 33+
+                    // (Android notification-permission docs), so the media
+                    // notification and lock-screen controls show without it.
+                    SettingsItem(
+                        icon = Icons.Outlined.Headphones,
+                        title = stringResource(R.string.pip_lockscreen_audio_title),
+                        supportingText = stringResource(R.string.pip_lockscreen_audio_summary),
+                        isActive = pipLockscreenAudio.value,
+                        onClick = { viewModel.setPipLockscreenAudio(!pipLockscreenAudio.value) }
                     )
                 )
             )

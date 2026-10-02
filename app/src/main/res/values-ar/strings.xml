@@ -42,4 +42,7 @@
     <string name="pip_ratio_2_3">2:3</string>
     <string name="pip_ratio_3_4">3:4</string>
     <string name="pip_ratio_9_16">9:16 (قد يتجاوز حدود الشاشة في بعض الأجهزة)</string>
+    <string name="pip_lockscreen_audio_title">متابعة الصوت عند قفل الشاشة</string>
+    <string name="pip_lockscreen_audio_summary">أثناء وضع الصورة داخل الصورة، يستمر تشغيل الصوت بعد إيقاف الشاشة</string>
+    <string name="lockscreen_audio_media_title">فيديو Facebook</string>
 </resources>

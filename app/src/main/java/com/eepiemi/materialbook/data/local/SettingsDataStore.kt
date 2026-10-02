@@ -31,6 +31,7 @@ class SettingsDataStore(private val context: Context) {
         val HIDE_GROUPS = booleanPreferencesKey("hide_groups")
         val PIP_ENABLED = booleanPreferencesKey("pip_enabled")
         val PIP_PORTRAIT_RATIO = stringPreferencesKey("pip_portrait_ratio")
+        val PIP_LOCKSCREEN_AUDIO = booleanPreferencesKey("pip_lockscreen_audio")
 
         // Legacy: set by the old auto-desktop logic when it wrote desktop_layout
         // on the user's behalf. Only read by the migration below.
@@ -132,6 +133,13 @@ class SettingsDataStore(private val context: Context) {
     val pipEnabled = context.dataStore.data.map { it[PIP_ENABLED] ?: false }
     suspend fun setPipEnabled(pipEnabled: Boolean) {
         context.dataStore.edit { it[PIP_ENABLED] = pipEnabled }
+    }
+
+    // Off by default, like PiP itself: opt-in to keep playing audio natively
+    // (with a media notification) after the screen locks during PiP.
+    val pipLockscreenAudio = context.dataStore.data.map { it[PIP_LOCKSCREEN_AUDIO] ?: false }
+    suspend fun setPipLockscreenAudio(enabled: Boolean) {
+        context.dataStore.edit { it[PIP_LOCKSCREEN_AUDIO] = enabled }
     }
 
     // Default "4:7" is the empirically safe portrait ratio on Samsung A56 (and similar OEMs)

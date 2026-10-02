@@ -106,6 +106,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.session)
     testImplementation(libs.playwright)
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
