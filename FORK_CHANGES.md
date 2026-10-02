@@ -55,6 +55,16 @@ would mostly be noise. See GitHub Releases for the actual per-version diffs.
   a desktop setting that was written by the old auto logic is reset to off,
   while one the user chose themselves is kept.
 
+## WebView
+
+- HTML5 fullscreen video support: the WebView's chrome client now implements
+  `onShowCustomView` / `onHideCustomView`, so Facebook's fullscreen button
+  shows the video in a real fullscreen overlay (system bars hidden, screen
+  kept on, follows the system auto-rotate setting) instead of only enlarging
+  it inside the page. Back exits fullscreen; system bars then return to the
+  Immersive mode setting. Entering PiP while fullscreen shows the fullscreen
+  view directly and skips PiP focus mode.
+
 ## CI/CD
 
 - `./gradlew test`, `:app:lintDebug`, and `connectedAndroidTest` now gate
