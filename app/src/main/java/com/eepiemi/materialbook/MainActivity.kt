@@ -202,9 +202,11 @@ class MainActivity : ComponentActivity() {
         future.addListener({
             try {
                 val controller = future.get()
-                controller.setMediaItem(item)
+                // Start position goes in with the item: a separate seekTo()
+                // was applied before the item was set and then reset to 0
+                // (seen on device: playback always started from 0:00).
+                controller.setMediaItem(item, read.positionMs)
                 controller.prepare()
-                controller.seekTo(read.positionMs)
                 controller.play()
                 Log.d(TAG, "handoff: native playback started at ${read.positionMs}ms")
             } catch (e: Exception) {
