@@ -64,6 +64,12 @@ would mostly be noise. See GitHub Releases for the actual per-version diffs.
   it inside the page. Back exits fullscreen; system bars then return to the
   Immersive mode setting. Entering PiP while fullscreen shows the fullscreen
   view directly and skips PiP focus mode.
+  Verified on device: rotating to landscape keeps the same video playing,
+  letterboxed; PiP from fullscreen shows the video (not black), the PiP
+  Play/Pause action works, and expanding PiP returns to fullscreen. File
+  upload (photo picker) still works through the extended chrome client.
+  Facebook offers its fullscreen button on landscape videos; portrait ones
+  open in its own Reels-style viewer instead.
 
 ## CI/CD
 
@@ -95,7 +101,7 @@ Added test coverage for the rebrand and default-behavior changes: settings
 defaults, theme colors, app identity/strings, launcher icon, applicationId,
 and the pinned external script source — none of which existed upstream.
 
-Also covers the PiP focus-mode/toggle/freeze JS (`PipFocusModeJsTest`, 15
+Also covers the PiP focus-mode/toggle/freeze JS (`PipFocusModeJsTest`, 20
 tests driven against a real `WebView` with synthetic DOM fixtures rather
 than live Facebook):
 
@@ -113,9 +119,29 @@ than live Facebook):
   frozen, preserves whatever was already tracked at install time, resumes
   on unfreeze.
 - Restore cleanup — all PiP-mode DOM markers actually removed on exit.
+- The video sized against the fixed-position containing block, so it fills
+  the window even when wide ancestors make the page zoom out.
+- The screen pin: values held from pin time, idempotent, native getters
+  restored on unpin with a single `resize` fired.
 - The anomaly scan (below): a clean-page case reporting nothing, and a case
   where a deliberately-unhideable element (inline `!important`, the same
   trick that caused the two button leaks) is correctly caught and named.
+
+Lock-screen audio, fullscreen and auto-desktop have their own suites:
+
+- `PipHandoffJsTest` (12, real `WebView`): the snapshot taken at page hide
+  even when the video is paused right after, mute/pause and restore of the
+  prior mute state, the visible-again signal only while a handoff is active,
+  handback position/play behaviour, and listener cleanup/re-arming.
+- `LockScreenHandoffTest` (8): handoff eligibility (`https://` only, not
+  `blob:`/empty, not already paused) and parsing of the page's answer.
+- `FullscreenControllerTest` (6): the show/hide contract (second show
+  dismissed, hide without show is a no-op, WebView told exactly once).
+- `AutoDesktopTest` (8): the effective-desktop rule and the one-time
+  migration of the old persisted auto decision.
+- `SettingsDefaultsTest` and `PipManifestTest` extended: lock-screen audio
+  off by default; the service declared with `foregroundServiceType`
+  mediaPlayback and exported.
 
 Facebook's own player behavior (the re-pause limitation below) is
 deliberately out of scope — external, unfixable from here.
@@ -153,6 +179,18 @@ leaving the app while a Facebook video or Reel is playing.
   the offending script's source. This lets the *next* one be diagnosed from
   an ordinary field `adb logcat` capture instead of needing a reproducible
   live session.
+- The video fills the PiP window even though Facebook's reel wrappers (the
+  video's own ancestors, deliberately left untouched) keep their full-screen
+  width inside it. That overflow makes Chromium zoom the whole page out, so
+  the video is sized against the fixed-position containing block
+  (`max(100vw, 100%)`) instead of the window alone. Resizing the wrappers
+  also fixed the zoom but made Facebook pause the reel.
+- Rotating the phone during PiP keeps the reel: the PiP window doesn't
+  change size, but Facebook read the rotated screen on `resize` and dropped
+  the reel for `/watch/`, laid out at PiP size. While in PiP the page now
+  reads the screen values from PiP entry (`screen` size, orientation,
+  `window.orientation`); the real ones are restored, with one `resize`, on
+  exit.
 - "Keep audio when screen locks" (opt-in, off by default, shown under the
   PiP settings): locking the screen while a video is in PiP hands its audio
   off from the WebView to a native Media3 player in a `mediaPlayback`
@@ -186,7 +224,20 @@ leaving the app while a Facebook video or Reel is playing.
   every hit, with no guarantee of actually winning against Facebook's own
   process - not attempted, for the same reason as the Reels re-pause above.
   Reels playing from the Reels tab, and videos playing inline in the feed
-  wall, are unaffected.
+  wall, are unaffected. Real fullscreen (Facebook's fullscreen button on a
+  landscape video, see WebView above) is unaffected too: its PiP shows the
+  video.
+- Rotating the phone while watching Reels in the app (not in PiP or
+  fullscreen) makes Facebook skip to another video and switch to `/watch/`.
+  That's Facebook's page reacting to a real landscape screen; the PiP
+  screen pin doesn't apply there, since the page really is landscape.
+- When a reel or fullscreen video ends, Facebook moves on by itself: in PiP
+  the window can go empty (the finished video collapsed, or the page went
+  back to the feed), and a fullscreen video auto-advances and leaves
+  fullscreen.
+- After lock-screen audio hands back on unlock, the page video is told to
+  resume, but on Reels Facebook can pause it again right away (the same
+  re-pause behavior as the first item).
 - Lock-screen audio plays Facebook's signed video URL directly, and those
   URLs expire. If one expires during a long lock, native playback stops
   (no refresh); on unlock the WebView video is restored at the last known

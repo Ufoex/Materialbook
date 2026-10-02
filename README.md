@@ -49,6 +49,8 @@ If enabled, the app:
 *  Keeps the navigation bar at the top
 *  Downloads media or copies it to the clipboard
 *  Supports Picture-in-Picture playback with selectable portrait-window ratios
+*  Keeps a Picture-in-Picture video's audio playing when the screen locks (opt-in)
+*  Supports real fullscreen video, including landscape, from Facebook's fullscreen button
 *  Supports English, Arabic, Bengali, German, Hebrew (`עברית`), Italian, Spanish, French, Portuguese, and Traditional Chinese
 *  And more!
 
@@ -85,6 +87,13 @@ black bars. Selecting 9:16 preserves the exact video shape, but the window may o
 some devices. Extreme detected landscape ratios are clamped to Android's supported PiP range.
 
 The page itself is hidden while in PiP so only the video shows, filling the window.
+Rotating the phone while a video is in PiP keeps the same video playing.
+
+To keep listening with the screen locked, also turn on **Keep audio when screen locks**
+(shown under the PiP settings). Locking the screen while a video is in PiP then hands its
+audio to a native player, with media controls on the lock screen. Unlocking hands it back to
+the video at the same position. Facebook's video links expire after a while, so audio during
+a very long lock can stop; the video is still restored where it left off.
 
 Android/Chromium auto-pauses the video the moment PiP starts (a platform limitation, not
 something an app can override) — tap the Play button on the PiP overlay to resume it.
