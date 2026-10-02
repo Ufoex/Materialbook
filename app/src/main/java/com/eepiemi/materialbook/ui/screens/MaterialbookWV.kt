@@ -215,19 +215,37 @@ internal const val PIP_FOCUS_MODE_JS = """
   best.style.setProperty('position', 'fixed', 'important');
   best.style.setProperty('top', '0', 'important');
   best.style.setProperty('left', '0', 'important');
-  // Sized against the fixed-position containing block (100%), not just the
-  // window (100vw/100vh). Found via live DevTools: Facebook's reel wrappers
+  // Sized to the visual viewport (the part of the page actually visible in
+  // the window), in px, and re-fitted on every visualViewport resize (the
+  // PiP window settling, rotation). Found via live DevTools, two cases that
+  // need different CSS units: on the Reels tab, Facebook's reel wrappers
   // (the ancestors we leave untouched, see the stylesheet comment below) stay
-  // at their full-screen width inside the small PiP window, so Chromium zooms
-  // the whole page out to fit them (visualViewport.scale 0.31 seen) and
-  // enlarges the layout viewport to match. A 100vw video then covers only
-  // the window's top-left fraction; 100% of the enlarged layout viewport
-  // fills it at any zoom. max() keeps it at least window-sized in case some
-  // layout gives the video a transformed ancestor (which would make 100%
-  // relative to that ancestor instead). Resizing the wrappers themselves
-  // also fixed the zoom but made Facebook pause the reel.
-  best.style.setProperty('width', 'max(100vw, 100%)', 'important');
-  best.style.setProperty('height', 'max(100vh, 100%)', 'important');
+  // at their full-screen width inside the PiP window, so Chromium zooms the
+  // page out (visualViewport.scale 0.31) and a 100vw video covered only the
+  // window's top-left corner. For a feed video the page isn't zoomed, but the
+  // fixed-position containing block kept its full-screen size (384x694 in a
+  // 120x210 window), so 100% made the video full-screen-sized and the window
+  // showed a zoomed-in crop. The visual viewport is the visible area in both
+  // cases. Resizing the wrappers instead also fixed the zoom but made
+  // Facebook pause the reel. The listener removes itself once the video is no
+  // longer the PiP video (PIP_RESTORE_MODE_JS removes the marker).
+  if (window.__astryxPipFit && window.visualViewport) {
+    window.visualViewport.removeEventListener('resize', window.__astryxPipFit);
+  }
+  window.__astryxPipFit = function fit() {
+    if (!best.hasAttribute('data-astryx-pip-video')) {
+      if (window.visualViewport) window.visualViewport.removeEventListener('resize', fit);
+      if (window.__astryxPipFit === fit) window.__astryxPipFit = null;
+      return;
+    }
+    var vv = window.visualViewport;
+    best.style.setProperty('width', (vv ? vv.width : window.innerWidth) + 'px', 'important');
+    best.style.setProperty('height', (vv ? vv.height : window.innerHeight) + 'px', 'important');
+  };
+  window.__astryxPipFit();
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', window.__astryxPipFit);
+  }
   best.style.setProperty('object-fit', 'cover', 'important');
   best.style.setProperty('z-index', '2147483647', 'important');
   best.style.setProperty('background', '#000', 'important');
@@ -287,7 +305,7 @@ internal const val PIP_FOCUS_MODE_JS = """
       'body[data-astryx-pip-active] > *:not([data-astryx-pip-keep]), ' +
       'body[data-astryx-pip-active] [data-astryx-pip-keep] > *:not([data-astryx-pip-keep]) { display:none !important; }' +
       'video:not([data-astryx-pip-video]) { display:none !important; }' +
-      'video[data-astryx-pip-video] { position:fixed !important; top:0 !important; left:0 !important; width:max(100vw, 100%) !important; height:max(100vh, 100%) !important; object-fit:cover !important; z-index:2147483647 !important; background:#000 !important; }';
+      'video[data-astryx-pip-video] { position:fixed !important; top:0 !important; left:0 !important; width:100vw !important; height:100vh !important; object-fit:cover !important; z-index:2147483647 !important; background:#000 !important; }';
     document.head.appendChild(style);
   }
 

@@ -150,13 +150,13 @@ class PipFocusModeJsTest {
         )
     }
 
-    // ── Video must fill the layout viewport, not just the window ────────────
-    // Facebook's reel wrappers keep their full-screen width inside the small
-    // PiP window, so Chromium zooms the page out and enlarges the layout
-    // viewport; a 100vw video then only covers the window's top-left corner.
+    // ── Video must fill exactly the visible area ────────────────────────────
+    // Neither 100vw (too small when wide reel wrappers zoom the page out) nor
+    // 100% (full-screen-sized for feed videos, whose fixed containing block
+    // keeps its full-screen size) fits every case; the visual viewport does.
 
     @Test
-    fun focusMode_sizesVideoToFixedContainingBlock_notJustTheWindow() {
+    fun focusMode_sizesVideoToVisualViewport_withoutTouchingWideAncestors() {
         val h = Harness()
         h.loadHtml(
             """
@@ -170,17 +170,39 @@ class PipFocusModeJsTest {
         h.eval(PIP_FOCUS_MODE_JS)
 
         assertEquals(
-            "max(100vw, 100%)",
+            h.eval("visualViewport.width + 'px'").unquoted(),
             h.eval("document.getElementById('myVideo').style.width").unquoted()
         )
         assertEquals(
-            "max(100vh, 100%)",
+            h.eval("visualViewport.height + 'px'").unquoted(),
             h.eval("document.getElementById('myVideo').style.height").unquoted()
         )
         assertEquals(
             "2000px",
             h.eval("getComputedStyle(document.getElementById('wrapper')).width").unquoted()
         )
+    }
+
+    @Test
+    fun focusMode_refitsOnViewportResize_andStopsAfterRestore() {
+        val h = Harness()
+        h.loadHtml("<html><body><video id=\"myVideo\" muted></video></body></html>")
+        h.eval("window.__astryxLastActiveVideo = document.getElementById('myVideo');")
+        h.eval(PIP_FOCUS_MODE_JS)
+
+        // A resize while in PiP re-applies the visual-viewport size.
+        h.eval("document.getElementById('myVideo').style.setProperty('width', '1px', 'important');")
+        h.eval("visualViewport.dispatchEvent(new Event('resize'));")
+        assertEquals(
+            h.eval("visualViewport.width + 'px'").unquoted(),
+            h.eval("document.getElementById('myVideo').style.width").unquoted()
+        )
+
+        // After restore the listener must not touch the element any more.
+        h.eval(PIP_RESTORE_MODE_JS)
+        h.eval("visualViewport.dispatchEvent(new Event('resize'));")
+        assertEquals("", h.eval("document.getElementById('myVideo').style.width").unquoted())
+        assertEquals("null", h.eval("window.__astryxPipFit"))
     }
 
     // ── download_content.js's button must hide only in PiP ──────────────────

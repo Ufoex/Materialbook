@@ -101,7 +101,7 @@ Added test coverage for the rebrand and default-behavior changes: settings
 defaults, theme colors, app identity/strings, launcher icon, applicationId,
 and the pinned external script source — none of which existed upstream.
 
-Also covers the PiP focus-mode/toggle/freeze JS (`PipFocusModeJsTest`, 20
+Also covers the PiP focus-mode/toggle/freeze JS (`PipFocusModeJsTest`, 21
 tests driven against a real `WebView` with synthetic DOM fixtures rather
 than live Facebook):
 
@@ -119,8 +119,9 @@ than live Facebook):
   frozen, preserves whatever was already tracked at install time, resumes
   on unfreeze.
 - Restore cleanup — all PiP-mode DOM markers actually removed on exit.
-- The video sized against the fixed-position containing block, so it fills
-  the window even when wide ancestors make the page zoom out.
+- The video sized to the visual viewport (wide ancestors left untouched),
+  re-fitted on viewport resize, and the resize listener removing itself
+  after restore.
 - The screen pin: values held from pin time, idempotent, native getters
   restored on unpin with a single `resize` fired.
 - The anomaly scan (below): a clean-page case reporting nothing, and a case
@@ -179,12 +180,15 @@ leaving the app while a Facebook video or Reel is playing.
   the offending script's source. This lets the *next* one be diagnosed from
   an ordinary field `adb logcat` capture instead of needing a reproducible
   live session.
-- The video fills the PiP window even though Facebook's reel wrappers (the
+- The video fills the PiP window exactly: it's sized to the visual viewport
+  (the visible area) in px and re-fitted whenever that resizes. Neither CSS
+  unit worked everywhere: on the Reels tab Facebook's reel wrappers (the
   video's own ancestors, deliberately left untouched) keep their full-screen
-  width inside it. That overflow makes Chromium zoom the whole page out, so
-  the video is sized against the fixed-position containing block
-  (`max(100vw, 100%)`) instead of the window alone. Resizing the wrappers
-  also fixed the zoom but made Facebook pause the reel.
+  width, Chromium zooms the page out and a `100vw` video covered only the
+  window's top-left corner; for a video playing inline in the feed the
+  fixed-position containing block keeps its full-screen size, so `100%` made
+  the PiP window a zoomed-in crop. Resizing the wrappers also fixed the zoom
+  but made Facebook pause the reel.
 - Rotating the phone during PiP keeps the reel: the PiP window doesn't
   change size, but Facebook read the rotated screen on `resize` and dropped
   the reel for `/watch/`, laid out at PiP size. While in PiP the page now
