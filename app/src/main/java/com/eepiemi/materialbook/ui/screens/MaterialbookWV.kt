@@ -413,6 +413,59 @@ internal const val PIP_NUDGE_COMPOSITOR_JS = """
 })();
 """
 
+// Rotating the phone while a reel is in PiP made Facebook drop it: found via
+// a live probe on device, the PiP window itself doesn't change size, but the
+// page gets resize/orientation events in which screen.width/height and
+// screen.orientation now read landscape. Facebook's reels page reacts by
+// emptying the video and switching to /watch/, built at the PiP window's
+// size, so returning to the app then showed that layout squeezed into the
+// left ~120px. Pinning the screen values the page reads to what they were
+// at PiP entry keeps Facebook on the reel (verified: same reel kept playing
+// through landscape and back, and the full-size layout came back intact).
+// The events themselves still reach the page.
+internal const val PIP_PIN_SCREEN_JS = """
+(function() {
+  if (window.__astryxScreenPin) return;
+  var saved = [];
+  function pin(target, key, value) {
+    saved.push([target, key, Object.getOwnPropertyDescriptor(target, key)]);
+    Object.defineProperty(target, key, { configurable: true, get: function() { return value; } });
+  }
+  var o = screen.orientation;
+  var values = {
+    width: screen.width, height: screen.height,
+    availWidth: screen.availWidth, availHeight: screen.availHeight
+  };
+  ['width', 'height', 'availWidth', 'availHeight'].forEach(function(k) {
+    pin(Screen.prototype, k, values[k]);
+  });
+  if (o && window.ScreenOrientation) {
+    pin(ScreenOrientation.prototype, 'type', o.type);
+    pin(ScreenOrientation.prototype, 'angle', o.angle);
+  }
+  if ('orientation' in window) pin(window, 'orientation', window.orientation);
+  window.__astryxScreenPin = saved;
+})();
+"""
+
+// Undoes PIP_PIN_SCREEN_JS on PiP exit, then fires one resize so the page
+// re-reads the real values (e.g. PiP expanded while the phone is landscape).
+internal const val PIP_UNPIN_SCREEN_JS = """
+(function() {
+  var saved = window.__astryxScreenPin;
+  if (!saved) return;
+  window.__astryxScreenPin = null;
+  for (var i = saved.length - 1; i >= 0; i--) {
+    if (saved[i][2]) {
+      Object.defineProperty(saved[i][0], saved[i][1], saved[i][2]);
+    } else {
+      delete saved[i][0][saved[i][1]];
+    }
+  }
+  window.dispatchEvent(new Event('resize'));
+})();
+"""
+
 @Composable
 fun MaterialbookWebView(
     url: String,
@@ -474,6 +527,16 @@ fun MaterialbookWebView(
         if (state.loadingState is LoadingState.Finished) {
             navigator.evaluateJavaScript(
                 if (isInPipMode) PIP_FOCUS_MODE_JS else PIP_RESTORE_MODE_JS
+            ) {}
+        }
+    }
+
+    // Separate from focus mode on purpose (see PIP_PIN_SCREEN_JS): keeps
+    // rotation during PiP from making Facebook drop the reel.
+    LaunchedEffect(isInPipMode, state.loadingState) {
+        if (state.loadingState is LoadingState.Finished) {
+            navigator.evaluateJavaScript(
+                if (isInPipMode) PIP_PIN_SCREEN_JS else PIP_UNPIN_SCREEN_JS
             ) {}
         }
     }
