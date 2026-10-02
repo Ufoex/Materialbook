@@ -37,4 +37,7 @@
     <string name="pip_ratio_2_3">2:3</string>
     <string name="pip_ratio_3_4">3:4</string>
     <string name="pip_ratio_9_16">9:16 (puede sobresalir en algunos dispositivos)</string>
+    <string name="pip_lockscreen_audio_title">Mantener el audio al bloquear la pantalla</string>
+    <string name="pip_lockscreen_audio_summary">En imagen en imagen, el audio sigue sonando cuando se apaga la pantalla</string>
+    <string name="lockscreen_audio_media_title">Video de Facebook</string>
 </resources>

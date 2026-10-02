@@ -9,7 +9,10 @@ private const val TAG = "AstryxbookPiP"
  * Reports the currently active video state so the activity can decide when to
  * enter PiP and how to size the floating window.
  */
-class PipBridge(private val onVideoStateChanged: (Boolean, Int, Int) -> Unit) {
+class PipBridge(
+    private val onVideoStateChanged: (Boolean, Int, Int) -> Unit,
+    private val onPageVisibleCallback: () -> Unit = {},
+) {
     @JavascriptInterface
     fun setVideoPlaying(isPlaying: Boolean) {
         Log.d(TAG, "PipBridge.setVideoPlaying: isPlaying=$isPlaying")
@@ -33,5 +36,14 @@ class PipBridge(private val onVideoStateChanged: (Boolean, Int, Int) -> Unit) {
     @JavascriptInterface
     fun logPipAnomaly(message: String) {
         Log.w(TAG, "PiP focus mode: unexpected visible element(s): $message")
+    }
+
+    // Called by PIP_HANDOFF_ARM_JS when the page becomes visible again while
+    // a lock-screen audio handoff is active (the user unlocked): one of the
+    // handback signals. Runs on the JS bridge thread, not the main thread.
+    @JavascriptInterface
+    fun onPageVisible() {
+        Log.d(TAG, "PipBridge.onPageVisible")
+        onPageVisibleCallback()
     }
 }

@@ -31,4 +31,7 @@
     <string name="pip_ratio_2_3">2:3</string>
     <string name="pip_ratio_3_4">3:4</string>
     <string name="pip_ratio_9_16">9:16 (pode ultrapassar a tela em alguns dispositivos)</string>
+    <string name="pip_lockscreen_audio_title">Manter o áudio ao bloquear a tela</string>
+    <string name="pip_lockscreen_audio_summary">No picture-in-picture, o áudio continua tocando depois que a tela desliga</string>
+    <string name="lockscreen_audio_media_title">Vídeo do Facebook</string>
 </resources>

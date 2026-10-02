@@ -143,6 +143,17 @@ leaving the app while a Facebook video or Reel is playing.
   the offending script's source. This lets the *next* one be diagnosed from
   an ordinary field `adb logcat` capture instead of needing a reproducible
   live session.
+- "Keep audio when screen locks" (opt-in, off by default, shown under the
+  PiP settings): locking the screen while a video is in PiP hands its audio
+  off from the WebView to a native Media3 player in a `mediaPlayback`
+  foreground service, with lock-screen media controls. Unlocking (or
+  returning to the app) hands playback back to the WebView video at the same
+  position, resuming only if it was still playing. The page video stays
+  muted in between, since Facebook restarts it on its own after unlock. The
+  service only accepts this app's own controller (trusted system controllers
+  get transport controls only). It is bound idle at PiP entry and only goes
+  to the foreground at screen-off, so no notification shows during ordinary
+  PiP use.
 
 ## Known limitations
 
@@ -166,5 +177,10 @@ leaving the app while a Facebook video or Reel is playing.
   process - not attempted, for the same reason as the Reels re-pause above.
   Reels playing from the Reels tab, and videos playing inline in the feed
   wall, are unaffected.
+- Lock-screen audio plays Facebook's signed video URL directly, and those
+  URLs expire. If one expires during a long lock, native playback stops
+  (no refresh); on unlock the WebView video is restored at the last known
+  position. It also only covers videos with a plain `https://` source, not
+  `blob:` (MSE) streams.
 - Store listing screenshots (`fastlane/metadata/.../phoneScreenshots/`)
   removed as stale; not replaced yet (need real device captures).
