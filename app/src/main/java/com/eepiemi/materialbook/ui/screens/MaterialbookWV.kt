@@ -50,6 +50,7 @@ import com.eepiemi.materialbook.ui.viewmodel.SettingsViewModel
 import com.eepiemi.materialbook.utils.DESKTOP_USER_AGENT
 import com.eepiemi.materialbook.utils.ExternalRequestInterceptor
 import com.eepiemi.materialbook.utils.FullscreenController
+import com.eepiemi.materialbook.utils.appOrientation
 import com.eepiemi.materialbook.utils.appWebViewParams
 import com.eepiemi.materialbook.utils.jsBridge.ClipboardBridge
 import com.eepiemi.materialbook.utils.jsBridge.DownloadBridge
@@ -916,8 +917,10 @@ fun MaterialbookWebView(
 
     // HTML5 fullscreen video: the custom view goes into a black overlay on
     // the window's decor view, above the Compose content. Rotation doesn't
-    // recreate the activity (configChanges), so the overlay just resizes;
-    // orientation is left to the system auto-rotate setting.
+    // recreate the activity (configChanges), so the overlay just resizes.
+    // On phones the app is otherwise held in portrait (see appOrientation);
+    // fullscreen lifts that so the video can follow auto-rotate, and leaving
+    // fullscreen puts it back, so Facebook lays its viewer out in portrait.
     val fullscreen = remember(activity) {
         var overlay: FrameLayout? = null
         FullscreenController(object : FullscreenController.Host {
@@ -938,6 +941,8 @@ fun MaterialbookWebView(
                         WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 }
                 isFullscreen = true
+                activity.requestedOrientation =
+                    appOrientation(activity.resources.configuration.smallestScreenWidthDp, isFullscreen = true)
                 Log.d("AstryxbookPiP", "HTML5 fullscreen: shown")
             }
 
@@ -950,6 +955,10 @@ fun MaterialbookWebView(
                 activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 setWindow(settingsVM.immersiveMode.value)
                 isFullscreen = false
+                activity?.let {
+                    it.requestedOrientation =
+                        appOrientation(it.resources.configuration.smallestScreenWidthDp, isFullscreen = false)
+                }
                 Log.d("AstryxbookPiP", "HTML5 fullscreen: hidden")
             }
         })

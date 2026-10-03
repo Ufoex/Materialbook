@@ -1,9 +1,11 @@
 package com.eepiemi.materialbook
 
+import android.content.pm.ActivityInfo
 import androidx.datastore.preferences.core.mutablePreferencesOf
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.DESKTOP_LAYOUT
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.LEGACY_REVERT_DESKTOP
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.migrateLegacyAutoDesktop
+import com.eepiemi.materialbook.utils.appOrientation
 import com.eepiemi.materialbook.utils.effectiveDesktop
 import com.eepiemi.materialbook.utils.isAutoDesktopScreen
 import org.junit.Assert.assertEquals
@@ -43,6 +45,24 @@ class AutoDesktopTest {
     fun tabletSmallestWidth_isAutoDesktop() {
         assertTrue(isAutoDesktopScreen(600))
         assertTrue(isAutoDesktopScreen(800))
+    }
+
+    // ── Orientation: phones portrait except fullscreen video ─────────────────
+
+    @Test
+    fun phone_browsing_isPortrait() {
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT, appOrientation(384, isFullscreen = false))
+    }
+
+    @Test
+    fun phone_fullscreenVideo_followsAutoRotate() {
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_FULL_USER, appOrientation(384, isFullscreen = true))
+    }
+
+    @Test
+    fun largeScreen_isNeverLocked() {
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, appOrientation(600, isFullscreen = false))
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, appOrientation(800, isFullscreen = true))
     }
 
     // ── Migration of the old persisted auto decision ─────────────────────────

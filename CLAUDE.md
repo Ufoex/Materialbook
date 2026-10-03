@@ -52,11 +52,12 @@ user-visible change.
 
 ## Facebook behaviour, not ours
 
-Verify against Chrome/Opera on the phone before "fixing" these: rotating to
-landscape outside PiP makes Facebook skip the reel; Reels can re-pause a
-resumed video; finished videos auto-advance (and leave fullscreen); leaving
-fullscreen in landscape shows an oversized still frame instead of the video
-(same in Chrome). See Known
+Verify against Chrome/Opera on the phone before "fixing" these: Reels can
+re-pause a resumed video; finished videos auto-advance (and leave
+fullscreen). A real landscape page is broken on Facebook's side (reel skip
+on rotation, oversized still frame after leaving fullscreen), which is why
+phones are held in portrait except during fullscreen video
+(`appOrientation`). See Known
 limitations in `FORK_CHANGES.md`.
 
 ## Repo housekeeping
