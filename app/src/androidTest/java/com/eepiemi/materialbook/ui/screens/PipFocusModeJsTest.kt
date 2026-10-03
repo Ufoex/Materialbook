@@ -577,6 +577,60 @@ class PipFocusModeJsTest {
         assertEquals("0", h.eval("window.__resizes"))
     }
 
+    // ── Re-layout after fullscreen ended during PiP ──────────────────────────
+
+    private fun Harness.countFullscreenChanges() =
+        eval("window.__fsChanges = 0; document.addEventListener('fullscreenchange', function() { window.__fsChanges++; });")
+
+    @Test
+    fun holdFullscreenChange_keepsItFromThePage_untilReleased() {
+        val h = Harness()
+        h.loadHtml("<html><body></body></html>")
+        h.countFullscreenChanges()
+
+        h.eval(PIP_HOLD_FULLSCREENCHANGE_JS)
+        h.eval("document.dispatchEvent(new Event('fullscreenchange'));")
+        assertEquals("0", h.eval("window.__fsChanges"))
+
+        h.eval(PIP_RELEASE_FULLSCREENCHANGE_JS)
+        h.eval("document.dispatchEvent(new Event('fullscreenchange'));")
+        assertEquals("1", h.eval("window.__fsChanges"))
+        assertEquals("null", h.eval("window.__astryxFsHold"))
+    }
+
+    @Test
+    fun relayoutAfterFullscreen_releasesHold_andReplaysOneChangeOnceSettled() {
+        val h = Harness()
+        h.loadHtml("<html><body></body></html>")
+        h.countFullscreenChanges()
+        h.eval(PIP_HOLD_FULLSCREENCHANGE_JS)
+
+        h.eval(PIP_RELAYOUT_AFTER_FULLSCREEN_JS)
+
+        // Not immediately: the window has to settle at its final size first.
+        assertEquals("0", h.eval("window.__fsChanges"))
+        Thread.sleep(1500)
+        assertEquals("1", h.eval("window.__fsChanges"))
+        Thread.sleep(2000)
+        assertEquals("exactly one, even after the cap", "1", h.eval("window.__fsChanges"))
+    }
+
+    @Test
+    fun relayoutAfterFullscreen_waitsWhileResizesKeepComing() {
+        val h = Harness()
+        h.loadHtml("<html><body></body></html>")
+        h.countFullscreenChanges()
+
+        h.eval(PIP_RELAYOUT_AFTER_FULLSCREEN_JS)
+        repeat(3) {
+            Thread.sleep(500)
+            h.eval("window.dispatchEvent(new Event('resize'));")
+        }
+        assertEquals("0", h.eval("window.__fsChanges"))
+        Thread.sleep(1200)
+        assertEquals("1", h.eval("window.__fsChanges"))
+    }
+
     // ── Restore cleanup ───────────────────────────────────────────────────
 
     @Test

@@ -12,7 +12,11 @@ user-visible change.
   The quotes are required in PowerShell. A plain local build is `versionCode`
   13, lower than the installed app, so `adb install -r` needs the override
   (bump N for each install).
-- Debug builds install as a separate app (`com.astryx.book.test`).
+- Debug builds install as a separate app (`com.astryx.book.test`). Use it
+  for device checks when the phone has an official (release-key) build:
+  a local release APK won't install over it. `connectedDebugAndroidTest`
+  uninstalls that app when it finishes (losing its Facebook login), so run
+  instrumented tests before or after a device session, not in the middle.
 - `.\gradlew.bat testDebugUnitTest` (use the variant task; `--tests` filtering
   doesn't work on plain `test`), `.\gradlew.bat connectedDebugAndroidTest`
   (needs a device), `.\gradlew.bat lintDebug`. CI (`ci.yml`) gates on
@@ -41,11 +45,18 @@ user-visible change.
   Live debugging on the device: forward `localabstract:webview_devtools_remote_<pid>`
   and use the DevTools protocol (`/json`, `Runtime.evaluate`).
 
+- Facebook's video viewer re-lays out only on a real fullscreen transition
+  (`fullscreenchange`), not on `resize`/`orientationchange`, and writes its
+  widths into inline styles. Chromium ends HTML5 fullscreen by itself when
+  PiP starts from landscape (see `PIP_HOLD_FULLSCREENCHANGE_JS`).
+
 ## Facebook behaviour, not ours
 
 Verify against Chrome/Opera on the phone before "fixing" these: rotating to
 landscape outside PiP makes Facebook skip the reel; Reels can re-pause a
-resumed video; finished videos auto-advance (and leave fullscreen). See Known
+resumed video; finished videos auto-advance (and leave fullscreen); leaving
+fullscreen in landscape shows an oversized still frame instead of the video
+(same in Chrome). See Known
 limitations in `FORK_CHANGES.md`.
 
 ## Repo housekeeping

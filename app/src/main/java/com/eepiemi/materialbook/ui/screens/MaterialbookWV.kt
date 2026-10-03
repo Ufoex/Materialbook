@@ -503,6 +503,66 @@ internal const val PIP_UNPIN_SCREEN_JS = """
 })();
 """
 
+// Entering PiP from HTML5 fullscreen with the phone in landscape: WebView
+// itself ends fullscreen ~0.4s after PiP starts (stack seen on device:
+// exitFullscreenModeForTab -> onHideCustomView; the display turns to
+// portrait for the home screen, which Chromium treats as rotating out of a
+// fullscreen video). Facebook's video viewer reacts to that fullscreenchange
+// by re-rendering at the tiny PiP window size and discarding the <video>, so
+// the PiP window went black, and on return its layout stayed at that width.
+// Facebook only re-renders on a real fullscreen -> not-fullscreen
+// transition, not on resize/orientationchange. So while in PiP, hold the
+// fullscreenchange events back from the page (installed at PiP entry while
+// fullscreen), and replay one after PiP once the window has settled at its
+// final size (PIP_RELAYOUT_AFTER_FULLSCREEN_JS). Verified live: the video
+// stayed and showed in PiP.
+internal const val PIP_HOLD_FULLSCREENCHANGE_JS = """
+(function() {
+  if (window.__astryxFsHold) return;
+  window.__astryxFsHold = function(e) { e.stopImmediatePropagation(); };
+  window.addEventListener('fullscreenchange', window.__astryxFsHold, true);
+  window.addEventListener('webkitfullscreenchange', window.__astryxFsHold, true);
+})();
+"""
+
+// Removes PIP_HOLD_FULLSCREENCHANGE_JS's blocker. Used on its own on PiP exit
+// when fullscreen survived PiP (nothing was held back), and by
+// PIP_RELAYOUT_AFTER_FULLSCREEN_JS below.
+internal const val PIP_RELEASE_FULLSCREENCHANGE_JS = """
+(function() {
+  if (!window.__astryxFsHold) return;
+  window.removeEventListener('fullscreenchange', window.__astryxFsHold, true);
+  window.removeEventListener('webkitfullscreenchange', window.__astryxFsHold, true);
+  window.__astryxFsHold = null;
+})();
+"""
+
+// Run on PiP exit when fullscreen ended during PiP: releases the blocker,
+// then replays the fullscreenchange the page missed once resize events have
+// stopped for a moment (the window can pass through portrait on its way back
+// to landscape, and Facebook lays out only once, at whatever size it sees),
+// with a cap in case no resize comes.
+internal const val PIP_RELAYOUT_AFTER_FULLSCREEN_JS = PIP_RELEASE_FULLSCREENCHANGE_JS + """
+(function() {
+  var done = false, settle = null;
+  function fire() {
+    if (done) return;
+    done = true;
+    clearTimeout(settle);
+    clearTimeout(cap);
+    window.removeEventListener('resize', onResize, true);
+    document.dispatchEvent(new Event('fullscreenchange'));
+  }
+  function onResize() {
+    clearTimeout(settle);
+    settle = setTimeout(fire, 800);
+  }
+  window.addEventListener('resize', onResize, true);
+  settle = setTimeout(fire, 800);
+  var cap = setTimeout(fire, 3000);
+})();
+"""
+
 // Lock-screen audio handoff (see LockScreenAudioService). Installed on PiP
 // entry when the setting is on. Observed on the device spike: at lock the
 // page first gets visibilitychange -> hidden, Facebook's own handler pauses
@@ -678,6 +738,35 @@ fun MaterialbookWebView(
             } else {
                 navigator.evaluateJavaScript(PIP_FOCUS_MODE_JS) {}
             }
+        }
+    }
+
+    // Landscape fullscreen -> PiP: WebView ends fullscreen right after PiP
+    // starts (see PIP_HOLD_FULLSCREENCHANGE_JS). Hold that change back from
+    // the page while in PiP so Facebook keeps the video, apply focus mode once
+    // fullscreen has ended (the skip above only covered PiP entry), and on
+    // the way out of PiP replay the change at the final window size.
+    var fullscreenEndedInPip by remember { mutableStateOf(false) }
+    var holdingFullscreenChange by remember { mutableStateOf(false) }
+    LaunchedEffect(isInPipMode) {
+        if (isInPipMode && isFullscreen && state.loadingState is LoadingState.Finished) {
+            holdingFullscreenChange = true
+            navigator.evaluateJavaScript(PIP_HOLD_FULLSCREENCHANGE_JS) {}
+        } else if (!isInPipMode && holdingFullscreenChange) {
+            holdingFullscreenChange = false
+            if (fullscreenEndedInPip) {
+                fullscreenEndedInPip = false
+                navigator.evaluateJavaScript(PIP_RELAYOUT_AFTER_FULLSCREEN_JS) {}
+            } else {
+                navigator.evaluateJavaScript(PIP_RELEASE_FULLSCREENCHANGE_JS) {}
+            }
+        }
+    }
+    LaunchedEffect(isFullscreen) {
+        if (!isFullscreen && isInPipMode && state.loadingState is LoadingState.Finished) {
+            Log.d("AstryxbookPiP", "fullscreen ended during PiP: applying focus mode")
+            fullscreenEndedInPip = true
+            navigator.evaluateJavaScript(PIP_FOCUS_MODE_JS) {}
         }
     }
 
