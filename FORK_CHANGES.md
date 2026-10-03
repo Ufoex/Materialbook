@@ -246,6 +246,12 @@ leaving the app while a Facebook video or Reel is playing.
   fullscreen) makes Facebook skip to another video and switch to `/watch/`.
   That's Facebook's page reacting to a real landscape screen; the PiP
   screen pin doesn't apply there, since the page really is landscape.
+- Leaving fullscreen while the phone is in landscape (Back, the exit
+  button, or returning from PiP) leaves Facebook's video viewer showing an
+  oversized, clipped still frame instead of the video: it lays out its
+  portrait viewer at the full landscape width (an 832x1480 poster image in
+  an 832x354 window seen) and drops the `<video>`. The same happens in
+  Chrome on m.facebook.com, so it isn't caused by this app.
 - When a reel or fullscreen video ends, Facebook moves on by itself: in PiP
   the window can go empty (the finished video collapsed, or the page went
   back to the feed), and a fullscreen video auto-advances and leaves
