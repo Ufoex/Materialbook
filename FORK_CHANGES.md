@@ -70,6 +70,15 @@ would mostly be noise. See GitHub Releases for the actual per-version diffs.
   upload (photo picker) still works through the extended chrome client.
   Facebook offers its fullscreen button on landscape videos; portrait ones
   open in its own Reels-style viewer instead.
+- PiP from fullscreen with the phone in landscape: WebView itself ends
+  fullscreen right after PiP starts (the display turns to portrait for the
+  home screen, which Chromium treats as rotating out of a fullscreen video).
+  Facebook's viewer reacted to that by re-rendering at the PiP window size
+  and discarding the video, so the PiP window went black and the app came
+  back with the page squeezed to that size. While in PiP the page now
+  doesn't see that `fullscreenchange`; focus mode is applied once
+  fullscreen has ended, and on return the event is replayed once the window
+  has settled, so Facebook lays out at the full size.
 
 ## CI/CD
 
@@ -101,7 +110,7 @@ Added test coverage for the rebrand and default-behavior changes: settings
 defaults, theme colors, app identity/strings, launcher icon, applicationId,
 and the pinned external script source — none of which existed upstream.
 
-Also covers the PiP focus-mode/toggle/freeze JS (`PipFocusModeJsTest`, 21
+Also covers the PiP focus-mode/toggle/freeze JS (`PipFocusModeJsTest`, 24
 tests driven against a real `WebView` with synthetic DOM fixtures rather
 than live Facebook):
 
@@ -124,6 +133,8 @@ than live Facebook):
   after restore.
 - The screen pin: values held from pin time, idempotent, native getters
   restored on unpin with a single `resize` fired.
+- Holding `fullscreenchange` back during PiP and replaying exactly one
+  after PiP, only once resize events have settled.
 - The anomaly scan (below): a clean-page case reporting nothing, and a case
   where a deliberately-unhideable element (inline `!important`, the same
   trick that caused the two button leaks) is correctly caught and named.
