@@ -1,3 +1,11 @@
+## Materialbook Fork - v1.2.7
+
+<ins>**Changelog:**</ins>
+
+* Fix: Links opened outside the app again (host match instead of a slash-dependent regex; Facebook root no longer bounced to the browser).
+* Fix: External links kept their `#fragment` and stopped being double-encoded into a broken URL.
+* Fix: `intent://` links and app deep links now resolve instead of throwing; single failure toast if nothing can open them.
+
 ## Materialbook Fork - v1.2.6
 
 <ins>**Changelog:**</ins>
