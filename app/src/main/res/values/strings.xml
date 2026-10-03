@@ -48,6 +48,7 @@
     <string name="open_messenger_title">Open Messenger</string>
     <string name="open_messenger_desc">Launch the Messenger app</string>
     <string name="messenger_redirect_toast">Please open Messenger in Materialbook Settings.</string>
+    <string name="open_external_failed_toast">No app can open this link.</string>
     <string name="messenger_package_label">Package name</string>
     <string name="messenger_package_save">Save</string>
     <string name="messenger_package_reset">Reset</string>

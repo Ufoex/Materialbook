@@ -2,7 +2,6 @@ package vip.dh6k.materialbook_fork.utils
 
 import java.net.URL
 import java.net.URLDecoder
-import java.net.URLEncoder
 
 fun fbRedirectSanitizer(link: String): String {
     try {
@@ -16,18 +15,20 @@ fun fbRedirectSanitizer(link: String): String {
             url = URL(params["u"] ?: return link)
         }
 
-        val params = url.query?.split("&")
+        // URL's query is already decoded; re-encoding double-encoded it ("%20" -> "%2520")
+        // and broke the link. Only fbclid has to go.
+        val params = url.query
+            ?.split("&")
             ?.filter { !it.startsWith("fbclid=") }
-            ?.joinToString("&") { param ->
-                val (key, value) = param.split("=", limit = 2)
-                "$key=${URLEncoder.encode(value, "UTF-8")}"
-            }
+            ?.joinToString("&")
 
         return buildString {
             append("${url.protocol}://${url.host}")
             if (url.port != -1 && url.port != url.defaultPort) append(":${url.port}")
             append(url.path)
             if (!params.isNullOrBlank()) append("?").append(params)
+            // Fragments matter for SPA/news anchors; dropping them lands on the wrong spot.
+            if (url.ref != null) append("#").append(url.ref)
         }
     } catch (_: Exception) {
         return link

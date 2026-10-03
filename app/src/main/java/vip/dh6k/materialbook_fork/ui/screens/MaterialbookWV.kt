@@ -1,6 +1,5 @@
 package vip.dh6k.materialbook_fork.ui.screens
 
-import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.view.View
 import android.webkit.CookieManager
@@ -29,7 +28,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.core.graphics.ColorUtils
-import androidx.core.net.toUri
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,6 +49,7 @@ import vip.dh6k.materialbook_fork.utils.jsBridge.MaterialbookSettings
 import vip.dh6k.materialbook_fork.utils.jsBridge.ThemeChange
 import vip.dh6k.materialbook_fork.utils.jsBridge.MaterialYouBridge
 import vip.dh6k.materialbook_fork.utils.openMessenger
+import vip.dh6k.materialbook_fork.utils.openExternalUrl
 import vip.dh6k.materialbook_fork.utils.rememberAutoDesktop
 import vip.dh6k.materialbook_fork.utils.rememberImeHeight
 import kotlinx.coroutines.delay
@@ -71,13 +70,11 @@ fun MaterialbookWebView(
     val navigator = rememberWebViewNavigator(
         requestInterceptor = ExternalRequestInterceptor(
             handleExternalUrl = { externalUrl ->
-                val intent = Intent(Intent.ACTION_VIEW, externalUrl.toUri())
-                runCatching {
-                    context.startActivity(intent)
-                }.onFailure {
+                val opened = openExternalUrl(context, externalUrl)
+                if (!opened) {
                     Toast.makeText(
                         context,
-                        resources.getString(R.string.messenger_redirect_toast),
+                        resources.getString(R.string.open_external_failed_toast),
                         Toast.LENGTH_SHORT
                     ).show()
                 }

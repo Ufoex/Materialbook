@@ -41,19 +41,13 @@ fun openMessenger(context: Context, url: String, packageName: String): Boolean {
     // fb-messenger:// deep links resolve but Messenger drops them instantly (verified
     // on-device: IntentHandlerActivity flashes then closes); m.me stays open, so use it.
     val stableUrl = if (url.startsWith("fb-messenger", ignoreCase = true)) "https://m.me/" else url
-    val plain = runCatching {
+    // No NEW_TASK guesswork here: openExternalUrl owns intent:// parsing + flags, and
+    // package pinning last would re-break the working launcher path above.
+    if (openExternalUrl(context, stableUrl)) return true
+    return runCatching {
         context.startActivity(Intent(Intent.ACTION_VIEW, stableUrl.toUri()).apply {
+            setPackage(pkg)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         })
-    }.isSuccess
-    if (plain) return true
-    return runCatching {
-        val base = if (stableUrl.startsWith("intent:", ignoreCase = true)) {
-            Intent.parseUri(stableUrl, Intent.URI_INTENT_SCHEME)
-        } else {
-            Intent(Intent.ACTION_VIEW, stableUrl.toUri())
-        }
-        base.setPackage(pkg).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(base)
     }.isSuccess
 }

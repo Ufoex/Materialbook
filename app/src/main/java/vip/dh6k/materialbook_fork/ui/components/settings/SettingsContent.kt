@@ -1,6 +1,5 @@
 package vip.dh6k.materialbook_fork.ui.components.settings
 
-import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -50,11 +49,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import vip.dh6k.materialbook_fork.R
 import vip.dh6k.materialbook_fork.ui.viewmodel.SettingsViewModel
 import vip.dh6k.materialbook_fork.utils.rememberAutoDesktop
+import vip.dh6k.materialbook_fork.utils.openExternalUrl
 import vip.dh6k.materialbook_fork.utils.openMessenger
 
 @Composable
@@ -203,9 +202,7 @@ fun SettingsContent(
             TextButton(
                 modifier = Modifier.align(Alignment.Center),
                 onClick = {
-                    val bmacUrl = "https://buymeacoffee.com/eepiemi"
-                    val intent = Intent(Intent.ACTION_VIEW, bmacUrl.toUri())
-                    context.startActivity(intent)
+                    openExternalUrl(context, "https://buymeacoffee.com/eepiemi")
                 }
             ) {
                 Text(
