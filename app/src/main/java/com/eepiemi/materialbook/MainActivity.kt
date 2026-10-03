@@ -39,6 +39,7 @@ import com.eepiemi.materialbook.audio.PipHandback
 import com.eepiemi.materialbook.audio.isHandoffEligible
 import com.eepiemi.materialbook.audio.parseHandoffRead
 import com.eepiemi.materialbook.ui.screens.MaterialbookWebView
+import com.eepiemi.materialbook.utils.appOrientation
 import com.eepiemi.materialbook.ui.theme.MaterialbookTheme
 import com.eepiemi.materialbook.ui.viewmodel.SettingsViewModel
 import com.google.common.util.concurrent.ListenableFuture
@@ -264,6 +265,11 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        // Phones browse in portrait; only HTML5 fullscreen video rotates (see
+        // appOrientation and the fullscreen host in MaterialbookWebView).
+        requestedOrientation =
+            appOrientation(resources.configuration.smallestScreenWidthDp, isFullscreen = false)
 
         // Unconditional on purpose (not gated behind BuildConfig.DEBUG): keeps
         // chrome://inspect available on release-type builds for field

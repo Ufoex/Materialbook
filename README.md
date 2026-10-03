@@ -51,6 +51,7 @@ If enabled, the app:
 *  Supports Picture-in-Picture playback with selectable portrait-window ratios
 *  Keeps a Picture-in-Picture video's audio playing when the screen locks (opt-in)
 *  Supports real fullscreen video, including landscape, from Facebook's fullscreen button
+   (on phones the app otherwise stays in portrait, since Facebook's mobile site breaks in landscape)
 *  Supports English, Arabic, Bengali, German, Hebrew (`עברית`), Italian, Spanish, French, Portuguese, and Traditional Chinese
 *  And more!
 

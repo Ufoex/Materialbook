@@ -45,6 +45,14 @@ would mostly be noise. See GitHub Releases for the actual per-version diffs.
 
 ## Default behavior changes
 
+- Phones stay in portrait while browsing; only a video in fullscreen can
+  rotate (following the system auto-rotate setting), and leaving fullscreen
+  returns to portrait. Facebook's mobile site doesn't handle a real
+  landscape page: rotating made it skip the reel, and leaving fullscreen in
+  landscape left an oversized still frame instead of the video (both also
+  in Chrome). Tablets and other large screens (`smallestScreenWidthDp >=
+  600`, the auto-desktop ones) still rotate freely.
+
 - Auto desktop layout now triggers only on genuinely large screens
   (`smallestScreenWidthDp >= 600`), no longer on a phone that happens to be
   in landscape at app start. The automatic decision is computed at runtime
@@ -149,8 +157,9 @@ Lock-screen audio, fullscreen and auto-desktop have their own suites:
   `blob:`/empty, not already paused) and parsing of the page's answer.
 - `FullscreenControllerTest` (6): the show/hide contract (second show
   dismissed, hide without show is a no-op, WebView told exactly once).
-- `AutoDesktopTest` (8): the effective-desktop rule and the one-time
-  migration of the old persisted auto decision.
+- `AutoDesktopTest` (11): the effective-desktop rule, the one-time
+  migration of the old persisted auto decision, and the orientation rule
+  (phones portrait except fullscreen video, large screens unlocked).
 - `SettingsDefaultsTest` and `PipManifestTest` extended: lock-screen audio
   off by default; the service declared with `foregroundServiceType`
   mediaPlayback and exported.
@@ -242,16 +251,12 @@ leaving the app while a Facebook video or Reel is playing.
   wall, are unaffected. Real fullscreen (Facebook's fullscreen button on a
   landscape video, see WebView above) is unaffected too: its PiP shows the
   video.
-- Rotating the phone while watching Reels in the app (not in PiP or
-  fullscreen) makes Facebook skip to another video and switch to `/watch/`.
-  That's Facebook's page reacting to a real landscape screen; the PiP
-  screen pin doesn't apply there, since the page really is landscape.
-- Leaving fullscreen while the phone is in landscape (Back, the exit
-  button, or returning from PiP) leaves Facebook's video viewer showing an
-  oversized, clipped still frame instead of the video: it lays out its
-  portrait viewer at the full landscape width (an 832x1480 poster image in
-  an 832x354 window seen) and drops the `<video>`. The same happens in
-  Chrome on m.facebook.com, so it isn't caused by this app.
+- On large screens (tablets, which still rotate freely, see Default
+  behavior changes) Facebook's mobile site handles a real landscape page
+  badly: rotating while watching Reels makes it skip to another video and
+  switch to `/watch/`, and leaving fullscreen in landscape leaves its viewer
+  showing an oversized still frame instead of the video (both also happen
+  in Chrome on m.facebook.com). Phones avoid both by staying portrait.
 - When a reel or fullscreen video ends, Facebook moves on by itself: in PiP
   the window can go empty (the finished video collapsed, or the page went
   back to the feed), and a fullscreen video auto-advances and leaves
