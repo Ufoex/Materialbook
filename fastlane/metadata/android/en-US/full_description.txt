@@ -1,8 +1,18 @@
 Astryxbook is a lightweight client for Facebook that keeps Facebook's own original Android look. The app is a wrapper around the mobile Facebook website, which is what allows it to be so light!
 
-If enabled in the app's settings, the app:
+Most features are toggles in the app's settings.
+
+On by default:
 <ul>
     <li>Blocks sponsored ads</li>
+    <li>Keeps the navigation bar at the top</li>
+    <li>Downloads media or copies it to the clipboard</li>
+</ul>
+
+Off by default (opt-in):
+<ul>
+    <li>Uses Material You colors instead of Facebook's blues (Facebook's own blue is the default theme)</li>
+    <li>Makes Facebook AMOLED Black</li>
     <li>Hides distractions like:</li>
         <ul>
             <li>Suggested posts</li>
@@ -12,13 +22,13 @@ If enabled in the app's settings, the app:
             <li>Groups</li>
         </ul>
     <li>Hides the system bars</li>
-    <li>Keeps the navigation bar at the top</li>
     <li>Allows pinch-to-zoom anywhere</li>
-    <li>Downloads media or copies it to the clipboard</li>
     <li>Lets the user access Messenger (Desktop layout only)</li>
     <li>Supports Picture-in-Picture for playing Facebook videos and Reels, with a native resume button</li>
     <li>Keeps a Picture-in-Picture video's audio playing when the screen locks, with lock-screen controls</li>
+</ul>
+
+Always on:
+<ul>
     <li>Plays videos in real fullscreen, including landscape</li>
-    <li>Uses Material You colors instead of Facebook's blues</li>
-    <li>Makes Facebook AMOLED Black</li>
 </ul>
