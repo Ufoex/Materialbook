@@ -36,20 +36,29 @@
     ⚙️ Features
 </h2>
 
-If enabled, the app:
-*  Uses Material You colors instead of Facebook's blues
-*  Makes Facebook AMOLED Black
+Most features are toggles in the app's Settings.
+
+On by default:
 *  Blocks sponsored ads
+*  Keeps the navigation bar at the top
+*  Downloads media or copies it to the clipboard
+
+Off by default (opt-in):
+*  Uses Material You colors instead of Facebook's blues (Facebook's own blue is the default theme)
+*  Makes Facebook AMOLED Black
 *  Hides distractions like:
     *  Suggested posts
     *  Reels
     *  Stories
     *  Groups
     *  People you may know
-*  Keeps the navigation bar at the top
-*  Downloads media or copies it to the clipboard
+*  Hides the system bars (immersive mode)
+*  Allows pinch-to-zoom anywhere
+*  Lets you access Messenger (Desktop layout only)
 *  Supports Picture-in-Picture playback with selectable portrait-window ratios
-*  Keeps a Picture-in-Picture video's audio playing when the screen locks (opt-in)
+*  Keeps a Picture-in-Picture video's audio playing when the screen locks
+
+Always on:
 *  Supports real fullscreen video, including landscape, from Facebook's fullscreen button
    (on phones the app otherwise stays in portrait, since Facebook's mobile site breaks in landscape)
 *  Supports English, Arabic, Bengali, German, Hebrew (`עברית`), Italian, Spanish, French, Portuguese, and Traditional Chinese
