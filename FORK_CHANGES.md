@@ -105,6 +105,9 @@ would mostly be noise. See GitHub Releases for the actual per-version diffs.
 - Releases now auto-version from the merge commit's conventional-commit
   prefix (`feat:` → minor, `fix:`/`chore:`/etc → patch, `feat!:`/
   `BREAKING CHANGE` → major) instead of manual tagging.
+- A push to `main` that only changes docs (Markdown, `LICENSE`, the
+  `fastlane/` store listing, README images in `assets/`) no longer publishes
+  a release; its commits roll into the next code release's version bump.
 - APK's actual `versionName`/`versionCode` now baked in from the resolved
   release tag at build time — previously hardcoded to a permanent `1.0.0`
   regardless of the real release version.

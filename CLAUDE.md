@@ -23,7 +23,8 @@ user-visible change.
   `test`, `:app:lintDebug` and `connectedAndroidTest`.
 - Pushing to `main` runs `create-release.yml` (which calls `ci.yml`); it
   auto-versions from conventional commits (`feat:` = minor bump) and
-  publishes a release.
+  publishes a release. A docs-only push (`*.md`, `LICENSE`, `fastlane/`,
+  `assets/`) skips it via `paths-ignore`.
 
 ## WebView and PiP code (`ui/screens/MaterialbookWV.kt`)
 

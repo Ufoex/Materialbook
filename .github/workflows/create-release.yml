@@ -14,12 +14,23 @@ name: Create Release
 #     auto-versioning (e.g. re-releasing an old commit).
 #  3. workflow_dispatch — manual override with an explicit tag.
 #
+# A main push that only touches docs (Markdown, the fastlane store listing,
+# README images) doesn't release. GitHub checks paths against the whole
+# push, so a push mixing docs and code still releases, and the docs commits
+# count toward the next release's version bump. Path filters don't apply to
+# tag pushes, so path 2 is unaffected.
+#
 # Use Ubuntu 26.04 across release jobs for current GitHub-hosted tooling.
 
 on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - 'fastlane/**'
+      - 'assets/**'
     tags:
       - 'v*.*.*'
   workflow_dispatch:
