@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Astryxbook</string>
+    <string name="network_error_description">Per utilizzare Astryxbook, attiva i dati mobili o connettiti al Wi-Fi.</string>
+    <string name="materialbook_settings">Impostazioni Astryxbook</string>
+</resources>

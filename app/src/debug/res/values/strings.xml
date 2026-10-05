@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug-build-only override (Android auto-merges src/debug/res/ on top of
+  src/main/res/ for debug builds only, zero build.gradle.kts change needed)
+  so the debug app is visibly distinguishable from the release install on
+  the home screen — both otherwise share the exact same name and icon.
+-->
+<resources>
+    <string name="app_name">Astryxbook Debug</string>
+</resources>

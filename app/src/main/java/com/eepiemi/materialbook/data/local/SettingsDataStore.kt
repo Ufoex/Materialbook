@@ -2,10 +2,13 @@ package com.eepiemi.materialbook.data.local
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "materialbook_prefs")
@@ -26,14 +29,33 @@ class SettingsDataStore(private val context: Context) {
         val HIDE_STORIES = booleanPreferencesKey("hide_stories")
         val HIDE_PEOPLE_YOU_MAY_KNOW = booleanPreferencesKey("hide_people_you_may_know")
         val HIDE_GROUPS = booleanPreferencesKey("hide_groups")
-        val isRevertDesktop = booleanPreferencesKey("is_revert_desktop")
+        val PIP_ENABLED = booleanPreferencesKey("pip_enabled")
+        val PIP_PORTRAIT_RATIO = stringPreferencesKey("pip_portrait_ratio")
+        val PIP_LOCKSCREEN_AUDIO = booleanPreferencesKey("pip_lockscreen_audio")
+
+        // Legacy: set by the old auto-desktop logic when it wrote desktop_layout
+        // on the user's behalf. Only read by the migration below.
+        val LEGACY_REVERT_DESKTOP = booleanPreferencesKey("is_revert_desktop")
+
+        /**
+         * If the legacy revert flag is set, desktop_layout was written by the
+         * old auto logic, not the user: reset it and drop the flag. A
+         * desktop_layout without the flag is the user's own choice and stays.
+         */
+        fun migrateLegacyAutoDesktop(prefs: MutablePreferences) {
+            if (prefs[LEGACY_REVERT_DESKTOP] == true) {
+                prefs[DESKTOP_LAYOUT] = false
+            }
+            prefs.remove(LEGACY_REVERT_DESKTOP)
+        }
     }
 
     val prefs = context.dataStore.data
 
-    val revertDesktop = context.dataStore.data.map { it[isRevertDesktop] ?: false }
-    suspend fun setRevertDesktop(revertDesktop: Boolean) {
-        context.dataStore.edit { it[isRevertDesktop] = revertDesktop }
+    suspend fun migrateLegacyAutoDesktop() {
+        if (prefs.first().contains(LEGACY_REVERT_DESKTOP)) {
+            context.dataStore.edit { migrateLegacyAutoDesktop(it) }
+        }
     }
 
     val removeAds = context.dataStore.data.map { it[REMOVE_ADS] ?: true }
@@ -71,12 +93,12 @@ class SettingsDataStore(private val context: Context) {
         context.dataStore.edit { it[PINCH_TO_ZOOM] = pinchToZoom }
     }
 
-    val materialYou = context.dataStore.data.map { it[MATERIAL_YOU] ?: true }
+    val materialYou = context.dataStore.data.map { it[MATERIAL_YOU] ?: false }
     suspend fun setMaterialYou(materialYou: Boolean) {
         context.dataStore.edit { it[MATERIAL_YOU] = materialYou }
     }
 
-    val amoledBlack = context.dataStore.data.map { it[AMOLED_BLACK] ?: true }
+    val amoledBlack = context.dataStore.data.map { it[AMOLED_BLACK] ?: false }
     suspend fun setAmoledBlack(amoledBlack: Boolean) {
         context.dataStore.edit { it[AMOLED_BLACK] = amoledBlack }
     }
@@ -104,5 +126,26 @@ class SettingsDataStore(private val context: Context) {
     val hideGroups = context.dataStore.data.map { it[HIDE_GROUPS] ?: false }
     suspend fun setHideGroups(hideGroups: Boolean) {
         context.dataStore.edit { it[HIDE_GROUPS] = hideGroups }
+    }
+
+    // Off by default: entering a floating window unexpectedly is surprising
+    // behavior, same reasoning as materialYou/amoledBlack defaulting off.
+    val pipEnabled = context.dataStore.data.map { it[PIP_ENABLED] ?: false }
+    suspend fun setPipEnabled(pipEnabled: Boolean) {
+        context.dataStore.edit { it[PIP_ENABLED] = pipEnabled }
+    }
+
+    // Off by default, like PiP itself: opt-in to keep playing audio natively
+    // (with a media notification) after the screen locks during PiP.
+    val pipLockscreenAudio = context.dataStore.data.map { it[PIP_LOCKSCREEN_AUDIO] ?: false }
+    suspend fun setPipLockscreenAudio(enabled: Boolean) {
+        context.dataStore.edit { it[PIP_LOCKSCREEN_AUDIO] = enabled }
+    }
+
+    // Default "4:7" is the empirically safe portrait ratio on Samsung A56 (and similar OEMs)
+    // where requesting true 9:16 causes the PiP window to overflow past the screen edge.
+    val pipPortraitRatio = context.dataStore.data.map { it[PIP_PORTRAIT_RATIO] ?: "4:7" }
+    suspend fun setPipPortraitRatio(ratio: String) {
+        context.dataStore.edit { it[PIP_PORTRAIT_RATIO] = ratio }
     }
 }

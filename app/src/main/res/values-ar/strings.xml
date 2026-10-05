@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Materialbook</string>
     <string name="apply_immediately">هل تريد تطبيق التغييرات فوراً؟</string>
     <string name="remove_ads_title">إزالة الإعلانات</string>
     <string name="download_content_title">تنزيل المحتوى</string>
@@ -12,7 +11,6 @@
     <string name="amoled_black_title">وضع أسود نقي</string>
     <string name="customize_feed_title">تخصيص الصفحة الرئيسية</string>
     <string name="network_error_title">يرجى الاتصال بالشبكة</string>
-    <string name="network_error_description">لاستخدام Materialbook، قم بتشغيل بيانات الجوال أو الاتصال بشبكة Wi-Fi.</string>
     <string name="ok">موافق</string>
     <string name="saved_to_downloads">تم الحفظ في التنزيلات</string>
     <string name="download_failed_invalid_data">فشل التنزيل: بيانات غير صالحة</string>
@@ -21,7 +19,6 @@
     <string name="copy_failed_invalid_data">فشل النسخ: بيانات غير صالحة</string>
     <string name="copy_failed_invalid_image">فشل النسخ: صورة غير صالحة</string>
     <string name="failed_to_copy_image">فشل نسخ الصورة</string>
-    <string name="clipboard_not_supported">الحافظة غير مدعومة في هذا الإصدار</string>
     <string name="suggested_posts">المنشورات المقترحة</string>
     <string name="reels">مقاطع ريلز</string>
     <string name="stories">القصص</string>
@@ -37,7 +34,15 @@
     <string name="hide_sponsored_ads_from_your_feed">إخفاء الإعلانات الممولة من الصفحة الرئيسية</string>
     <string name="enable_download_button_on_media_view">تفعيل زر التنزيل عند عرض الوسائط</string>
     <string name="enable_copy_to_clipboard_button_on_media_view">تفعيل زر النسخ للحافظة عند عرض الوسائط</string>
-    <string name="materialbook_settings">إعدادات Materialbook</string>
-    <string name="support_my_work">ادعمني! ☕</string>
     <string name="not_supported">غير مدعوم</string>
+    <string name="pip_title">الصورة داخل الصورة</string>
+    <string name="shrink_into_a_floating_window_when_leaving_while_a_video_plays">التصغير إلى نافذة عائمة عند مغادرة التطبيق أثناء تشغيل فيديو</string>
+    <string name="pip_ratio_title">نسبة العرض إلى الارتفاع لـ PiP (الفيديوهات العمودية)</string>
+    <string name="pip_ratio_4_7">4:7 (موصى به)</string>
+    <string name="pip_ratio_2_3">2:3</string>
+    <string name="pip_ratio_3_4">3:4</string>
+    <string name="pip_ratio_9_16">9:16 (قد يتجاوز حدود الشاشة في بعض الأجهزة)</string>
+    <string name="pip_lockscreen_audio_title">متابعة الصوت عند قفل الشاشة</string>
+    <string name="pip_lockscreen_audio_summary">أثناء وضع الصورة داخل الصورة، يستمر تشغيل الصوت بعد إيقاف الشاشة</string>
+    <string name="lockscreen_audio_media_title">فيديو Facebook</string>
 </resources>

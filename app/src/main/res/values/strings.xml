@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Materialbook</string>
 
     <!-- Bottom Text and Buttons -->
     <string name="apply_immediately">Apply Immediately?</string>
@@ -12,9 +11,9 @@
     <string name="pinch_to_zoom_title">Pinch to zoom</string>
     <string name="material_you_title">Material You</string>
     <string name="amoled_black_title">AMOLED Black</string>
+    <string name="pip_title">Picture-in-Picture</string>
     <string name="customize_feed_title">Customize feed</string>
     <string name="network_error_title">Connect to a network</string>
-    <string name="network_error_description">To use Materialbook, turn on mobile data or connect to Wi-Fi.</string>
     <string name="ok">OK</string>
     <string name="saved_to_downloads">Saved to Downloads</string>
     <string name="download_failed_invalid_data">Download failed: Invalid data</string>
@@ -23,7 +22,6 @@
     <string name="copy_failed_invalid_data">Copy failed: Invalid data</string>
     <string name="copy_failed_invalid_image">Copy failed: Invalid image</string>
     <string name="failed_to_copy_image">Failed to copy image</string>
-    <string name="clipboard_not_supported">Clipboard not supported on this version</string>
     <string name="suggested_posts">Suggested posts</string>
     <string name="reels">Reels</string>
     <string name="stories">Stories</string>
@@ -39,7 +37,14 @@
     <string name="hide_sponsored_ads_from_your_feed">Hide sponsored ads from feed</string>
     <string name="enable_download_button_on_media_view">Enable download button on media view</string>
     <string name="enable_copy_to_clipboard_button_on_media_view">Enable copy to clipboard button on media view</string>
-    <string name="materialbook_settings">Materialbook settings</string>
-    <string name="support_my_work">Support my work! ☕</string>
+    <string name="shrink_into_a_floating_window_when_leaving_while_a_video_plays">Shrink into a floating window when leaving the app while a video is playing</string>
     <string name="not_supported">Not supported</string>
+    <string name="pip_ratio_title">PiP aspect ratio (portrait videos)</string>
+    <string name="pip_ratio_4_7">4:7 (recommended)</string>
+    <string name="pip_ratio_2_3">2:3</string>
+    <string name="pip_ratio_3_4">3:4</string>
+    <string name="pip_ratio_9_16">9:16 (may overflow on some devices)</string>
+    <string name="pip_lockscreen_audio_title">Keep audio when screen locks</string>
+    <string name="pip_lockscreen_audio_summary">While in picture-in-picture, keep playing audio after the screen turns off</string>
+    <string name="lockscreen_audio_media_title">Facebook video</string>
 </resources>

@@ -1,10 +1,10 @@
 package com.eepiemi.materialbook.ui.viewmodel
 
 import android.app.Application
+import android.util.Rational
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.eepiemi.materialbook.data.local.SettingsDataStore
-import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MATERIAL_YOU
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.AMOLED_BLACK
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.DESKTOP_LAYOUT
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.ENABLE_COPY_TO_CLIPBOARD
@@ -15,7 +15,11 @@ import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_REEL
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_STORIES
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_SUGGESTED
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.IMMERSIVE_MODE
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MATERIAL_YOU
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PINCH_TO_ZOOM
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_ENABLED
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_LOCKSCREEN_AUDIO
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_PORTRAIT_RATIO
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.REMOVE_ADS
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.STICKY_NAVBAR
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,14 +28,18 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-
 class SettingsViewModel(
     application: Application,
 ) : AndroidViewModel(application) {
 
     private val dataStore: SettingsDataStore = SettingsDataStore(application)
 
-    private val initialPrefs = runBlocking { dataStore.prefs.first() }
+    // Migrate before the first read so desktopLayout's initial value already
+    // reflects the unstuck state on installs hit by the old auto-desktop logic.
+    private val initialPrefs = runBlocking {
+        dataStore.migrateLegacyAutoDesktop()
+        dataStore.prefs.first()
+    }
 
     val removeAds = dataStore.removeAds.stateIn(
         scope = viewModelScope,
@@ -70,12 +78,12 @@ class SettingsViewModel(
     )
     val materialYou = dataStore.materialYou.stateIn(
         scope = viewModelScope,
-        initialValue = initialPrefs[MATERIAL_YOU] ?: true,
+        initialValue = initialPrefs[MATERIAL_YOU] ?: false,
         started = SharingStarted.WhileSubscribed()
     )
     val amoledBlack = dataStore.amoledBlack.stateIn(
         scope = viewModelScope,
-        initialValue = initialPrefs[AMOLED_BLACK] ?: true,
+        initialValue = initialPrefs[AMOLED_BLACK] ?: false,
         started = SharingStarted.WhileSubscribed()
     )
     val hideSuggested = dataStore.hideSuggested.stateIn(
@@ -103,9 +111,19 @@ class SettingsViewModel(
         initialValue = initialPrefs[HIDE_GROUPS] ?: false,
         started = SharingStarted.WhileSubscribed()
     )
-    val isRevertDesktop = dataStore.revertDesktop.stateIn(
+    val pipEnabled = dataStore.pipEnabled.stateIn(
         scope = viewModelScope,
-        initialValue = false,
+        initialValue = initialPrefs[PIP_ENABLED] ?: false,
+        started = SharingStarted.WhileSubscribed()
+    )
+    val pipLockscreenAudio = dataStore.pipLockscreenAudio.stateIn(
+        scope = viewModelScope,
+        initialValue = initialPrefs[PIP_LOCKSCREEN_AUDIO] ?: false,
+        started = SharingStarted.WhileSubscribed()
+    )
+    val pipPortraitRatio = dataStore.pipPortraitRatio.stateIn(
+        scope = viewModelScope,
+        initialValue = initialPrefs[PIP_PORTRAIT_RATIO] ?: "4:7",
         started = SharingStarted.WhileSubscribed()
     )
 
@@ -193,9 +211,82 @@ class SettingsViewModel(
         }
     }
 
-    fun setRevertDesktop(revertDesktop: Boolean) {
+    fun setPipEnabled(pipEnabled: Boolean) {
         viewModelScope.launch {
-            dataStore.setRevertDesktop(revertDesktop)
+            dataStore.setPipEnabled(pipEnabled)
+        }
+    }
+
+    fun setPipLockscreenAudio(enabled: Boolean) {
+        viewModelScope.launch {
+            dataStore.setPipLockscreenAudio(enabled)
+        }
+    }
+
+    fun setPipPortraitRatio(ratio: String) {
+        viewModelScope.launch {
+            dataStore.setPipPortraitRatio(ratio)
+        }
+    }
+
+    fun parsedPipRational(): Rational = parsedPipRational(pipPortraitRatio.value)
+
+    fun pipRationalForVideo(videoWidth: Int, videoHeight: Int): Rational =
+        calculatePipRational(videoWidth, videoHeight, parsedPipRational())
+
+    companion object {
+        private val MIN_PIP_ASPECT_RATIO = 100f / 239f
+        private val MAX_PIP_ASPECT_RATIO = 239f / 100f
+
+        /**
+         * Converts a stored "W:H" string to a [Rational] suitable for
+         * [android.app.PictureInPictureParams.Builder.setAspectRatio].
+         * Falls back to Rational(4, 7) on any parse error so a corrupt pref
+         * can never crash the app.
+         */
+        fun parsedPipRational(stored: String): Rational {
+            return try {
+                val parts = stored.split(":")
+                Rational(parts[0].trim().toInt(), parts[1].trim().toInt())
+            } catch (_: Exception) {
+                Rational(4, 7)
+            }
+        }
+
+        /**
+         * Uses the selected ratio for portrait video and the detected source
+         * ratio for landscape video. Extreme landscape ratios are clamped to
+         * Android's documented PiP range; unknown dimensions use 16:9.
+         */
+        fun calculatePipRational(
+            videoWidth: Int,
+            videoHeight: Int,
+            portraitRatio: Rational,
+        ): Rational {
+            if (videoWidth <= 0 || videoHeight <= 0) {
+                return Rational(16, 9)
+            }
+            if (videoHeight > videoWidth) {
+                return portraitRatio
+            }
+
+            val sourceRatio = videoWidth.toFloat() / videoHeight.toFloat()
+            return when {
+                sourceRatio < MIN_PIP_ASPECT_RATIO -> Rational(100, 239)
+                sourceRatio > MAX_PIP_ASPECT_RATIO -> Rational(239, 100)
+                else -> reducedRational(videoWidth, videoHeight)
+            }
+        }
+
+        private fun reducedRational(numerator: Int, denominator: Int): Rational {
+            var a = numerator
+            var b = denominator
+            while (b != 0) {
+                val remainder = a % b
+                a = b
+                b = remainder
+            }
+            return Rational(numerator / a, denominator / a)
         }
     }
 }

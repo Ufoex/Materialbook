@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Materialbook</string>
     <string name="apply_immediately">Appliquer maintenant?</string>
     <string name="remove_ads_title">Supprimer les publicités</string>
     <string name="download_content_title">Télécharger le contenu</string>
@@ -10,7 +9,6 @@
     <string name="amoled_black_title">Noir AMOLED</string>
     <string name="customize_feed_title">Personnaliser le flux</string>
     <string name="network_error_title">Se connecter au réseau</string>
-    <string name="network_error_description">Pour utiliser Materialbook, activez les données mobiles ou connectez-vous au Wi-Fi.</string>
     <string name="ok">OK</string>
     <string name="saved_to_downloads">Enregistré dans Téléchargements</string>
     <string name="download_failed_invalid_data">Échec du téléchargement : données invalides</string>
@@ -28,5 +26,12 @@
     <string name="customize_feed">Afficher ou masquer les éléments</string>
     <string name="hide_sponsored_ads_from_your_feed">Masquer les publicités sponsorisées dans le flux</string>
     <string name="enable_download_button_on_media_view">Activer le bouton de téléchargement sur la vue média</string>
-    <string name="materialbook_settings">Paramètres Materialbook</string>
+    <string name="pip_ratio_title">Rapport d\'aspect PiP (vidéos verticales)</string>
+    <string name="pip_ratio_4_7">4:7 (recommandé)</string>
+    <string name="pip_ratio_2_3">2:3</string>
+    <string name="pip_ratio_3_4">3:4</string>
+    <string name="pip_ratio_9_16">9:16 (peut dépasser sur certains appareils)</string>
+    <string name="pip_lockscreen_audio_title">Garder le son quand l\'écran se verrouille</string>
+    <string name="pip_lockscreen_audio_summary">En mode Picture-in-Picture, le son continue après l\'extinction de l\'écran</string>
+    <string name="lockscreen_audio_media_title">Vidéo Facebook</string>
 </resources>

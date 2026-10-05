@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!--
+      local.properties is generated per machine. A Windows SDK path such as
+      C:/Users/... is valid to Gradle even though lint's generic .properties
+      escaping rule treats the drive-letter colon as an error.
+    -->
+    <issue id="PropertyEscape">
+        <ignore path="local.properties" />
+    </issue>
+
+    <!--
+      Dependency freshness checks are advisory. The newest versions currently
+      require compileSdk 37, while this project intentionally builds against
+      compileSdk 36; upgrades should be made deliberately with a full build.
+    -->
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
+    <issue id="GradleDependency" severity="ignore" />
+    <issue id="NewerVersionAvailable" severity="ignore" />
+</lint>

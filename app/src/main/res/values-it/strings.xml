@@ -1,8 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Materialbook</string>
-
-    <!-- Bottom Text and Buttons -->
-    <string name="apply_immediately">Applica Immediatamente?</string>
+    <string name="apply_immediately">Applica immediatamente?</string>
     <string name="remove_ads_title">Rimuovi pubblicità</string>
     <string name="download_content_title">Scarica contenuti</string>
     <string name="copy_to_clipboard_title">Copia negli appunti</string>
@@ -12,9 +10,9 @@
     <string name="pinch_to_zoom_title">Pizzica per ingrandire</string>
     <string name="material_you_title">Material You</string>
     <string name="amoled_black_title">AMOLED Black</string>
+    <string name="pip_title">Picture-in-Picture</string>
     <string name="customize_feed_title">Personalizza il feed</string>
     <string name="network_error_title">Connettiti a una rete</string>
-    <string name="network_error_description">Per utilizzare Materialbook, attiva i dati mobili o connettiti al Wi-Fi.</string>
     <string name="ok">OK</string>
     <string name="saved_to_downloads">Salvato nei Download</string>
     <string name="download_failed_invalid_data">Download fallito: dati non validi</string>
@@ -23,7 +21,6 @@
     <string name="copy_failed_invalid_data">Copia fallita: dati non validi</string>
     <string name="copy_failed_invalid_image">Copia fallita: immagine non valida</string>
     <string name="failed_to_copy_image">Impossibile copiare l\'immagine</string>
-    <string name="clipboard_not_supported">Gli appunti non sono supportati in questa versione</string>
     <string name="suggested_posts">Post consigliati</string>
     <string name="reels">Reel</string>
     <string name="stories">Storie</string>
@@ -39,7 +36,14 @@
     <string name="hide_sponsored_ads_from_your_feed">Nascondi gli annunci sponsorizzati dal feed</string>
     <string name="enable_download_button_on_media_view">Abilita il pulsante di download nella vista contenuti multimediali</string>
     <string name="enable_copy_to_clipboard_button_on_media_view">Abilita il pulsante \'Copia negli appunti\' nella vista contenuti multimediali</string>
-    <string name="materialbook_settings">Impostazioni Materialbook</string>
-    <string name="support_my_work">Supporta il mio lavoro! ☕</string>
+    <string name="shrink_into_a_floating_window_when_leaving_while_a_video_plays">Riduci in una finestra fluttuante quando esci dall\'app durante la riproduzione di un video</string>
     <string name="not_supported">Non supportato</string>
+    <string name="pip_ratio_title">Rapporto di aspetto PiP (video verticali)</string>
+    <string name="pip_ratio_4_7">4:7 (consigliato)</string>
+    <string name="pip_ratio_2_3">2:3</string>
+    <string name="pip_ratio_3_4">3:4</string>
+    <string name="pip_ratio_9_16">9:16 (potrebbe superare i limiti dello schermo su alcuni dispositivi)</string>
+    <string name="pip_lockscreen_audio_title">Mantieni l\'audio con lo schermo bloccato</string>
+    <string name="pip_lockscreen_audio_summary">In Picture-in-Picture, l\'audio continua dopo lo spegnimento dello schermo</string>
+    <string name="lockscreen_audio_media_title">Video di Facebook</string>
 </resources>

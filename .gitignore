@@ -1,5 +1,7 @@
 *.iml
+*.orig
 .gradle
+.kotlin
 .idea
 /local.properties
 /.idea
@@ -14,3 +16,8 @@ local.properties
 /build/
 /app/build/
 *.apk
+.vscode/settings.json
+PR_BODY.md
+astryxbook-release.b64
+astryxbook-release.jks
+jacoco-debug.log

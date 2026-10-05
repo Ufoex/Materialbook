@@ -1,7 +1,36 @@
 name: Create Release
 
+# Runs the same checks as CI (via workflow_call — never duplicated) before
+# signing and publishing. Deliberately does NOT trigger on pull_request —
+# that's ci.yml's job now; keeping this file tag/dispatch/main-push-only
+# means PR checks are correctly labeled "CI / ..." instead of
+# "Create Release / ...".
+#
+# Three ways this runs:
+#  1. push to main (normal path) — compute-version auto-bumps the version
+#     from the conventional-commit prefix (feat/fix/chore/etc.) of the
+#     merge commit and pushes the new tag itself.
+#  2. push of a v*.*.* tag directly — manual escape hatch, bypasses
+#     auto-versioning (e.g. re-releasing an old commit).
+#  3. workflow_dispatch — manual override with an explicit tag.
+#
+# A main push that only touches docs (Markdown, the fastlane store listing,
+# README images) doesn't release. GitHub checks paths against the whole
+# push, so a push mixing docs and code still releases, and the docs commits
+# count toward the next release's version bump. Path filters don't apply to
+# tag pushes, so path 2 is unaffected.
+#
+# Use Ubuntu 26.04 across release jobs for current GitHub-hosted tooling.
+
 on:
   push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - 'fastlane/**'
+      - 'assets/**'
     tags:
       - 'v*.*.*'
   workflow_dispatch:
@@ -12,24 +41,95 @@ on:
         type: string
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  compute-version:
+    # Only the main-push path auto-computes a version — a direct tag push or
+    # workflow_dispatch already carries an explicit one.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+    outputs:
+      new_tag: ${{ steps.tag.outputs.new_tag }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Reads conventional-commit prefixes since the last tag: feat -> minor,
+      # fix/chore/docs/ci/etc -> patch (default_bump), BREAKING CHANGE or a
+      # "!" after the type -> major. Uses the default GITHUB_TOKEN
+      # deliberately — that means this tag push will NOT re-trigger this
+      # same workflow's own `push: tags` listener, avoiding a duplicate run;
+      # we already continue in this same run via the outputs below instead.
+      - name: Bump version and push tag
+        id: tag
+        uses: mathieudutour/github-tag-action@v7
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+          release_branches: main
+
+  # Computes the single tag used everywhere downstream, regardless of which
+  # of the 3 trigger paths fired: compute-version's output (auto-bump path),
+  # else the workflow_dispatch input, else the pushed tag itself. needs:
+  # compute-version works even when that job is skipped (skipped counts as
+  # satisfied for a needs: gate, and its outputs resolve to empty string).
+  resolve-version:
+    needs: compute-version
+    runs-on: ubuntu-26.04
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+      version: ${{ steps.resolve.outputs.version }}
+    steps:
+      - name: Resolve effective tag
+        id: resolve
+        run: |
+          TAG_NAME="${{ needs.compute-version.outputs.new_tag || github.event.inputs.release_tag || github.ref_name }}"
+          echo "tag=$TAG_NAME" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG_NAME#v}" >> "$GITHUB_OUTPUT"
+
+  ci:
+    needs: resolve-version
+    uses: ./.github/workflows/ci.yml
+    with:
+      version_name: ${{ needs.resolve-version.outputs.version }}
+
+  release:
+    needs: [ci, resolve-version]
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: '17'
           cache: 'gradle'
 
-      - name: Build APK
+      - name: Create Tag for Manual Trigger
+        if: github.event_name == 'workflow_dispatch'
         run: |
-          chmod +x gradlew
-          ./gradlew assembleRelease --stacktrace || { echo "Gradle build failed"; exit 1; }
-          ls -R app/build/outputs/apk || echo "No APK directory found"
+          git tag ${{ github.event.inputs.release_tag }}
+          git push origin ${{ github.event.inputs.release_tag }}
+
+      # Tag was already resolved once, identically, by resolve-version —
+      # reused here (not recomputed) so ci.yml's build and this job can never
+      # disagree on which version they're each working with.
+      - name: Determine release tag
+        id: vars
+        run: |
+          echo "tag=${{ needs.resolve-version.outputs.tag }}" >> "$GITHUB_OUTPUT"
+          echo "version=${{ needs.resolve-version.outputs.version }}" >> "$GITHUB_OUTPUT"
+
+      - name: Download APK Artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: apk-artifact
 
       - name: Set up Keystore
         run: |
@@ -40,7 +140,7 @@ jobs:
             exit 1
           fi
 
-      - name: Sign APK
+      - name: Sign and Rename APK
         run: |
           BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -n 1)
           if [ -z "$BUILD_TOOLS_DIR" ]; then
@@ -52,8 +152,8 @@ jobs:
             echo "apksigner not found at $APKSIGNER"
             exit 1
           fi
-          if [ ! -f app/build/outputs/apk/release/app-release.apk ]; then
-            echo "APK not found at app/build/outputs/apk/release/app-release.apk"
+          if [ ! -f app-release.apk ]; then
+            echo "APK not found at app-release.apk"
             exit 1
           fi
           $APKSIGNER sign \
@@ -61,62 +161,22 @@ jobs:
             --ks-key-alias ${{ secrets.KEY_ALIAS }} \
             --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
             --key-pass pass:${{ secrets.KEY_PASSWORD }} \
-            --out app-release.apk \
-            app/build/outputs/apk/release/app-release.apk
+            --out "Astryxbook-${{ steps.vars.outputs.version }}.apk" \
+            app-release.apk
+          if [ ! -f "Astryxbook-${{ steps.vars.outputs.version }}.apk" ]; then
+            echo "Failed to produce signed release APK"
+            exit 1
+          fi
 
       - name: Clean Up Keystore
         if: always()
         run: |
           rm -f $RUNNER_TEMP/keystores/keystore.jks
 
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: apk-artifact
-          path: app-release.apk
-          compression-level: 5
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Create Tag for Manual Trigger
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          git tag ${{ github.event.inputs.release_tag }}
-          git push origin ${{ github.event.inputs.release_tag }}
-
-      - name: Download APK Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: apk-artifact
-
-      - name: Rename APK for Release
-        run: |
-          TAG_NAME="${{ github.event.inputs.release_tag || github.ref_name }}"
-          mv app-release.apk "Materialbook_${TAG_NAME}.apk"
-          if [ ! -f "Materialbook_${TAG_NAME}.apk" ]; then
-            echo "Failed to rename APK"
-            exit 1
-          fi
-
-      - name: Prepare Changelog
-        run: |
-          if [ ! -f CHANGE.md ]; then
-            echo "CHANGE.md not found, using default changelog"
-            echo "Release ${{ github.ref_name || github.event.inputs.release_tag }}" > CHANGE.txt
-          else
-            cp CHANGE.md CHANGE.txt
-          fi
-
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
-          files: Materialbook_${{ github.event.inputs.release_tag || github.ref_name }}.apk
-          body_path: CHANGE.txt
+          tag_name: ${{ steps.vars.outputs.tag }}
+          name: Astryxbook ${{ steps.vars.outputs.tag }}
+          generate_release_notes: true
+          files: Astryxbook-${{ steps.vars.outputs.version }}.apk

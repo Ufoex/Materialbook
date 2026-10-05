@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.view.View
 import android.webkit.ValueCallback
 import android.webkit.WebView
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -21,11 +22,11 @@ import com.multiplatform.webview.web.PlatformWebViewParams
 // src: https://github.com/KevinnZou/compose-webview-multiplatform
 
 @Composable
-fun fileChooserWebViewParams(): PlatformWebViewParams {
+fun appWebViewParams(fullscreen: FullscreenController): PlatformWebViewParams {
     var fileChooserIntent by remember { mutableStateOf<Intent?>(null) }
 
     val webViewChromeClient =
-        remember { FileChoosableWebChromeClient { fileChooserIntent = it } }
+        remember(fullscreen) { AppWebChromeClient(fullscreen) { fileChooserIntent = it } }
 
     val launcher =
         rememberLauncherForActivityResult(
@@ -72,10 +73,22 @@ private fun Intent.getUris(): List<Uri>? {
     return (0 until clipData.itemCount).map { clipData.getItemAt(it).uri }
 }
 
-private class FileChoosableWebChromeClient(
+private class AppWebChromeClient(
+    private val fullscreen: FullscreenController,
     private val onShowFilePicker: (Intent) -> Unit,
 ) : AccompanistWebChromeClient() {
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
+
+    // HTML5 fullscreen: without these two, element.requestFullscreen() from
+    // the page (Facebook's fullscreen button) goes nowhere.
+    override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
+        if (view == null || callback == null) return
+        fullscreen.show(view, callback)
+    }
+
+    override fun onHideCustomView() {
+        fullscreen.hide()
+    }
 
     override fun onShowFileChooser(
         webView: WebView?,
