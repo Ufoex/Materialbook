@@ -32,7 +32,7 @@ Fork-only changes (on top of upstream v1.0.0):
 * Open Messenger links directly in the Messenger app, with a configurable package name in settings
 * New "Open Messenger" item at the top of Materialbook Settings
 * Harden adblock with structural signals, catch obfuscated Sponsored + paid-partnership labels
-* Rebranded application ID (`vip.dh6k.materialbook_fork`) so it installs alongside the original
+* Rebranded application ID (`com.eepiemi.materialbook`) so it installs alongside the original
 
 <h2 align="middle">
     🤖 AI disclosure

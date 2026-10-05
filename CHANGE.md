@@ -52,7 +52,7 @@
 
 * Feature: Open Messenger via launcher entry — no download interstitial flash, back returns to the right tab.
 * Feature: Toast "Please open Messenger in Materialbook Settings." when Messenger can't open.
-* Tweak: Rebranded application ID (`vip.dh6k.materialbook_fork`), installs alongside the original.
+* Tweak: Rebranded application ID (`com.eepiemi.materialbook`), installs alongside the original.
 * Tweak: "Support my work" button is now "Donate to original author" (donations go to eepiemi).
 * Docs: README rewritten — fork differences, honest AI disclosure, correct fork links.
 

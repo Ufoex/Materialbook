@@ -296,7 +296,7 @@ if (!window._mbBannerObserver) {
 })();
 
 
-/* The below scripts are specific to the vip.dh6k.materialbook_fork application. */
+/* The below scripts are specific to the com.eepiemi.materialbook application. */
 
 (() => {
   const onReady = (fn) => {

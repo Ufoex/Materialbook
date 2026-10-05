@@ -14,11 +14,11 @@ kotlin {
 }
 
 extensions.configure<ApplicationExtension> {
-    namespace = "vip.dh6k.materialbook_fork"
+    namespace = "com.eepiemi.materialbook"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "vip.dh6k.materialbook_fork"
+        applicationId = "com.eepiemi.materialbook"
         minSdk = 23
         targetSdk = 36
         versionCode = 22
