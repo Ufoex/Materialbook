@@ -36,6 +36,8 @@ would mostly be noise. See GitHub Releases for the actual per-version diffs.
   branding and current PiP ratio strings.
 - Updated every existing translated locale with the new PiP aspect-ratio
   title and options.
+- Pulled the upstream Traditional Chinese (`zh-rTW`) update: clipboard copy and
+  Material You strings, without upstream's Materialbook-branded strings.
 
 ## Android compatibility
 
