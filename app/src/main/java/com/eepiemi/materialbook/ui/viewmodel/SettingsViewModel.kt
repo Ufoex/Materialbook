@@ -10,13 +10,13 @@ import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.DESKTOP_L
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.ENABLE_COPY_TO_CLIPBOARD
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.ENABLE_DOWNLOAD_CONTENT
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_GROUPS
-import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MESSAGES_DESKTOP
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_PEOPLE_YOU_MAY_KNOW
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_REELS
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_STORIES
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_SUGGESTED
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.IMMERSIVE_MODE
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MATERIAL_YOU
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MESSAGES_DESKTOP
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PINCH_TO_ZOOM
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_ENABLED
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_LOCKSCREEN_AUDIO

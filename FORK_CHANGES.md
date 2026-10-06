@@ -170,6 +170,27 @@ Lock-screen audio, fullscreen and auto-desktop have their own suites:
 Facebook's own player behavior (the re-pause limitation below) is
 deliberately out of scope — external, unfixable from here.
 
+## Messages in desktop mode
+
+Facebook Lite no longer renders Messages on mobile ("Download Messenger" page). The
+Messages section is now shown inside the app using the desktop site, only for that section.
+
+- Every Messages/Messenger entry point (the Messages tab, `facebook.com/messages`,
+  `m.me`, `messenger.com`, `fb-messenger://`, `intent://`) opens the desktop Messages
+  page. Links that point at a conversation keep it (`/messages/t/<id>`, `m.me/<name>`,
+  `messenger.com/t/<id>`, `fb-messenger://user/<id>`); anything else opens the inbox.
+- The desktop user agent applies only while Messages is open. Leaving it, either by a
+  real page load or by an in-page navigation of the desktop single-page app
+  (reported by `messages_tab.js` through `MessagesBridge`, since WebView does not report
+  `pushState`/`popstate` as page loads), switches back to the normal user agent and
+  reloads the page (no duplicate history entry).
+- `messages_tab.js` hooks the Messages tab so the "Download Messenger" page never
+  flashes; it recognises the tab by its icon glyph or its position (third of six), so it
+  does not depend on the interface language.
+- Setting **Messages in desktop mode** (on by default). Off restores the previous
+  behavior. The flag is saved across Activity recreation.
+- `MessagesDesktopTest` covers the URL helpers.
+
 ## Picture-in-Picture
 
 New feature, opt-in (off by default): shrinks into a floating window when

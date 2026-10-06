@@ -55,6 +55,7 @@ Off by default (opt-in):
 *  Hides the system bars (immersive mode)
 *  Allows pinch-to-zoom anywhere
 *  Lets you access Messenger (Desktop layout only)
+*  Opens Messages inside the app using the desktop site, only for that section (Settings → *Messages in desktop mode*); links to a conversation keep it
 *  Supports Picture-in-Picture playback with selectable portrait-window ratios
 *  Keeps a Picture-in-Picture video's audio playing when the screen locks
 
