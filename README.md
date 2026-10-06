@@ -23,12 +23,23 @@
 </p>
 
 <h2 align="middle">
-    ✏️ This fork:
+    ✏️ About this repo
 </h2>
 
-*  Combines the improvements of several Materialbook forks: **PiP / fullscreen video / lock-screen audio** (AstryxBook), **Messenger redirect, external links, adblock hardening and photo viewer fixes** (dh6k), **Brave block list tracker/ad blocking** (BraveBook) and **post text copy plus reliable video/reel downloads** (LiteBook)
-*  Material You theming and AMOLED Black ship **off by default** (inherited from AstryxBook); both are opt-in toggles in Settings
-*  See [FORK_CHANGES.md](./FORK_CHANGES.md) for the details and credits
+This is **not an original project**. It is a collection repo where the changes from other
+[Materialbook](https://github.com/eepiemi/Materialbook) forks are brought together in one app.
+Almost all the code was written by the people below; this repo only merges it and builds the APK
+(a new release is published on every push to `main`).
+
+| Original author | Project | What it contributed |
+|---|---|---|
+| [eepiemi](https://github.com/eepiemi) | [Materialbook](https://github.com/eepiemi/Materialbook) | The base app |
+| [ofirc73](https://github.com/ofirc73) | [AstryxBook](https://github.com/ofirc73/AstryxBook) | PiP for reels, lock-screen audio, fullscreen video, portrait on phones |
+| [dh6k](https://github.com/dh6k) | [Materialbook_fork](https://github.com/dh6k/Materialbook_fork) | Messenger redirect, external links, adblock hardening, photo viewer and feed performance fixes |
+| [farhun1](https://github.com/farhun1) | [BraveBook](https://github.com/farhun1/BraveBook) | Brave block list ad/tracker blocking, hide group posts |
+| [Kdomy](https://github.com/Kdomy) | [LiteBook](https://github.com/Kdomy/LiteBook) | Copy post text, reliable video/reel downloads, AMOLED login fix |
+
+See [FORK_CHANGES.md](./FORK_CHANGES.md) for the details. Material You theming and AMOLED Black ship off by default (from AstryxBook); both are toggles in Settings.
 
 <h2 align="middle">
     ⚙️ Features
