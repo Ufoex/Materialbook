@@ -21,10 +21,14 @@ class ExternalRequestInterceptor(
             return WebRequestInterceptResult.Allow
         }
 
-        // facebook.com/messages: shown in desktop mode inside the app when enabled
-        // (the caller switches the user agent and loads the desktop page).
-        if (isMessagesWebUrl(request.url)) {
-            if (isMessagesDesktopActive()) return WebRequestInterceptResult.Allow
+        // Any attempt to open Messages/Messenger (web page, fb-messenger://, intent://,
+        // m.me, messenger.com) is shown in desktop mode inside the app when enabled;
+        // the caller switches the user agent and loads the desktop page.
+        if (isMessagesWebUrl(request.url) || isMessengerUrl(request.url)) {
+            if (isMessagesDesktopActive()) {
+                val web = request.url.startsWith("http", ignoreCase = true)
+                return if (web) WebRequestInterceptResult.Allow else WebRequestInterceptResult.Reject
+            }
             if (tryOpenMessagesDesktop(request.url)) return WebRequestInterceptResult.Reject
         }
 
