@@ -84,7 +84,10 @@
 
     const style = document.createElement('style');
     style.textContent = 'html.mb-hide-reel-ui [data-mb-hid]{opacity:0 !important;pointer-events:none !important}' +
-        'html.mb-hide-reel-ui [data-mb-fade]{opacity:0 !important}';
+        'html.mb-hide-reel-ui [data-mb-fade]{opacity:0 !important}' +
+        // top tab bar leaves the layout; the reel list is then scaled to fill the freed strip
+        'html.mb-hide-reel-ui [data-mb-gone]{display:none !important}' +
+        'html.mb-hide-reel-ui [data-mb-scale]{transform:scale(var(--mb-k,1)) !important;transform-origin:50% 0 !important}';
     document.head.appendChild(style);
 
     const lca = (els) => {
@@ -100,9 +103,12 @@
     //  - data-mb-fade: invisible but still tappable (anything that holds the
     //    tap-to-pause surface, so pausing keeps working)
     const markIcons = (v) => {
-        document.querySelectorAll('[data-mb-hid],[data-mb-fade]').forEach(e => {
+        document.querySelectorAll('[data-mb-hid],[data-mb-fade],[data-mb-gone],[data-mb-scale]').forEach(e => {
             e.removeAttribute('data-mb-hid');
             e.removeAttribute('data-mb-fade');
+            e.removeAttribute('data-mb-gone');
+            e.removeAttribute('data-mb-scale');
+            e.style.removeProperty('--mb-k');
         });
         if (!hideOn) return;
         const cont = v.closest('.vertically-snappable') || v.parentElement;
@@ -158,7 +164,21 @@
             const b = e.getBoundingClientRect();
             if (b.width > 0 && b.top < 0.2 * ih) hid(e);
         });
-        document.querySelectorAll('[role="tablist"]').forEach(t => { hid(t); hid(t.parentElement); });
+        // top tab bar: remove it from the layout, then stretch the reels over its space
+        let freed = false;
+        document.querySelectorAll('[role="tablist"]').forEach(t => {
+            hid(t);
+            const wrap = t.parentElement;
+            if (wrap && !holdsKept(wrap)) { wrap.setAttribute('data-mb-gone', ''); freed = true; }
+        });
+        const scroller = v.closest('.vscroller');
+        if (freed && scroller && scroller.offsetHeight > 0) {
+            const k = ih / scroller.offsetHeight;
+            if (k > 1.01 && k < 1.3) {
+                scroller.setAttribute('data-mb-scale', '');
+                scroller.style.setProperty('--mb-k', k);
+            }
+        }
         // our own buttons
         document.querySelectorAll('button[aria-label="Download content"], button[aria-label="Copy image to clipboard"]').forEach(hid);
     };

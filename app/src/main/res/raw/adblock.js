@@ -348,8 +348,15 @@
     }
 
     // Initial cleanup
+    // Reels are watched on the feed ("/") and in the reel viewer ("/reel/<id>"); the
+    // viewer used to be skipped by the off-feed guard, so its ads were never removed.
+    const onReelSurface = () => {
+        const p = window.location.pathname;
+        return p === '/' || p.indexOf('/reel') === 0;
+    };
+    if (window.location.pathname.indexOf('/reel') === 0) removeReelAds(document);
     const reelObserver = new MutationObserver(mutations => {
-        if (window.location.pathname !== '/') return;
+        if (!onReelSurface()) return;
 
         for (const mutation of mutations) {
             for (const node of mutation.addedNodes) {
