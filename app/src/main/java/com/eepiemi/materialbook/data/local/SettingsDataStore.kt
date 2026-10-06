@@ -30,6 +30,7 @@ class SettingsDataStore(private val context: Context) {
         val HIDE_STORIES = booleanPreferencesKey("hide_stories")
         val HIDE_PEOPLE_YOU_MAY_KNOW = booleanPreferencesKey("hide_people_you_may_know")
         val HIDE_GROUPS = booleanPreferencesKey("hide_groups")
+        val BRAVE_BLOCK_LIST = booleanPreferencesKey("brave_block_list")
         val PIP_ENABLED = booleanPreferencesKey("pip_enabled")
         val PIP_PORTRAIT_RATIO = stringPreferencesKey("pip_portrait_ratio")
         val PIP_LOCKSCREEN_AUDIO = booleanPreferencesKey("pip_lockscreen_audio")
@@ -149,6 +150,11 @@ class SettingsDataStore(private val context: Context) {
     val pipPortraitRatio = context.dataStore.data.map { it[PIP_PORTRAIT_RATIO] ?: "4:7" }
     suspend fun setPipPortraitRatio(ratio: String) {
         context.dataStore.edit { it[PIP_PORTRAIT_RATIO] = ratio }
+    }
+
+    val braveBlockList = context.dataStore.data.map { it[BRAVE_BLOCK_LIST] ?: true }
+    suspend fun setBraveBlockList(braveBlockList: Boolean) {
+        context.dataStore.edit { it[BRAVE_BLOCK_LIST] = braveBlockList }
     }
 
     val messengerPackage = context.dataStore.data.map { it[MESSENGER_PACKAGE] ?: DEFAULT_MESSENGER_PACKAGE }

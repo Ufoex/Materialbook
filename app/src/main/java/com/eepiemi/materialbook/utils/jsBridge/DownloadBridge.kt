@@ -10,8 +10,8 @@ import android.provider.MediaStore
 import android.util.Base64
 import android.webkit.JavascriptInterface
 import android.webkit.MimeTypeMap
-import android.widget.Toast
 import com.eepiemi.materialbook.R
+import com.eepiemi.materialbook.utils.showToast
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -22,11 +22,7 @@ class DownloadBridge(private val context: Context) {
     fun downloadBase64File(base64Data: String, mimeType: String) {
         runCatching {
             if (!base64Data.contains(",")) {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.download_failed_invalid_data),
-                    Toast.LENGTH_SHORT
-                ).show()
+                context.showToast(context.getString(R.string.download_failed_invalid_data))
                 return
             }
 
@@ -83,29 +79,17 @@ class DownloadBridge(private val context: Context) {
                     contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
                     resolver.update(uri, contentValues, null, null)
 
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.saved_to_downloads),
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    context.showToast(context.getString(R.string.saved_to_downloads))
                 }
             } else {
                 val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                 val file = File(downloadsDir, fileName)
 
                 FileOutputStream(file).use { it.write(finalData) }
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.saved_to_downloads),
-                    Toast.LENGTH_SHORT
-                ).show()
+                context.showToast(context.getString(R.string.saved_to_downloads))
             }
         }.onFailure {
-            Toast.makeText(
-                context,
-                context.getString(R.string.failed_to_save_file),
-                Toast.LENGTH_SHORT
-            ).show()
+            context.showToast(context.getString(R.string.failed_to_save_file))
         }
     }
 }

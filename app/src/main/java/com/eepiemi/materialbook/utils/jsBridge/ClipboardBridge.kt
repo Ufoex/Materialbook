@@ -8,7 +8,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
 import android.webkit.JavascriptInterface
-import android.widget.Toast
+import com.eepiemi.materialbook.utils.showToast
 import androidx.core.content.FileProvider
 import com.eepiemi.materialbook.R
 import java.io.File
@@ -19,11 +19,7 @@ class ClipboardBridge(private val context: Context) {
     fun copyImageToClipboard(base64Data: String, mimeType: String) {
         runCatching {
             if (!base64Data.contains(",")) {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.copy_failed_invalid_data),
-                    Toast.LENGTH_SHORT
-                ).show()
+                context.showToast(context.getString(R.string.copy_failed_invalid_data))
                 return
             }
 
@@ -32,11 +28,7 @@ class ClipboardBridge(private val context: Context) {
             // Decode bitmap to verify it's a valid image
             val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size)
             if (bitmap == null) {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.copy_failed_invalid_image),
-                    Toast.LENGTH_SHORT
-                ).show()
+                context.showToast(context.getString(R.string.copy_failed_invalid_image))
                 return
             }
 
@@ -70,17 +62,9 @@ class ClipboardBridge(private val context: Context) {
             val clip = ClipData.newUri(context.contentResolver, "Image", contentUri)
             clipboardManager.setPrimaryClip(clip)
 
-            Toast.makeText(
-                context,
-                context.getString(R.string.image_copied_to_clipboard),
-                Toast.LENGTH_SHORT
-            ).show()
+            context.showToast(context.getString(R.string.image_copied_to_clipboard))
         }.onFailure {
-            Toast.makeText(
-                context,
-                context.getString(R.string.failed_to_copy_image),
-                Toast.LENGTH_SHORT
-            ).show()
+            context.showToast(context.getString(R.string.failed_to_copy_image))
         }
     }
 }

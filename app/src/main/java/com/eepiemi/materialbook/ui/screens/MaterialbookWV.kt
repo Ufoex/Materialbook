@@ -48,6 +48,7 @@ import com.eepiemi.materialbook.ui.components.settings.SettingsDialog
 import com.eepiemi.materialbook.ui.viewmodel.MainViewModel
 import com.eepiemi.materialbook.ui.viewmodel.SettingsViewModel
 import com.eepiemi.materialbook.utils.DESKTOP_USER_AGENT
+import com.eepiemi.materialbook.utils.BraveBlockList
 import com.eepiemi.materialbook.utils.ExternalRequestInterceptor
 import com.eepiemi.materialbook.utils.FullscreenController
 import com.eepiemi.materialbook.utils.appOrientation
@@ -896,6 +897,15 @@ fun MaterialbookWebView(
     val isAutoDesktop = rememberAutoDesktop()
     val isEffectiveDesktop = effectiveDesktop(isDesktop, isAutoDesktop)
 
+    val braveBlockList by settingsVM.braveBlockList.collectAsState()
+    LaunchedEffect(braveBlockList) {
+        BraveBlockList.setEnabled(braveBlockList)
+    }
+    // Pull the latest Brave Block List; falls back to the bundled copy.
+    LaunchedEffect(Unit) {
+        BraveBlockList.refresh(resources)
+    }
+
     var isLoading by rememberSaveable { mutableStateOf(true) }
     val isError = state.errorsForCurrentRequest.lastOrNull()?.isFromMainFrame == true
 
@@ -1108,9 +1118,13 @@ fun MaterialbookWebView(
         captureBackPresses = false,
         onCreated = { webView ->
 
+            // Make Brave Block List active immediately, before the first request.
+            BraveBlockList.loadInitial(webView.context.resources)
+
             val cookieManager = CookieManager.getInstance()
             cookieManager.setAcceptCookie(true)
-            cookieManager.setAcceptThirdPartyCookies(webView, true)
+            // Privacy: third parties not on the block list can't set/read cross-site cookies.
+            cookieManager.setAcceptThirdPartyCookies(webView, false)
             cookieManager.flush()
 
             state.webSettings.apply {

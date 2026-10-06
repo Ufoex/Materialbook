@@ -28,6 +28,8 @@ fun appWebViewParams(fullscreen: FullscreenController): PlatformWebViewParams {
     val webViewChromeClient =
         remember(fullscreen) { AppWebChromeClient(fullscreen) { fileChooserIntent = it } }
 
+    val webViewClient = remember { BlockingWebViewClient() }
+
     val launcher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.StartActivityForResult(),
@@ -65,7 +67,7 @@ fun appWebViewParams(fullscreen: FullscreenController): PlatformWebViewParams {
         }
     }
 
-    return PlatformWebViewParams(chromeClient = webViewChromeClient)
+    return PlatformWebViewParams(client = webViewClient, chromeClient = webViewChromeClient)
 }
 
 private fun Intent.getUris(): List<Uri>? {

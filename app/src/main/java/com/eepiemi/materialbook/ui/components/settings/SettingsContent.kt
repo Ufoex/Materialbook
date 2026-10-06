@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.DesktopWindows
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Headphones
+import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.Message
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PanoramaWideAngle
@@ -72,6 +73,7 @@ fun SettingsContent(
     var isMessengerDialog by rememberSaveable { mutableStateOf(false) }
 
     val removeAds = viewModel.removeAds.collectAsState()
+    val braveBlockList = viewModel.braveBlockList.collectAsState()
     val enableDownloadContent = viewModel.enableDownloadContent.collectAsState()
     val enableCopyToClipboard = viewModel.enableCopyToClipboard.collectAsState()
     val desktopLayout = viewModel.desktopLayout.collectAsState()
@@ -127,6 +129,13 @@ fun SettingsContent(
                     supportingText = stringResource(R.string.hide_sponsored_ads_from_your_feed),
                     isActive = removeAds.value,
                     onClick = { viewModel.setRemoveAds(!removeAds.value) },
+                ),
+                SettingsItem(
+                    icon = Icons.Outlined.Block,
+                    title = stringResource(R.string.brave_blocklist_title),
+                    supportingText = stringResource(R.string.brave_blocklist_supporting),
+                    isActive = braveBlockList.value,
+                    onClick = { viewModel.setBraveBlockList(!braveBlockList.value) },
                 ),
                 SettingsItem(
                     icon = Icons.Outlined.FileDownload,

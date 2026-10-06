@@ -1,0 +1,52 @@
+[Adblock Plus 2.0]
+! Curated subset of Brave's adblock lists (https://github.com/brave/adblock-lists/).
+! Network-blocking rules only; cosmetic/scriptlet rules are intentionally skipped
+! because this is a Facebook-only wrapper. Refreshable at runtime: a hosted copy
+! of this file overrides the bundled one (same pattern as the injected scripts).
+! Update by regenerating from Brave's sources and shipping it as brave_blocklist.txt.
+
+! ---- First-party Facebook trackers (path-based, safe to block) ----
+||facebook.com/tr^
+||facebook.com/ads/^
+||facebook.com/oftenaurora/^
+||facebook.com/ajax/bz^
+||facebook.com/ajax/activity/attachments^
+
+! ---- Third-party ad/tracker networks ----
+||doubleclick.net^
+||googletagmanager.com^
+||google-analytics.com^
+||analytics.google.com^
+||googlesyndication.com^
+||adservice.google.com^
+||googleadservices.com^
+||adnxs.com^
+||rubiconproject.com^
+||pubmatic.com^
+||criteo.com^
+||criteo.net^
+||taboola.com^
+||outbrain.com^
+||moatads.com^
+||adroll.com^
+||scorecardresearch.com^
+||hotjar.com^
+||mixpanel.com^
+||segment.io^
+||bat.bing.com^
+||analytics.tiktok.com^
+||static.ads-twitter.com^
+||pixel.quantserve.com^
+||adsystem.com^
+||adsrvr.org^
+||krxd.net^
+||liadm.com^
+||bounceexchange.com^
+||serving-sys.com^
+||advertising.com^
+||dotomi.com^
+
+! ---- Exceptions: never block Facebook's functional endpoints ----
+@@||facebook.com/ajax/mercury/^
+@@||facebook.com/ajax/chat/^
+@@||facebook.com/ajax/composer/^
