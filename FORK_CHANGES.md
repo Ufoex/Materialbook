@@ -28,6 +28,9 @@ would mostly be noise. See GitHub Releases for the actual per-version diffs.
 - Local badge assets (`download.svg`, `open_issue.svg`) and the store
   listing icon/banner recolored to match; downloads badge swapped from an
   opaque third-party worker to a themed, GitHub-API-backed shields.io badge.
+- Weekly download history: `download-stats.yml` appends each release's
+  GitHub download count to `downloads.csv` on the data-only `stats` branch
+  (Mondays, or on demand from the Actions tab). No tracking in the app.
 
 ## Localization
 
