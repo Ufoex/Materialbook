@@ -238,113 +238,17 @@
                     // Mark as hidden to prevent re-processing
                     container.dataset.adHidden = 'true';
 
-                    // Completely empty the container but keep it in DOM for scroll snap
+                    // Stop the ad's video, then take the whole reel out of the list: no
+                    // placeholder, the next reel simply takes its place.
+                    container.querySelectorAll('video').forEach(v => { try { v.pause(); } catch (e) {} });
                     container.innerHTML = '';
-
-                    // Add a styled message for blocked ad
-                    const messageDiv = document.createElement('div');
-                    messageDiv.style.cssText = `
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        height: 100%;
-                        width: 100%;
-                        background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
-                        color: #666;
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                        text-align: center;
-                        padding: 20px;
-                        box-sizing: border-box;
-                    `;
-
-                    const icon = document.createElement('div');
-                    icon.style.cssText = `
-                        font-size: 48px;
-                        margin-bottom: 16px;
-                        opacity: 0.6;
-                    `;
-                    icon.textContent = '🚫';
-
-                    const title = document.createElement('div');
-                    title.style.cssText = `
-                        font-size: 18px;
-                        font-weight: 600;
-                        margin-bottom: 8px;
-                        color: #888;
-                    `;
-                    title.textContent = 'Ad Blocked';
-
-                    const subtitle = document.createElement('div');
-                    subtitle.style.cssText = `
-                        font-size: 14px;
-                        color: #555;
-                        line-height: 1.4;
-                    `;
-                    subtitle.textContent = 'Sponsored content was removed';
-
-                    messageDiv.appendChild(icon);
-                    messageDiv.appendChild(title);
-                    messageDiv.appendChild(subtitle);
-                    container.appendChild(messageDiv);
-
-                    // Make container non-interactive
-                    container.style.pointerEvents = 'none';
-                    container.style.userSelect = 'none';
-
-                    // Set up intersection observer to auto-scroll when this ad comes into view
-                    setupAutoScroll(container);
+                    container.style.setProperty('display', 'none', 'important');
 
                     hiddenCount++;
                     break;
                 }
             }
         });
-    }
-
-    // Auto-scroll past hidden ads when they come into view
-    function setupAutoScroll(container) {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
-                    // Find next non-hidden reel (skip all consecutive hidden ads)
-                    let nextReel = container.nextElementSibling;
-                    let skippedCount = 0;
-
-                    while (nextReel && nextReel.dataset.adHidden === 'true') {
-                        nextReel = nextReel.nextElementSibling;
-                        skippedCount++;
-                    }
-
-                    if (nextReel) {
-                        // Use a more aggressive scroll approach
-                        setTimeout(() => {
-                            // Scroll with center alignment for better distance
-                            nextReel.scrollIntoView({
-                                behavior: 'smooth',
-                                block: 'center',
-                                inline: 'nearest'
-                            });
-
-                            // Additional scroll push after a short delay to ensure we're past the ad
-                            setTimeout(() => {
-                                window.scrollBy({
-                                    top: 100,
-                                    behavior: 'smooth'
-                                });
-                            }, 200);
-                        }, 100);
-                    }
-
-                    // Unobserve after scrolling once
-                    observer.unobserve(container);
-                }
-            });
-        }, {
-            threshold: 0.5 // Trigger when 50% of the ad is visible
-        });
-
-        observer.observe(container);
     }
 
     // Initial cleanup
