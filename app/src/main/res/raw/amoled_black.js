@@ -157,15 +157,21 @@
 
   loginAndCookieCSS();
 
+  let moScheduled = false;
   new MutationObserver(mutations => {
-    if (mutations.some(m =>
-      (m.type === 'childList' && Array.from(m.addedNodes).some(n =>
-        n.tagName === 'STYLE' || (n.nodeType === 1 && n.hasAttribute('style')) ||
-        (n.tagName === 'META' && n.getAttribute('name') === 'theme-color'))) ||
-      (m.type === 'characterData' && m.target.parentNode?.tagName === 'STYLE') ||
-      (m.type === 'attributes' && (m.attributeName === 'style' ||
-        (m.target.tagName === 'META' && m.attributeName === 'content'))))
-    ) processStyles();
+    if (moScheduled) return;
+    moScheduled = true;
+    requestAnimationFrame(() => {
+      moScheduled = false;
+      if (mutations.some(m =>
+        (m.type === 'childList' && Array.from(m.addedNodes).some(n =>
+          n.tagName === 'STYLE' || (n.nodeType === 1 && n.hasAttribute('style')) ||
+          (n.tagName === 'META' && n.getAttribute('name') === 'theme-color'))) ||
+        (m.type === 'characterData' && m.target.parentNode?.tagName === 'STYLE') ||
+        (m.type === 'attributes' && (m.attributeName === 'style' ||
+          (m.target.tagName === 'META' && m.attributeName === 'content'))))
+      ) processStyles();
+    });
   }).observe(document.documentElement, {
     childList: true,
     subtree: true,

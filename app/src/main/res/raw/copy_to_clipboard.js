@@ -100,7 +100,8 @@
 
   // Check if we are in a story or reel view
   const isInContentView = () => {
-    // URL pattern checks
+    // ponytail: same cheap-bail as download_content — plain URLs skip DOM.
+    if (!/\/stories\/|\/videos\/|\/watch\/|\/photo|\/photos\/|\/highlights\//.test(window.location.href)) return false;
     const url = window.location.href;
     if (
       url.includes("/stories/") ||

@@ -9,15 +9,18 @@
 // Feed identifier
 (() => {
     window.isFeed = () => {
+        // ponytail: cheap string check first — the span scan below walks the
+        // whole DOM, and every guarded observer calls isFeed per batch.
         const isHomeUrl = window.location.pathname === '/' &&
             (window.location.hostname === 'm.facebook.com' || window.location.hostname === 'www.facebook.com');
+        if (!isHomeUrl) return false;
 
-        if (window.isDesktopMode()) return isHomeUrl;
+        if (window.isDesktopMode()) return true;
 
         const hasSpecialButton = Array.from(document.querySelectorAll('[role="button"] span'))
             .some(span => span.textContent === '󱥆');
 
-        return isHomeUrl && hasSpecialButton;
+        return hasSpecialButton;
     };
 })();
 
@@ -164,6 +167,9 @@
   };
 
   const updateText = () => {
+    // ponytail: caption-selectable only matters on feed; skip while viewing
+    // a post so back-navigation batch doesn't pay this scan.
+    if (!window.isFeed()) return;
     document.querySelectorAll('.native-text').forEach(makeSelectable);
   };
 
@@ -245,25 +251,41 @@
     document.head.appendChild(style);
 })();
 
-// Hide annoying bottom banners
-const observer = new MutationObserver(() => {
+// Guarded: the bundle is re-evaluated on every SPA navigation in the same
+// context, so a top-level const would throw "already declared" and abort
+// everything below it (settings button, theme notify, download hook).
+if (!window._mbBannerObserver) {
+    window._mbBannerObserver = new MutationObserver(() => {
 
-  if (location.pathname === '/'
-  && document.querySelector('div[role="button"][aria-label*="Facebook"]') === null) return;
+      // ponytail: FB's "Mở ứng dụng / Open app" smart banner lives in
+      // .bottom.fixed-container — same bucket as the height<80 banner above.
+      // Match the button text (not container text) so typing the phrase in
+      // the comment composer can't nuke it. Runs before the feed-ready
+      // early-return so the banner dies even while the feed is loading.
+      const banner = document.querySelector('.bottom.fixed-container');
+      const bannerBtn = banner?.querySelector('div[role="button"]');
+      if (bannerBtn && /Mở ứng dụng|Open (in )?app/i.test(bannerBtn.textContent || '')) {
+        banner.style.display = 'none';
+        return;
+      }
 
-  const element = document.querySelector('.bottom.fixed-container');
-  if (
-    element &&
-    !element.hasAttribute('data-shift-on-keyboard-shown')
-  ) {
-    const heightAttr = element.getAttribute('data-actual-height');
-    if (heightAttr && parseInt(heightAttr, 10) < 80) {
-      element.style.display = 'none';
-    }
-  }
-});
+      if (location.pathname === '/'
+      && document.querySelector('div[role="button"][aria-label*="Facebook"]') === null) return;
 
-observer.observe(document.body, { childList: true, subtree: true });
+      const element = banner;
+      if (
+        element &&
+        !element.hasAttribute('data-shift-on-keyboard-shown')
+      ) {
+        const heightAttr = element.getAttribute('data-actual-height');
+        if (heightAttr && parseInt(heightAttr, 10) < 80) {
+          element.style.display = 'none';
+        }
+      }
+    });
+
+    window._mbBannerObserver.observe(document.body, { childList: true, subtree: true });
+}
 
 
 // Hold Effect Script
@@ -274,7 +296,7 @@ observer.observe(document.body, { childList: true, subtree: true });
 })();
 
 
-/* The below scripts are specific to com.eepiemi.materialbook application. */
+/* The below scripts are specific to the com.eepiemi.materialbook application. */
 
 (() => {
   const onReady = (fn) => {

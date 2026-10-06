@@ -11,7 +11,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withTimeoutOrNull
 
 
-const val SCRIPT_SRC = "https://raw.githubusercontent.com/ofirc73/AstryxBook/refs/heads/main/app/src/main/res/raw/"
+const val SCRIPT_SRC = "https://raw.githubusercontent.com/Ufoex/Materialbook/refs/heads/main/app/src/main/res/raw/"
 
 // Fetches were previously unbounded (no timeout at all - success or
 // exception, whichever came first, however long that took) and strictly
@@ -32,6 +32,10 @@ data class Script(
     val scriptTitle: String
 )
 
+// Debug use only: force bundled scripts so local JS edits verify on-device
+// without pushing to GitHub first. Release keeps remote fetch + fallback.
+const val USE_LOCAL_SCRIPTS = false
+
 suspend fun fetchScripts(
     scripts: List<Script>,
     fallbackContent: (Int) -> String,
@@ -39,7 +43,7 @@ suspend fun fetchScripts(
 ): String = coroutineScope {
     val deferredContents = scripts.filter { it.isEnabled }.map { script ->
         async {
-            val fetched = withTimeoutOrNull(FETCH_TIMEOUT_MS) {
+            val fetched = if (USE_LOCAL_SCRIPTS) null else withTimeoutOrNull(FETCH_TIMEOUT_MS) {
                 runCatching {
                     val res = httpClient.get(SCRIPT_SRC + script.scriptTitle)
                     if (res.status == HttpStatusCode.OK) {
@@ -56,6 +60,17 @@ suspend fun fetchScripts(
     // concatenated script content still evaluates in the same order the
     // caller specified.
     buildString {
-        deferredContents.forEach { append(it.await()) }
+        // FB is an SPA, same document lives across feed -> post -> back, and
+        // MaterialbookWV re-evaluates this bundle on every Finished. Without
+        // this guard each navigation stacks ~20 more MutationObservers on the
+        // same document, so the app gets slower the more posts you tap.
+        // window flags reset on a real reload, so refresh() still reinstalls cleanly.
+        append("if(!window._mbBundleInjected){window._mbBundleInjected=true;")
+        deferredContents.forEach {
+            append('\n')
+            append(it.await())
+        }
+        append('\n')
+        append("}")
     }
 }

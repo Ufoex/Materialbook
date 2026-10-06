@@ -8,6 +8,7 @@
     <string name="desktop_layout_title">Desktop layout</string>
     <string name="immersive_mode_title">Immersive mode</string>
     <string name="sticky_navbar_title">Sticky Navbar</string>
+    <string name="lock_orientation_title">Lock orientation</string>
     <string name="pinch_to_zoom_title">Pinch to zoom</string>
     <string name="material_you_title">Material You</string>
     <string name="amoled_black_title">AMOLED Black</string>
@@ -30,6 +31,7 @@
     <string name="enable_material_you_theming_for_facebook">Enable Material You theming for Facebook</string>
     <string name="enable_pure_black_theme_for_amoled_displays">Enable pure black theme. Needs \'Dark mode\' to work</string>
     <string name="keep_the_navigation_bar_visible_while_scrolling">Keep the navigation bar visible while scrolling</string>
+    <string name="lock_orientation_desc">Prevent the screen from rotating</string>
     <string name="hide_system_bars_for_a_fullscreen_experience">Hide system bars for a fullscreen experience</string>
     <string name="force_desktop_layout_may_not_be_suitable_for_smaller_display">Force desktop layout. Not suitable for small display.</string>
     <string name="use_two_fingers_to_zoom_in_or_out">Use two fingers to zoom in or out</string>
@@ -47,4 +49,14 @@
     <string name="pip_lockscreen_audio_title">Keep audio when screen locks</string>
     <string name="pip_lockscreen_audio_summary">While in picture-in-picture, keep playing audio after the screen turns off</string>
     <string name="lockscreen_audio_media_title">Facebook video</string>
+    <string name="materialbook_settings">Materialbook settings</string>
+    <string name="support_my_work">Donate to original author 🎁</string>
+    <string name="messenger_title">Messenger app</string>
+    <string name="open_messenger_title">Open Messenger</string>
+    <string name="open_messenger_desc">Launch the Messenger app</string>
+    <string name="messenger_redirect_toast">Please open Messenger in Materialbook Settings.</string>
+    <string name="open_external_failed_toast">No app can open this link.</string>
+    <string name="messenger_package_label">Package name</string>
+    <string name="messenger_package_save">Save</string>
+    <string name="messenger_package_reset">Reset</string>
 </resources>

@@ -52,12 +52,19 @@
           });
         }
 
+        let sgScheduled = false;
         const observer = new MutationObserver(mutations => {
-          for (const mutation of mutations) {
-            for (const node of mutation.addedNodes) {
-              processNode(node);
+          // ponytail: defer off the back-paint (same as adblock).
+          if (sgScheduled) return;
+          sgScheduled = true;
+          requestAnimationFrame(() => {
+            sgScheduled = false;
+            for (const mutation of mutations) {
+              for (const node of mutation.addedNodes) {
+                processNode(node);
+              }
             }
-          }
+          });
         });
 
         observer.observe(document.body, {

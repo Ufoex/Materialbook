@@ -156,8 +156,11 @@
 
   materialYouCSS();
 
+  let moScheduled = false;
   new MutationObserver(() => {
-    processMaterialYouStyles();
+    if (moScheduled) return;
+    moScheduled = true;
+    requestAnimationFrame(() => { moScheduled = false; processMaterialYouStyles(); });
   }).observe(document.documentElement, {
     childList: true,
     subtree: true,

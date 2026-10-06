@@ -35,7 +35,14 @@
 
   hidePymk([document.body]);
 
-  new MutationObserver(muts =>
-    muts.forEach(m => hidePymk([...m.addedNodes]))
-  ).observe(document.body, { childList: true, subtree: true });
+  let pymkScheduled = false;
+  new MutationObserver(muts => {
+    // ponytail: defer off the back-paint (same as adblock).
+    if (pymkScheduled) return;
+    pymkScheduled = true;
+    requestAnimationFrame(() => {
+      pymkScheduled = false;
+      muts.forEach(m => hidePymk([...m.addedNodes]));
+    });
+  }).observe(document.body, { childList: true, subtree: true });
 })();

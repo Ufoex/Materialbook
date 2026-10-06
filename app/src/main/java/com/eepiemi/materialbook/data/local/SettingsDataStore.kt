@@ -5,11 +5,13 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import com.eepiemi.materialbook.utils.DEFAULT_MESSENGER_PACKAGE
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "materialbook_prefs")
 
@@ -48,6 +50,7 @@ class SettingsDataStore(private val context: Context) {
             }
             prefs.remove(LEGACY_REVERT_DESKTOP)
         }
+        val MESSENGER_PACKAGE = stringPreferencesKey("messenger_package")
     }
 
     val prefs = context.dataStore.data
@@ -147,5 +150,8 @@ class SettingsDataStore(private val context: Context) {
     val pipPortraitRatio = context.dataStore.data.map { it[PIP_PORTRAIT_RATIO] ?: "4:7" }
     suspend fun setPipPortraitRatio(ratio: String) {
         context.dataStore.edit { it[PIP_PORTRAIT_RATIO] = ratio }
+    val messengerPackage = context.dataStore.data.map { it[MESSENGER_PACKAGE] ?: DEFAULT_MESSENGER_PACKAGE }
+    suspend fun setMessengerPackage(messengerPackage: String) {
+        context.dataStore.edit { it[MESSENGER_PACKAGE] = messengerPackage }
     }
 }

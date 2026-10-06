@@ -1,6 +1,7 @@
 package com.eepiemi.materialbook.ui.components.settings
 
 import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,14 +25,17 @@ import androidx.compose.material.icons.outlined.DesktopWindows
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Headphones
+import androidx.compose.material.icons.outlined.Message
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PanoramaWideAngle
 import androidx.compose.material.icons.outlined.PictureInPictureAlt
 import androidx.compose.material.icons.outlined.Pinch
+import androidx.compose.material.icons.outlined.ScreenLockRotation
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,6 +56,8 @@ import com.eepiemi.materialbook.R
 import com.eepiemi.materialbook.ui.viewmodel.SettingsViewModel
 import com.eepiemi.materialbook.utils.effectiveDesktop
 import com.eepiemi.materialbook.utils.rememberAutoDesktop
+import com.eepiemi.materialbook.utils.openExternalUrl
+import com.eepiemi.materialbook.utils.openMessenger
 
 @Composable
 fun SettingsContent(
@@ -60,6 +66,7 @@ fun SettingsContent(
 ) {
     var isOpenDialog by rememberSaveable { mutableStateOf(false) }
     var isPipRatioDialog by rememberSaveable { mutableStateOf(false) }
+    var isMessengerDialog by rememberSaveable { mutableStateOf(false) }
 
     val removeAds = viewModel.removeAds.collectAsState()
     val enableDownloadContent = viewModel.enableDownloadContent.collectAsState()
@@ -73,6 +80,7 @@ fun SettingsContent(
     val pipEnabled = viewModel.pipEnabled.collectAsState()
     val pipLockscreenAudio = viewModel.pipLockscreenAudio.collectAsState()
     val pipPortraitRatio = viewModel.pipPortraitRatio.collectAsState()
+    val messengerPackage = viewModel.messengerPackage.collectAsState()
 
     val isAutoDesktop = rememberAutoDesktop()
 
@@ -80,6 +88,34 @@ fun SettingsContent(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        SettingsGroup(
+            items = listOf(
+                SettingsItem(
+                    icon = Icons.Outlined.Message,
+                    title = stringResource(R.string.open_messenger_title),
+                    supportingText = stringResource(R.string.open_messenger_desc),
+                    isActive = null,
+                    onClick = {
+                        val ok = openMessenger(context, "https://m.me/", messengerPackage.value)
+                        if (!ok) {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.messenger_redirect_toast),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    },
+                ),
+                SettingsItem(
+                    icon = Icons.Outlined.Message,
+                    title = stringResource(R.string.messenger_title),
+                    supportingText = messengerPackage.value,
+                    isActive = null,
+                    onClick = { isMessengerDialog = true },
+                )
+            )
+        )
+
         SettingsGroup(
             items = listOf(
                 SettingsItem(
@@ -109,7 +145,7 @@ fun SettingsContent(
                     supportingText = stringResource(R.string.customize_feed),
                     isActive = null,
                     onClick = { isOpenDialog = true },
-                )
+                ),
             )
         )
 
@@ -226,6 +262,60 @@ fun SettingsContent(
                 isPipRatioDialog = false
             }
         )
+    }
+    if (isMessengerDialog) {
+        MessengerPackageDialog(
+            current = messengerPackage.value,
+            onDismiss = { isMessengerDialog = false },
+            onSave = {
+                viewModel.setMessengerPackage(it)
+                isMessengerDialog = false
+            },
+        )
+    }
+}
+
+@Composable
+private fun MessengerPackageDialog(
+    current: String,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit,
+) {
+    var text by rememberSaveable(current) { mutableStateOf(current) }
+    Dialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .clip(RoundedCornerShape(24.dp))
+                .background(color = MaterialTheme.colorScheme.surfaceContainer)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.messenger_title),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it.trim() },
+                label = { Text(stringResource(R.string.messenger_package_label)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = {
+                    text = com.eepiemi.materialbook.utils.DEFAULT_MESSENGER_PACKAGE
+                }) {
+                    Text(stringResource(R.string.messenger_package_reset))
+                }
+                TextButton(onClick = { onSave(text) }) {
+                    Text(stringResource(R.string.messenger_package_save))
+                }
+            }
+        }
     }
 
 }

@@ -102,7 +102,9 @@
 
   // Check if we are in a story or reel view
   const isInStoryOrReelView = () => {
-    // URL pattern checks
+    // ponytail: back-navigation fires big batches on plain URLs — bail on the
+    // cheap string test before touching querySelector in the loop below.
+    if (!/\/stories\/|\/reel\/|\/videos\/|\/watch\/|\/photo|\/photos\/|\/highlights\//.test(window.location.href)) return false;
     const url = window.location.href;
     if (
       url.includes("/stories/") ||
