@@ -18,7 +18,7 @@
         if (window.isDesktopMode()) return true;
 
         const hasSpecialButton = Array.from(document.querySelectorAll('[role="button"] span'))
-            .some(span => span.textContent === '󱥆');
+            .some(span => span.textContent === 'ó±¥†');
 
         return hasSpecialButton;
     };
@@ -196,6 +196,10 @@
         const overlays = document.querySelectorAll('.loading-overlay');
         overlays.forEach(overlay => {
             overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+            // Never let a stuck Facebook loading overlay swallow taps:
+            // it sometimes stays full-screen after a navigation is done
+            // (e.g. after an account switch), blocking the whole UI.
+            overlay.style.pointerEvents = 'none';
         });
     }
     applyOverlayStyle();
@@ -211,6 +215,46 @@
         childList: true,
         subtree: true
     });
+
+    // A full-screen .loading-overlay is Facebook's SPA/spinner layer. On this
+    // WebView it sometimes never clears after a navigation or an account
+    // switch, permanently covering and blocking the page (the switch actually
+    // succeeds, but the UI appears to stay "loading"). Remove a full-screen
+    // overlay that lingers after the document has finished loading.
+    const coversViewport = (overlay) => {
+        const rect = overlay.getBoundingClientRect();
+        return (
+            rect.width >= window.innerWidth - 2 &&
+            rect.height >= window.innerHeight - 2
+        );
+    };
+
+    const clearStale = () => {
+        document.querySelectorAll('.loading-overlay').forEach((overlay) => {
+            if (coversViewport(overlay)) overlay.remove();
+        });
+    };
+
+    // Full document load: once finished, drop any leftover overlay quickly.
+    if (document.readyState !== 'complete') {
+        window.addEventListener('load', () => setTimeout(clearStale, 1500));
+    }
+
+    // SPA transitions (account switch, navigation inside m.facebook.com):
+    // let a real transition breathe for a few seconds, then clear it.
+    let stuckSince = 0;
+    setInterval(() => {
+        const overlay = document.querySelector('.loading-overlay');
+        if (!overlay || document.readyState !== 'complete' || !coversViewport(overlay)) {
+            stuckSince = 0;
+            return;
+        }
+        stuckSince += 1000;
+        if (stuckSince >= 3000) {
+            overlay.remove();
+            stuckSince = 0;
+        }
+    }, 1000);
 })();
 
 // Hide facebook download button and other distractions at login page
@@ -324,7 +368,7 @@ if (!window._mbBannerObserver) {
 
     const findInsertionPoint = () => {
       const iconSpan = Array.from(document.querySelectorAll('span'))
-        .find(span => span.textContent === '󱥊');
+        .find(span => span.textContent === 'ó±¥Š');
       const container = iconSpan?.closest('div[role="button"]')?.parentNode;
 
       const desktopTarget = document.querySelector(
@@ -399,18 +443,177 @@ if (!window._mbBannerObserver) {
     }
 })();
 
-// File Download Script
+// Image load fix for media viewer
 (function() {
-    if (window._downloadBridgeInitialized) return;
-    window._downloadBridgeInitialized = true;
-    const originalCreateObjectURL = URL.createObjectURL;
-    URL.createObjectURL = function(blob) {
-        const reader = new FileReader();
-        reader.onloadend = function() {
-            if (reader.result)
-                DownloadBridge.downloadBase64File(reader.result, blob.type);
-        };
-        reader.readAsDataURL(blob);
-        return originalCreateObjectURL(blob);
+  // When an image is promoted to its own composited layer (will-change,
+  // transitions), Android WebView can paint only the top part of a tall
+  // photo and never finishes the rest. Keep viewer images out of their own
+  // layer; transforms (pinch zoom) still work.
+  const style = document.createElement("style");
+  style.textContent = `
+    div[role="dialog"] img {
+      will-change: auto !important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  const isViewerImage = (img) => {
+    if (location.pathname.indexOf("/photo") === 0) return true;
+    const dialog = img.closest && img.closest('div[role="dialog"]');
+    if (!dialog) return false;
+    // In the video viewer the visible media is the <video>, not the poster
+    // image. Leave video viewers alone so the video element and the download
+    // capture logic are never disturbed.
+    if (dialog.querySelector && dialog.querySelector("video")) return false;
+    return true;
+  };
+
+  // Force a fresh GPU texture upload: a sub-pixel scale toggle re-rasterizes
+  // the element in place, which fixes the "bottom of a tall photo stays
+  // black" compositing glitch without touching the image source.
+  const nudgeRepaint = (el) => {
+    try {
+      el.style.webkitTransform = "scale(0.9999)";
+      void el.offsetWidth;
+      el.style.webkitTransform = "";
+    } catch (e) {}
+  };
+
+  // Clear and restore src in the same task: the empty state is never painted
+  // and the second decode is served from the image cache, producing a
+  // complete texture.
+  const reDecode = (img) => {
+    if (img._fbRedecoding) return;
+    const src = img.currentSrc || img.src;
+    if (!src || src.indexOf("data:") === 0) return;
+    if (!img.complete || img.naturalWidth <= 0) return;
+    img._fbRedecoding = true;
+    setTimeout(() => {
+      img._fbRedecoding = false;
+    }, 600);
+    img.src = "";
+    void img.offsetWidth;
+    img.src = src;
+  };
+
+  // Retry a few times: the first attempt can run while the browser is still
+  // decoding, so we nudge on every pass and re-decode once the image is
+  // definitely complete.
+  const heal = (img, attempt) => {
+    if (!img.isConnected) return;
+    if (attempt > 4) return;
+    setTimeout(() => {
+      if (!img.isConnected) return;
+      if (!(img.complete && img.naturalWidth > 0)) {
+        heal(img, attempt + 1);
+        return;
+      }
+      nudgeRepaint(img);
+      if (attempt === 1) reDecode(img);
+      heal(img, attempt + 1);
+    }, attempt === 0 ? 150 : 700);
+  };
+
+  const processImage = (img) => {
+    if (!(img instanceof HTMLImageElement)) return;
+    if (!isViewerImage(img)) return;
+    img.loading = "eager";
+    const start = () => {
+      if (!img.isConnected) return;
+      if (!(img.complete && img.naturalWidth > 0)) {
+        setTimeout(start, 300);
+        return;
+      }
+      heal(img, 0);
     };
+    if (typeof img.decode === "function") {
+      img.decode().then(start).catch(start);
+    }
+    img.addEventListener("load", start, { once: true });
+    img.addEventListener("error", start, { once: true });
+    setTimeout(start, 600);
+  };
+
+  // Facebook sometimes renders the viewer photo as a div with
+  // background-image. Nudge those too.
+  const processBackgrounds = (dialog) => {
+    const candidates = dialog.querySelectorAll('div[style*="background-image"]');
+    for (const el of candidates) {
+      if (el._fbNudged) continue;
+      const rect = el.getBoundingClientRect();
+      if (rect.width < 200 || rect.height < 200) continue;
+      el._fbNudged = true;
+      setTimeout(() => nudgeRepaint(el), 300);
+    }
+  };
+
+  const scanViewer = () => {
+    const dialog = document.querySelector('div[role="dialog"]');
+    if (dialog) {
+      const images = dialog.querySelectorAll('img[src]');
+      for (const img of images) processImage(img);
+      processBackgrounds(dialog);
+    }
+    // Full photo pages (photo.php) render the photo as a normal page element.
+    // Heal the largest visible photo so it only re-decodes that one image.
+    if (location.pathname.indexOf("/photo") === 0) {
+      const images = Array.from(document.querySelectorAll('img[src*="fbcdn"]'))
+        .filter((img) => {
+          const rect = img.getBoundingClientRect();
+          return rect.width > 300 && rect.height > 300;
+        })
+        .sort((a, b) => {
+          const areaA = a.getBoundingClientRect().width * a.getBoundingClientRect().height;
+          const areaB = b.getBoundingClientRect().width * b.getBoundingClientRect().height;
+          return areaB - areaA;
+        });
+      if (images[0]) processImage(images[0]);
+    }
+  };
+
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (node.nodeType !== 1) continue;
+        if (node.matches && node.matches('div[role="dialog"]')) {
+          scanViewer();
+          return;
+        }
+        if (node.querySelector) {
+          const dialog = node.matches && node.matches('div[role="dialog"]')
+            ? node
+            : node.querySelector('div[role="dialog"]');
+          if (dialog) {
+            scanViewer();
+            return;
+          }
+        }
+      }
+      if (mutation.type === "attributes" && mutation.target.tagName === "IMG") {
+        processImage(mutation.target);
+      }
+    }
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["src", "srcset"]
+  });
+
+  let rescanTimer = null;
+  const scheduleRescan = () => {
+    if (rescanTimer) return;
+    rescanTimer = setTimeout(() => {
+      rescanTimer = null;
+      if (document.querySelector('div[role="dialog"]') || location.pathname.indexOf("/photo") === 0) {
+        scanViewer();
+        scheduleRescan();
+      }
+    }, 1500);
+  };
+
+  scanViewer();
+  scheduleRescan();
 })();

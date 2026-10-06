@@ -24,7 +24,7 @@ extensions.configure<ApplicationExtension> {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.astryx.book"
+        applicationId = "com.ufoex.materialbook"
         minSdk = 26
         targetSdk = 36
 
@@ -46,8 +46,8 @@ extensions.configure<ApplicationExtension> {
             // (e.g. v1.0.100 and v1.1.0 must never produce the same code).
             versionCode = major * 1_000_000 + minor * 1_000 + patch
         } else {
-            versionName = "1.0.0"
-            versionCode = 13
+            versionName = "1.1.0"
+            versionCode = 1001000
         }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

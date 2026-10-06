@@ -24,13 +24,6 @@ name: Create Release
 
 on:
   push:
-    branches:
-      - main
-    paths-ignore:
-      - '**.md'
-      - 'LICENSE'
-      - 'fastlane/**'
-      - 'assets/**'
     tags:
       - 'v*.*.*'
   workflow_dispatch:
@@ -161,9 +154,9 @@ jobs:
             --ks-key-alias ${{ secrets.KEY_ALIAS }} \
             --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
             --key-pass pass:${{ secrets.KEY_PASSWORD }} \
-            --out "Astryxbook-${{ steps.vars.outputs.version }}.apk" \
+            --out "Materialbook-${{ steps.vars.outputs.version }}.apk" \
             app-release.apk
-          if [ ! -f "Astryxbook-${{ steps.vars.outputs.version }}.apk" ]; then
+          if [ ! -f "Materialbook-${{ steps.vars.outputs.version }}.apk" ]; then
             echo "Failed to produce signed release APK"
             exit 1
           fi
@@ -177,6 +170,6 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.vars.outputs.tag }}
-          name: Astryxbook ${{ steps.vars.outputs.tag }}
+          name: Materialbook ${{ steps.vars.outputs.tag }}
           generate_release_notes: true
-          files: Astryxbook-${{ steps.vars.outputs.version }}.apk
+          files: Materialbook-${{ steps.vars.outputs.version }}.apk

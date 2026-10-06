@@ -59,6 +59,9 @@ class MainActivity : ComponentActivity() {
     // can read the PiP setting without extra plumbing through the UI layer.
     private val settingsVM: SettingsViewModel by viewModels()
 
+    // VIEW intents delivered to an already-running instance (singleTop) update this.
+    private val urlState = mutableStateOf<String?>(null)
+
     // Live playback state reported by PipBridge — not settings-backed, so it
     // isn't part of SettingsViewModel; just a plain flag read at the one
     // moment it matters (onUserLeaveHint).
@@ -291,8 +294,10 @@ class MainActivity : ComponentActivity() {
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
+        urlState.value = intent?.data?.toString()
+
         setContent {
-            val intentUrl = intent?.data?.toString()
+            val intentUrl = urlState.value
             MaterialbookTheme {
                 MaterialbookWebView(
                     url = intentUrl
@@ -464,6 +469,12 @@ class MainActivity : ComponentActivity() {
     // (and OEM skins like Samsung's OneUI layer their own windowing
     // customizations on top of AOSP). A redundant explicit call here when
     // auto-enter already handled it is harmless.
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        intent.data?.toString()?.let { urlState.value = it }
+    }
+
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         val eligible = isVideoPlaying &&

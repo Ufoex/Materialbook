@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Astryxbook"
+rootProject.name = "Materialbook"
 include(":app")
  

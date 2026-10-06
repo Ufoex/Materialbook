@@ -1,5 +1,5 @@
 <p align="middle">
-    <img src='./fastlane/metadata/android/en-US/images/featureGraphic.png' alt="Astryxbook banner" width="100%">
+    <img src='./fastlane/metadata/android/en-US/images/featureGraphic.png' alt="Materialbook banner" width="100%">
 </p>
 
 <h1 align="middle">
@@ -7,11 +7,11 @@
 </h1>
 
 <p align="middle">
-    <a href='https://github.com/ofirc73/AstryxBook/releases/latest'><img alt='Download' height='40' src='./assets/download.svg'/></a>
+    <a href='https://github.com/Ufoex/Materialbook/releases/latest'><img alt='Download' height='40' src='./assets/download.svg'/></a>
 </p>
 
 <p align="middle">
-    <a href='https://grev.shehryar.ae/?owner=ofirc73&repo=AstryxBook'><img alt='Downloads count' height='40' src='https://img.shields.io/github/downloads/ofirc73/AstryxBook/total?style=for-the-badge&logo=github&label=Downloads&color=1877F2&labelColor=24292F'/></a>
+    <a href='https://grev.shehryar.ae/?owner=Ufoex&repo=Materialbook'><img alt='Downloads count' height='40' src='https://img.shields.io/github/downloads/Ufoex/Materialbook/total?style=for-the-badge&logo=github&label=Downloads&color=1877F2&labelColor=24292F'/></a>
 </p>
 
 <h2 align="middle">
@@ -19,18 +19,16 @@
 </h2>
 
 <p align="middle">
-    <a href='https://github.com/ofirc73/AstryxBook/issues/new/choose'><img alt='Open issue' height='40' src='./assets/open_issue.svg'/></a>
+    <a href='https://github.com/Ufoex/Materialbook/issues/new/choose'><img alt='Open issue' height='40' src='./assets/open_issue.svg'/></a>
 </p>
 
 <h2 align="middle">
     ✏️ This fork:
 </h2>
 
-*  Renames the app to **Astryxbook**, with an original "A" monogram launcher icon (Facebook blue, but not Facebook's own trademarked logo — avoids impersonation/trademark issues)
-*  Restyles it to match **Facebook's own original Android look** — Material You theming and AMOLED Black now ship **off by default**, using Facebook's native blue instead of your wallpaper colors out of the box
-*  Both settings remain available as opt-in toggles for anyone who preferred the upstream [Materialbook](https://github.com/eepiemi/Materialbook) look
-*  Everything below still applies whenever those toggles are switched on
-*  See [FORK_CHANGES.md](./FORK_CHANGES.md) for the full list of changes in this fork
+*  Combines the improvements of several Materialbook forks: **PiP / fullscreen video / lock-screen audio** (AstryxBook), **Messenger redirect, external links, adblock hardening and photo viewer fixes** (dh6k), **Brave block list tracker/ad blocking** (BraveBook) and **post text copy plus reliable video/reel downloads** (LiteBook)
+*  Material You theming and AMOLED Black ship **off by default** (inherited from AstryxBook); both are opt-in toggles in Settings
+*  See [FORK_CHANGES.md](./FORK_CHANGES.md) for the details and credits
 
 <h2 align="middle">
     ⚙️ Features
@@ -76,7 +74,7 @@ To use Picture-in-Picture:
    * **2:3**
    * **3:4**
    * **9:16** (may overflow on some devices)
-3. If needed, also allow PiP in Android under **Settings > Apps > Astryxbook > Picture-in-picture**.
+3. If needed, also allow PiP in Android under **Settings > Apps > Materialbook > Picture-in-picture**.
 4. Open a Facebook video or Reel and start playback.
 5. Keep the video visible and audible, then use the Home gesture or Home button.
 
@@ -115,16 +113,16 @@ and that both the app and Android system PiP permissions are enabled.
     🛠️ Setup
 </h2>
 
-Astryxbook requires Android 8.0 (API level 26) or newer.
+Materialbook requires Android 8.0 (API level 26) or newer.
 
 1.  **Clone the repository**
     * In Android Studio:
       * File > New > Project from Version Control
-      * Paste `https://github.com/ofirc73/AstryxBook.git` and clone.
+      * Paste `https://github.com/Ufoex/Materialbook.git` and clone.
     * Or via terminal:
     ```
-    git clone https://github.com/ofirc73/AstryxBook.git
-    cd AstryxBook
+    git clone https://github.com/Ufoex/Materialbook.git
+    cd Materialbook
     ```
 2.  **Open in Android Studio.** (only if cloned via terminal)
     * Select Open an Existing Project and choose the cloned folder.

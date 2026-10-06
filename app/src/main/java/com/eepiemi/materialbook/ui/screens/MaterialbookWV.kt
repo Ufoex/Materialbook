@@ -710,9 +710,19 @@ fun MaterialbookWebView(
         )
     )
 
+    val initialUrl = rememberSaveable { mutableStateOf(url) }
+
     LaunchedEffect(navigator) {
         val bundle = state.viewState
         if (bundle == null) {
+            navigator.loadUrl(url)
+        }
+    }
+
+    // A new VIEW intent while the app is already open (MainActivity is singleTop).
+    LaunchedEffect(url) {
+        if (url != initialUrl.value) {
+            initialUrl.value = url
             navigator.loadUrl(url)
         }
     }

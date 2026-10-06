@@ -36,6 +36,13 @@ class FetchScriptsTest {
 
     private fun fallbackFor(resourceId: Int) = "fallback-$resourceId"
 
+    // fetchScripts wraps the bundle in an inject-once guard; strip it and the
+    // per-script newlines so the tests can compare the raw script content.
+    private fun unwrap(bundle: String) = bundle
+        .removePrefix("if(!window._mbBundleInjected){window._mbBundleInjected=true;")
+        .removeSuffix("}")
+        .replace("\n", "")
+
     private fun clientRespondingWith(
         bodies: Map<String, String> = emptyMap(),
         errors: Set<String> = emptySet(),
@@ -58,7 +65,7 @@ class FetchScriptsTest {
     fun returnsNetworkContent_onSuccess() = runBlocking {
         val client = clientRespondingWith(bodies = mapOf("a.js" to "network-a"))
 
-        val result = fetchScripts(listOf(scriptA), ::fallbackFor, client)
+        val result = unwrap(fetchScripts(listOf(scriptA), ::fallbackFor, client))
 
         assertEquals("network-a", result)
     }
@@ -67,7 +74,7 @@ class FetchScriptsTest {
     fun fallsBackToBundled_onNon200Status() = runBlocking {
         val client = clientRespondingWith(errors = setOf("a.js"))
 
-        val result = fetchScripts(listOf(scriptA), ::fallbackFor, client)
+        val result = unwrap(fetchScripts(listOf(scriptA), ::fallbackFor, client))
 
         assertEquals(fallbackFor(1), result)
     }
@@ -79,7 +86,7 @@ class FetchScriptsTest {
             delays = mapOf("a.js" to FETCH_TIMEOUT_MS + 500)
         )
 
-        val result = fetchScripts(listOf(scriptA), ::fallbackFor, client)
+        val result = unwrap(fetchScripts(listOf(scriptA), ::fallbackFor, client))
 
         assertEquals(
             "a fetch that exceeds FETCH_TIMEOUT_MS must fall back, not hang or throw",
@@ -98,7 +105,7 @@ class FetchScriptsTest {
             delays = mapOf("a.js" to 200L)
         )
 
-        val result = fetchScripts(listOf(scriptA, scriptB), ::fallbackFor, client)
+        val result = unwrap(fetchScripts(listOf(scriptA, scriptB), ::fallbackFor, client))
 
         assertEquals("content-acontent-b", result)
     }
@@ -118,7 +125,7 @@ class FetchScriptsTest {
             delays = mapOf("a.js" to perScriptDelay, "b.js" to perScriptDelay)
         )
 
-        val result = fetchScripts(listOf(scriptA, scriptB), ::fallbackFor, client)
+        val result = unwrap(fetchScripts(listOf(scriptA, scriptB), ::fallbackFor, client))
 
         assertEquals(
             "both fetches should succeed within roughly one timeout window if run concurrently",

@@ -10,8 +10,68 @@
   }
 
   const processedStyles = new WeakSet();
+  const fixedText = new WeakSet();
+  let isLightScreen = false;
+
+  function detectLightScreen() {
+    if (window.isDesktopMode?.()) return false;
+    const hasBloks = document.querySelector('[class*="wbloks"]') !== null ||
+                     document.querySelector('[data-bloks-name]') !== null;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const content = meta?.getAttribute('content')?.toLowerCase().trim();
+    if (hasBloks && (content === '#ffffff' || content === '#3b5998' || content === '#f0f2f5')) return true;
+    return /(\/login\/?|\/cookie\/|consent\.redirect|onboard)/i.test((location.pathname || '') + (location.search || ''));
+  }
+
+  function isOnLightBackground(el) {
+    let node = el;
+    let sawLightOpaque = false;
+    while (node) {
+      const bg = getComputedStyle(node).backgroundColor.match(
+        /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)/
+      );
+      if (bg) {
+        const [br, bgg, bb] = bg.slice(1, 4).map(Number);
+        const alpha = bg[4] !== undefined ? parseFloat(bg[4]) : 1;
+        // Fully transparent backgrounds carry no information: keep climbing.
+        if (alpha === 0) { node = node.parentElement; continue; }
+        const light = 0.299 * br + 0.587 * bgg + 0.114 * bb > 128;
+        // Any opaque dark background stops the climb and wins: dark text over
+        // it is unreadable and must be lightened.
+        if (!light) return false;
+        // An opaque LIGHT background (e.g. a white card) is remembered, but the
+        // climb continues: the login screen is a white card sitting on a dark
+        // page wash, so the OUTERMOST painted background decides. Stopping at
+        // the first white ancestor made the whole screen report "light" and
+        // left near-black text invisible over the black wash.
+        sawLightOpaque = true;
+      }
+      node = node.parentElement;
+    }
+    return sawLightOpaque;
+  }
+
+  function lightenLoginText() {
+    if (!isLightScreen) return;
+    document.querySelectorAll('div, span, h1, h2, h3, p, a, button, label, input, textarea').forEach(el => {
+      if (fixedText.has(el)) return;
+      if (el.childElementCount > 0 && el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA') return;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') return;
+      if (isOnLightBackground(el)) return;
+      const m = cs.color.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+      if (!m) return;
+      const [r, g, b] = m.slice(1).map(Number);
+      if (r + g + b > 350) return;
+      if (b > r + 30 && b > g + 30) return;
+      el.style.color = '#e4e6eb';
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.style.caretColor = '#e4e6eb';
+      fixedText.add(el);
+    });
+  }
 
   function processStyles() {
+    if (!isLightScreen) isLightScreen = detectLightScreen();
     document.querySelectorAll('style').forEach(style => {
       if (processedStyles.has(style)) return;
       processedStyles.add(style);
@@ -106,6 +166,8 @@
       const parent = spinner.closest('div[data-mcomponent="MContainer"][style*="margin-top:-1px"]');
       if (parent) parent.classList.add('spinner-parent');
     });
+
+    lightenLoginText();
 
     const meta = document.querySelector('meta[name="theme-color"]')
     const content = meta?.getAttribute('content')?.toLowerCase().trim();

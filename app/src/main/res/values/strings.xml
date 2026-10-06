@@ -60,4 +60,6 @@
     <string name="messenger_package_label">Package name</string>
     <string name="messenger_package_save">Save</string>
     <string name="messenger_package_reset">Reset</string>
+    <string name="saved_to_movies">Saved to Movies/Materialbook</string>
+    <string name="text_copied_to_clipboard">Text copied to clipboard</string>
 </resources>

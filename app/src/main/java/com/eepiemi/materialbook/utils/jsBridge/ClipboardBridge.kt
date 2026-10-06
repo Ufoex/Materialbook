@@ -16,6 +16,16 @@ import java.io.FileOutputStream
 
 class ClipboardBridge(private val context: Context) {
     @JavascriptInterface
+    fun copyText(text: String) {
+        runCatching {
+            val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("text", text)
+            clipboardManager.setPrimaryClip(clip)
+            context.showToast(context.getString(R.string.text_copied_to_clipboard))
+        }
+    }
+
+    @JavascriptInterface
     fun copyImageToClipboard(base64Data: String, mimeType: String) {
         runCatching {
             if (!base64Data.contains(",")) {

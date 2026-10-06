@@ -43,6 +43,7 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="screenLayout|orientation|screenSize|keyboard|keyboardHidden|smallestScreenSize|uiMode"
+            android:launchMode="singleTop"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize"
             android:exported="true"

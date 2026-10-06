@@ -7,7 +7,7 @@ fun fbRedirectSanitizer(link: String): String {
     try {
         var url = URL(link)
 
-        if (url.host == "l.facebook.com" && url.path == "/l.php") {
+        if ((url.host == "l.facebook.com" || url.host == "lm.facebook.com") && url.path == "/l.php") {
             val params = url.query.split("&").associate {
                 val (key, value) = it.split("=", limit = 2)
                 key to URLDecoder.decode(value, "UTF-8")

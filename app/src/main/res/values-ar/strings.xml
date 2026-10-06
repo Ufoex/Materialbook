@@ -45,4 +45,5 @@
     <string name="pip_lockscreen_audio_title">متابعة الصوت عند قفل الشاشة</string>
     <string name="pip_lockscreen_audio_summary">أثناء وضع الصورة داخل الصورة، يستمر تشغيل الصوت بعد إيقاف الشاشة</string>
     <string name="lockscreen_audio_media_title">فيديو Facebook</string>
+    <string name="text_copied_to_clipboard">تم نسخ النص إلى الحافظة</string>
 </resources>
