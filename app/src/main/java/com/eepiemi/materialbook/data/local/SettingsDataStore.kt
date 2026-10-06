@@ -7,7 +7,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -150,6 +149,8 @@ class SettingsDataStore(private val context: Context) {
     val pipPortraitRatio = context.dataStore.data.map { it[PIP_PORTRAIT_RATIO] ?: "4:7" }
     suspend fun setPipPortraitRatio(ratio: String) {
         context.dataStore.edit { it[PIP_PORTRAIT_RATIO] = ratio }
+    }
+
     val messengerPackage = context.dataStore.data.map { it[MESSENGER_PACKAGE] ?: DEFAULT_MESSENGER_PACKAGE }
     suspend fun setMessengerPackage(messengerPackage: String) {
         context.dataStore.edit { it[MESSENGER_PACKAGE] = messengerPackage }

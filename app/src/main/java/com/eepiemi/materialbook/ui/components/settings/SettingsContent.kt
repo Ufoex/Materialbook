@@ -38,6 +38,8 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -64,6 +66,7 @@ fun SettingsContent(
     modifier: Modifier,
     viewModel: SettingsViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     var isOpenDialog by rememberSaveable { mutableStateOf(false) }
     var isPipRatioDialog by rememberSaveable { mutableStateOf(false) }
     var isMessengerDialog by rememberSaveable { mutableStateOf(false) }

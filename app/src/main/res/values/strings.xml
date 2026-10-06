@@ -49,7 +49,6 @@
     <string name="pip_lockscreen_audio_title">Keep audio when screen locks</string>
     <string name="pip_lockscreen_audio_summary">While in picture-in-picture, keep playing audio after the screen turns off</string>
     <string name="lockscreen_audio_media_title">Facebook video</string>
-    <string name="materialbook_settings">Materialbook settings</string>
     <string name="support_my_work">Donate to original author 🎁</string>
     <string name="messenger_title">Messenger app</string>
     <string name="open_messenger_title">Open Messenger</string>
