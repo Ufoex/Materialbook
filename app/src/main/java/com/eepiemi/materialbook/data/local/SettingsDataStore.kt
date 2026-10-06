@@ -31,6 +31,7 @@ class SettingsDataStore(private val context: Context) {
         val HIDE_PEOPLE_YOU_MAY_KNOW = booleanPreferencesKey("hide_people_you_may_know")
         val HIDE_GROUPS = booleanPreferencesKey("hide_groups")
         val BRAVE_BLOCK_LIST = booleanPreferencesKey("brave_block_list")
+        val MESSAGES_DESKTOP = booleanPreferencesKey("messages_desktop")
         val PIP_ENABLED = booleanPreferencesKey("pip_enabled")
         val PIP_PORTRAIT_RATIO = stringPreferencesKey("pip_portrait_ratio")
         val PIP_LOCKSCREEN_AUDIO = booleanPreferencesKey("pip_lockscreen_audio")
@@ -155,6 +156,11 @@ class SettingsDataStore(private val context: Context) {
     val braveBlockList = context.dataStore.data.map { it[BRAVE_BLOCK_LIST] ?: true }
     suspend fun setBraveBlockList(braveBlockList: Boolean) {
         context.dataStore.edit { it[BRAVE_BLOCK_LIST] = braveBlockList }
+    }
+
+    val messagesDesktop = context.dataStore.data.map { it[MESSAGES_DESKTOP] ?: true }
+    suspend fun setMessagesDesktop(messagesDesktop: Boolean) {
+        context.dataStore.edit { it[MESSAGES_DESKTOP] = messagesDesktop }
     }
 
     val messengerPackage = context.dataStore.data.map { it[MESSENGER_PACKAGE] ?: DEFAULT_MESSENGER_PACKAGE }

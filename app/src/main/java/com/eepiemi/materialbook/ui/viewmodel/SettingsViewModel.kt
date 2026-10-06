@@ -11,6 +11,7 @@ import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.ENABLE_CO
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.ENABLE_DOWNLOAD_CONTENT
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.BRAVE_BLOCK_LIST
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_GROUPS
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MESSAGES_DESKTOP
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_PEOPLE_YOU_MAY_KNOW
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_REELS
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_STORIES
@@ -117,6 +118,11 @@ class SettingsViewModel(
     val braveBlockList = dataStore.braveBlockList.stateIn(
         scope = viewModelScope,
         initialValue = initialPrefs[BRAVE_BLOCK_LIST] ?: true,
+        started = SharingStarted.WhileSubscribed()
+    )
+    val messagesDesktop = dataStore.messagesDesktop.stateIn(
+        scope = viewModelScope,
+        initialValue = initialPrefs[MESSAGES_DESKTOP] ?: true,
         started = SharingStarted.WhileSubscribed()
     )
     val messengerPackage = dataStore.messengerPackage.stateIn(
@@ -227,6 +233,12 @@ class SettingsViewModel(
     fun setMessengerPackage(messengerPackage: String) {
         viewModelScope.launch {
             dataStore.setMessengerPackage(messengerPackage.ifBlank { DEFAULT_MESSENGER_PACKAGE })
+        }
+    }
+
+    fun setMessagesDesktop(messagesDesktop: Boolean) {
+        viewModelScope.launch {
+            dataStore.setMessagesDesktop(messagesDesktop)
         }
     }
 

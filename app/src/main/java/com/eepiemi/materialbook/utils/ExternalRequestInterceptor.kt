@@ -8,6 +8,8 @@ import com.multiplatform.webview.web.WebViewNavigator
 class ExternalRequestInterceptor(
     private val handleExternalUrl: (String) -> Unit,
     private val tryOpenMessenger: (String) -> Boolean = { false },
+    private val tryOpenMessagesDesktop: (String) -> Boolean = { false },
+    private val isMessagesDesktopActive: () -> Boolean = { false },
 ) : RequestInterceptor {
 
     override fun onInterceptUrlRequest(
@@ -17,6 +19,13 @@ class ExternalRequestInterceptor(
         // Sub-resources (images, XHR) must never leave the app or spawn browser tabs.
         if (!request.isForMainFrame) {
             return WebRequestInterceptResult.Allow
+        }
+
+        // facebook.com/messages: shown in desktop mode inside the app when enabled
+        // (the caller switches the user agent and loads the desktop page).
+        if (isMessagesWebUrl(request.url)) {
+            if (isMessagesDesktopActive()) return WebRequestInterceptResult.Allow
+            if (tryOpenMessagesDesktop(request.url)) return WebRequestInterceptResult.Reject
         }
 
         // Messenger deep links can never render anything useful in-WebView: fire the app,

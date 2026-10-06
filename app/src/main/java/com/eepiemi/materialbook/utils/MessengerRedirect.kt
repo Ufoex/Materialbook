@@ -51,3 +51,28 @@ fun openMessenger(context: Context, url: String, packageName: String): Boolean {
         })
     }.isSuccess
 }
+
+const val MESSAGES_DESKTOP_URL = "https://www.facebook.com/messages/"
+
+private fun facebookHost(url: String): Boolean {
+    val host = runCatching { java.net.URI(url).host }.getOrNull()?.lowercase() ?: return false
+    val isFb = host == "facebook.com" || host.endsWith(".facebook.com")
+    return isFb && !host.startsWith("l.") && !host.startsWith("lm.")
+}
+
+/** facebook.com/messages* web page (the one Facebook Lite refuses to render on mobile). */
+fun isMessagesWebUrl(url: String): Boolean {
+    if (!facebookHost(url)) return false
+    return (runCatching { java.net.URI(url).path }.getOrNull() ?: "").startsWith("/messages")
+}
+
+/**
+ * True when [url] is a regular Facebook page outside the messages section,
+ * i.e. where the desktop-mode override should end. Login/checkpoint pages are
+ * excluded because the desktop messages page may bounce through them.
+ */
+fun isLeavingMessages(url: String): Boolean {
+    if (!facebookHost(url)) return false
+    val path = runCatching { java.net.URI(url).path }.getOrNull() ?: ""
+    return listOf("/messages", "/messenger", "/login", "/checkpoint").none { path.startsWith(it) }
+}

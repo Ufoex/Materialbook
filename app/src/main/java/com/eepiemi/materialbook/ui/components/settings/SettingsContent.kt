@@ -86,6 +86,7 @@ fun SettingsContent(
     val pipLockscreenAudio = viewModel.pipLockscreenAudio.collectAsState()
     val pipPortraitRatio = viewModel.pipPortraitRatio.collectAsState()
     val messengerPackage = viewModel.messengerPackage.collectAsState()
+    val messagesDesktop = viewModel.messagesDesktop.collectAsState()
 
     val isAutoDesktop = rememberAutoDesktop()
 
@@ -110,6 +111,13 @@ fun SettingsContent(
                             ).show()
                         }
                     },
+                ),
+                SettingsItem(
+                    icon = Icons.Outlined.Message,
+                    title = stringResource(R.string.messages_desktop_title),
+                    supportingText = stringResource(R.string.messages_desktop_desc),
+                    isActive = messagesDesktop.value,
+                    onClick = { viewModel.setMessagesDesktop(!messagesDesktop.value) },
                 ),
                 SettingsItem(
                     icon = Icons.Outlined.Message,

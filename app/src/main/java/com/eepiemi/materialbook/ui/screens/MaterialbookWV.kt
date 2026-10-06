@@ -61,6 +61,8 @@ import com.eepiemi.materialbook.utils.jsBridge.MaterialYouBridge
 import com.eepiemi.materialbook.utils.jsBridge.PipBridge
 import com.eepiemi.materialbook.audio.PipHandback
 import com.eepiemi.materialbook.utils.effectiveDesktop
+import com.eepiemi.materialbook.utils.MESSAGES_DESKTOP_URL
+import com.eepiemi.materialbook.utils.isLeavingMessages
 import com.eepiemi.materialbook.utils.openMessenger
 import com.eepiemi.materialbook.utils.openExternalUrl
 import com.eepiemi.materialbook.utils.rememberAutoDesktop
@@ -684,6 +686,10 @@ fun MaterialbookWebView(
     val messengerPkg by settingsVM.messengerPackage.collectAsState()
     // Stable holder: navigator may keep the first interceptor, so read latest at call time.
     val currentMessengerPkg by rememberUpdatedState(messengerPkg)
+    // Desktop-mode override that applies only while the Messages section is open.
+    val messagesDesktopSetting by settingsVM.messagesDesktop.collectAsState()
+    val currentMessagesDesktopSetting by rememberUpdatedState(messagesDesktopSetting)
+    var messagesDesktop by remember { mutableStateOf(false) }
     val navigator = rememberWebViewNavigator(
         requestInterceptor = ExternalRequestInterceptor(
             handleExternalUrl = { externalUrl ->
@@ -696,6 +702,15 @@ fun MaterialbookWebView(
                     ).show()
                 }
             },
+            tryOpenMessagesDesktop = {
+                if (currentMessagesDesktopSetting) {
+                    messagesDesktop = true
+                    true
+                } else {
+                    false
+                }
+            },
+            isMessagesDesktopActive = { messagesDesktop },
             tryOpenMessenger = { messengerUrl ->
                 val ok = openMessenger(context, messengerUrl, currentMessengerPkg)
                 if (!ok) {
@@ -1096,9 +1111,29 @@ fun MaterialbookWebView(
     }
 
 
-    LaunchedEffect(isEffectiveDesktop) {
-        val userAgent = if (isEffectiveDesktop) DESKTOP_USER_AGENT else ""
+    LaunchedEffect(isEffectiveDesktop, messagesDesktop) {
+        val userAgent = if (isEffectiveDesktop || messagesDesktop) DESKTOP_USER_AGENT else ""
         state.nativeWebView.settings.userAgentString = userAgent
+    }
+
+    // Messages tapped: switch to the desktop UA first, then load the desktop page.
+    LaunchedEffect(messagesDesktop) {
+        if (messagesDesktop) {
+            state.nativeWebView.settings.userAgentString = DESKTOP_USER_AGENT
+            navigator.loadUrl(MESSAGES_DESKTOP_URL)
+        }
+    }
+
+    // Left the Messages section: back to the normal user agent and reload there.
+    val lastLoadedUrl = state.lastLoadedUrl
+    LaunchedEffect(lastLoadedUrl) {
+        val u = lastLoadedUrl ?: return@LaunchedEffect
+        if (messagesDesktop && isLeavingMessages(u)) {
+            messagesDesktop = false
+            state.nativeWebView.settings.userAgentString =
+                if (isEffectiveDesktop) DESKTOP_USER_AGENT else ""
+            navigator.loadUrl(u)
+        }
     }
 
     // needed to consume extra padding when keyboard is open

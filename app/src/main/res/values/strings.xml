@@ -42,6 +42,8 @@
     <string name="shrink_into_a_floating_window_when_leaving_while_a_video_plays">Shrink into a floating window when leaving the app while a video is playing</string>
     <string name="brave_blocklist_title">Brave Block List</string>
     <string name="brave_blocklist_supporting">Block trackers and ads with Brave\'s filter rules</string>
+    <string name="messages_desktop_title">Messages in desktop mode</string>
+    <string name="messages_desktop_desc">Open Messages inside the app using the desktop site (only for that section)</string>
     <string name="not_supported">Not supported</string>
     <string name="pip_ratio_title">PiP aspect ratio (portrait videos)</string>
     <string name="pip_ratio_4_7">4:7 (recommended)</string>
