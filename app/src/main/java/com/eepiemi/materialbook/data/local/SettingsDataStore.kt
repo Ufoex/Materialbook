@@ -22,6 +22,7 @@ class SettingsDataStore(private val context: Context) {
         val DESKTOP_LAYOUT = booleanPreferencesKey("desktop_layout")
         val IMMERSIVE_MODE = booleanPreferencesKey("immersive_mode")
         val STICKY_NAVBAR = booleanPreferencesKey("sticky_navbar")
+        val COLLAPSING_TOOLBAR = booleanPreferencesKey("collapsing_toolbar")
         val PINCH_TO_ZOOM = booleanPreferencesKey("pinch_to_zoom")
         val MATERIAL_YOU = booleanPreferencesKey("material_you")
         val AMOLED_BLACK = booleanPreferencesKey("amoled_black")
@@ -90,6 +91,11 @@ class SettingsDataStore(private val context: Context) {
     val stickyNavbar = context.dataStore.data.map { it[STICKY_NAVBAR] ?: true }
     suspend fun setStickyNavbar(stickyNavbar: Boolean) {
         context.dataStore.edit { it[STICKY_NAVBAR] = stickyNavbar }
+    }
+
+    val collapsingToolbar = context.dataStore.data.map { it[COLLAPSING_TOOLBAR] ?: true }
+    suspend fun setCollapsingToolbar(collapsingToolbar: Boolean) {
+        context.dataStore.edit { it[COLLAPSING_TOOLBAR] = collapsingToolbar }
     }
 
     val pinchToZoom = context.dataStore.data.map { it[PINCH_TO_ZOOM] ?: false }

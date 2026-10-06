@@ -10,6 +10,8 @@ All credit to eepiemi and to the fork authors below. Package: `com.ufoex.materia
 | [farhun1/BraveBook](https://github.com/farhun1/BraveBook) | Network-level ad/tracker blocking with the Brave block list (toggle in settings), third-party cookies off, thread-safe toasts, hide group posts from the feed |
 | [Kdomy/LiteBook](https://github.com/Kdomy/LiteBook) | Copy post text on long press, reliable photo/video/reel downloads (video+audio mux), legible AMOLED login screens, `lm.facebook.com` redirects, VIEW intents while the app is open |
 
+Own additions in this repo: Messages in desktop mode (only that section) and a collapsing toolbar (top bars hide when scrolling down and come back when scrolling up; needs Sticky Navbar).
+
 Not taken: the other forks' rebrands, Astryx's/dh6k's overlapping orientation and auto-desktop logic, BraveBook's own fullscreen manager (Astryx's is used),
 LiteBook's `MIXED_CONTENT_ALWAYS_ALLOW` (insecure).
 

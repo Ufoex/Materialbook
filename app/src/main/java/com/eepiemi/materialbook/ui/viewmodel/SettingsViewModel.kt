@@ -23,6 +23,7 @@ import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_ENABL
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_LOCKSCREEN_AUDIO
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_PORTRAIT_RATIO
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.REMOVE_ADS
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.COLLAPSING_TOOLBAR
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.STICKY_NAVBAR
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MESSENGER_PACKAGE
 import com.eepiemi.materialbook.utils.DEFAULT_MESSENGER_PACKAGE
@@ -73,6 +74,11 @@ class SettingsViewModel(
     val stickyNavbar = dataStore.stickyNavbar.stateIn(
         scope = viewModelScope,
         initialValue = initialPrefs[STICKY_NAVBAR] ?: true,
+        started = SharingStarted.WhileSubscribed()
+    )
+    val collapsingToolbar = dataStore.collapsingToolbar.stateIn(
+        scope = viewModelScope,
+        initialValue = initialPrefs[COLLAPSING_TOOLBAR] ?: true,
         started = SharingStarted.WhileSubscribed()
     )
     val pinchToZoom = dataStore.pinchToZoom.stateIn(
@@ -173,6 +179,12 @@ class SettingsViewModel(
     fun setImmersiveMode(immersiveMode: Boolean) {
         viewModelScope.launch {
             dataStore.setImmersiveMode(immersiveMode)
+        }
+    }
+
+    fun setCollapsingToolbar(collapsingToolbar: Boolean) {
+        viewModelScope.launch {
+            dataStore.setCollapsingToolbar(collapsingToolbar)
         }
     }
 
