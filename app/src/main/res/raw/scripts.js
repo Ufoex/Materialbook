@@ -18,7 +18,7 @@
         if (window.isDesktopMode()) return true;
 
         const hasSpecialButton = Array.from(document.querySelectorAll('[role="button"] span'))
-            .some(span => span.textContent === 'ó±¥†');
+            .some(span => span.textContent === '󱥆');
 
         return hasSpecialButton;
     };
@@ -368,7 +368,7 @@ if (!window._mbBannerObserver) {
 
     const findInsertionPoint = () => {
       const iconSpan = Array.from(document.querySelectorAll('span'))
-        .find(span => span.textContent === 'ó±¥Š');
+        .find(span => span.textContent === '󱥊');
       const container = iconSpan?.closest('div[role="button"]')?.parentNode;
 
       const desktopTarget = document.querySelector(

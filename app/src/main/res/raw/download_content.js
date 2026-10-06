@@ -727,12 +727,12 @@
         const buttons = root.querySelectorAll('div[role="button"]');
 
         buttons.forEach(button => {
-          // Check if it contains div.fl.ac with a span containing the ó±¥¬ symbol
+          // Check if it contains div.fl.ac with a span containing the 󱥬 symbol
           const flAcDiv = button.querySelector('div.fl.ac');
 
           if (flAcDiv) {
             const span = flAcDiv.querySelector('span');
-            if (span && span.textContent.includes('ó±¥¬')) {
+            if (span && span.textContent.includes('󱥬')) {
               button.style.display = 'none';
             }
           }
