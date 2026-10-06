@@ -45,6 +45,7 @@ class MainViewModel(
             Script(settings.enableCopyToClipboard.value, R.raw.copy_to_clipboard, "copy_to_clipboard.js"),
             Script(true, R.raw.copy_post_text, "copy_post_text.js"),
             Script(settings.stickyNavbar.value, R.raw.sticky_navbar, "sticky_navbar.js"),
+            Script(settings.reelControls.value, R.raw.reel_controls, "reel_controls.js"),
             // Needs the bars pinned by the sticky navbar script.
             Script(settings.stickyNavbar.value && settings.collapsingToolbar.value, R.raw.collapsing_toolbar, "collapsing_toolbar.js"),
             Script(!settings.pinchToZoom.value, R.raw.pinch_to_zoom, "pinch_to_zoom.js"),

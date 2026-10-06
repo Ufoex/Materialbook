@@ -1,0 +1,221 @@
+// Reel controls: Facebook's /reel/ viewer only shows Play when paused, while the
+// regular video viewer also shows time, a seek bar, fullscreen and volume. Show the
+// same kind of bar on reels while the video is paused.
+(function() {
+    if (window.isDesktopMode && window.isDesktopMode()) return;
+    if (window.__mbReelControls) return;
+    window.__mbReelControls = true;
+
+    const ICON = {
+        full: 'M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z',
+        vol: 'M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z',
+        mute: 'M16.5 12A4.5 4.5 0 0014 7.97v2.21l2.45 2.45c.03-.2.05-.41.05-.63zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.8 8.8 0 0021 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 003.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'
+    };
+    const svg = (d) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="${d}"/></svg>`;
+    const fmt = (s) => {
+        s = Math.max(0, Math.floor(s || 0));
+        return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+    };
+
+    let bar, seek, time, fsBtn, muteBtn, vid = null, dragging = false;
+
+    const build = () => {
+        bar = document.createElement('div');
+        bar.id = 'mb-reel-controls';
+        bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483000;display:none;' +
+            'padding:10px 16px 12px;box-sizing:border-box;color:#fff;font:600 15px sans-serif;' +
+            'background:rgba(0,0,0,.88);';
+        bar.innerHTML =
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
+            '<span id="mb-reel-time">0:00 / 0:00</span>' +
+            '<span style="display:flex;gap:18px"><span id="mb-reel-fs">' + svg(ICON.full) + '</span>' +
+            '<span id="mb-reel-mute">' + svg(ICON.vol) + '</span></span></div>' +
+            '<input id="mb-reel-seek" type="range" min="0" max="1000" value="0" style="width:100%;display:block">';
+        document.body.appendChild(bar);
+        time = bar.querySelector('#mb-reel-time');
+        seek = bar.querySelector('#mb-reel-seek');
+        fsBtn = bar.querySelector('#mb-reel-fs');
+        muteBtn = bar.querySelector('#mb-reel-mute');
+
+        // Keep Facebook's own tap handlers (play/pause, swipe between reels) from seeing these touches.
+        ['pointerdown', 'pointerup', 'touchstart', 'touchmove', 'touchend', 'mousedown', 'mouseup', 'click']
+            .forEach(t => bar.addEventListener(t, e => e.stopPropagation()));
+
+        seek.addEventListener('input', () => {
+            dragging = true;
+            if (vid && isFinite(vid.duration)) vid.currentTime = vid.duration * seek.value / 1000;
+        });
+        seek.addEventListener('change', () => { dragging = false; });
+        fsBtn.addEventListener('click', () => {
+            if (!vid) return;
+            const req = vid.requestFullscreen || vid.webkitRequestFullscreen;
+            if (req) req.call(vid);
+        });
+        muteBtn.addEventListener('click', () => {
+            if (!vid) return;
+            vid.muted = !vid.muted;
+            muteBtn.innerHTML = svg(vid.muted ? ICON.mute : ICON.vol);
+        });
+    };
+
+    // The video that is mostly on screen (reels are one per screen).
+    const activeVideo = () => {
+        let best = null, area = 0;
+        document.querySelectorAll('video').forEach(v => {
+            const r = v.getBoundingClientRect();
+            const w = Math.max(0, Math.min(r.right, innerWidth) - Math.max(r.left, 0));
+            const h = Math.max(0, Math.min(r.bottom, innerHeight) - Math.max(r.top, 0));
+            if (w * h > area) { area = w * h; best = v; }
+        });
+        return best;
+    };
+
+    // Facebook's regular video viewer already has its own range input while paused.
+    const hasNativeSeek = () => [...document.querySelectorAll('input[type=range]')].some(i => {
+        if (i.id === 'mb-reel-seek') return false;
+        const r = i.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && getComputedStyle(i).opacity !== '0';
+    });
+
+    // ---- Hide icons button ----
+    const EYE = 'M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z';
+    const EYE_OFF = 'M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.804 11.804 0 001 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2z';
+    let hideBtn, hideOn = false;
+
+    const style = document.createElement('style');
+    style.textContent = 'html.mb-hide-reel-ui [data-mb-hid]{opacity:0 !important;pointer-events:none !important}' +
+        'html.mb-hide-reel-ui [data-mb-fade]{opacity:0 !important}';
+    document.head.appendChild(style);
+
+    const lca = (els) => {
+        let a = els[0];
+        while (a && !els.every(e => a.contains(e))) a = a.parentElement;
+        return a;
+    };
+
+    // Hide everything except the video and the swipe gesture: action icons, user and
+    // caption, header, top tab bar, sound chip, download/copy buttons. Found by
+    // position and structure, so it does not depend on the page language.
+    //  - data-mb-hid : invisible and not tappable (icon groups, header, tab bar)
+    //  - data-mb-fade: invisible but still tappable (anything that holds the
+    //    tap-to-pause surface, so pausing keeps working)
+    const markIcons = (v) => {
+        document.querySelectorAll('[data-mb-hid],[data-mb-fade]').forEach(e => {
+            e.removeAttribute('data-mb-hid');
+            e.removeAttribute('data-mb-fade');
+        });
+        if (!hideOn) return;
+        const cont = v.closest('.vertically-snappable') || v.parentElement;
+        const iw = innerWidth, ih = innerHeight;
+        // Facebook's thin progress bar (track + played part + buffer) stays visible,
+        // like the video itself.
+        const seekbox = cont.querySelector('.seekbar-container');
+        const inSeek = (e) => !!seekbox && seekbox.contains(e);
+        const keep = [v, seekbox].filter(Boolean);
+        const holdsKept = (e) => keep.some(k => e.contains(k));
+        const hid = (e) => { if (e && !holdsKept(e) && !inSeek(e)) e.setAttribute('data-mb-hid', ''); };
+
+        // element under the screen centre: the tap-to-pause surface lives in its ancestors
+        const center = document.elementFromPoint(iw / 2, ih / 2);
+
+        // everything in the reel container that is not the video itself
+        const walk = (node) => {
+            for (const c of node.children) {
+                if (inSeek(c)) continue;
+                if (holdsKept(c)) walk(c);
+                else if (center && c.contains(center)) c.setAttribute('data-mb-fade', '');
+                else hid(c);
+            }
+        };
+        walk(cont);
+
+        const labelled = [...cont.querySelectorAll('[aria-label]')]
+            .filter(e => e.tagName !== 'INPUT' && e.tagName !== 'BUTTON')
+            .map(e => ({ e, b: e.getBoundingClientRect() }))
+            .filter(o => o.b.width > 0);
+        // right-hand action column and bottom profile/caption row: also not tappable
+        labelled.filter(o => o.b.left > 0.7 * iw && o.b.width >= 48 && o.b.top > 0.3 * ih).forEach(o => hid(o.e));
+        const bottom = labelled.filter(o => o.b.top > 0.8 * ih && o.b.left < 0.7 * iw).map(o => o.e);
+        if (bottom.length) {
+            const row = lca(bottom);
+            if (row && !holdsKept(row) && row.getBoundingClientRect().height < 0.25 * ih) hid(row);
+            else bottom.forEach(hid);
+        }
+        // header (back / search / profile) and the top tab bar
+        const top = [...document.querySelectorAll('[aria-label]')]
+            .filter(e => e.tagName !== 'INPUT' && e.tagName !== 'BUTTON' && e.getAttribute('role') !== 'tab' &&
+                !e.closest('#mb-reel-hide, #mb-reel-controls, [role="tablist"]'))
+            .filter(e => { const b = e.getBoundingClientRect(); return b.width > 0 && b.top < 0.2 * ih; });
+        if (top.length) {
+            const row = lca(top);
+            if (row && !holdsKept(row) && row.getBoundingClientRect().height < 0.2 * ih) hid(row);
+            else top.forEach(hid);
+        }
+        // header title text ("Reels") has no label: hide text nodes in the top strip
+        document.querySelectorAll('div, span').forEach(e => {
+            if (e.closest('#mb-reel-hide, #mb-reel-controls, [role="tablist"]')) return;
+            if (![...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return;
+            const b = e.getBoundingClientRect();
+            if (b.width > 0 && b.top < 0.2 * ih) hid(e);
+        });
+        document.querySelectorAll('[role="tablist"]').forEach(t => { hid(t); hid(t.parentElement); });
+        // our own buttons
+        document.querySelectorAll('button[aria-label="Download content"], button[aria-label="Copy image to clipboard"]').forEach(hid);
+    };
+
+    const buildHideBtn = () => {
+        hideBtn = document.createElement('div');
+        hideBtn.id = 'mb-reel-hide';
+        hideBtn.style.cssText = 'position:fixed;z-index:2147483000;width:40px;height:40px;border-radius:50%;' +
+            'background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;';
+        hideBtn.innerHTML = svg(EYE_OFF);
+        ['pointerdown', 'pointerup', 'touchstart', 'touchmove', 'touchend', 'mousedown', 'mouseup']
+            .forEach(t => hideBtn.addEventListener(t, e => e.stopPropagation()));
+        hideBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            hideOn = !hideOn;
+            document.documentElement.classList.toggle('mb-hide-reel-ui', hideOn);
+            hideBtn.innerHTML = svg(hideOn ? EYE : EYE_OFF);
+            hideBtn.style.opacity = hideOn ? '0.35' : '1';
+        });
+        document.body.appendChild(hideBtn);
+    };
+
+    setInterval(() => {
+        const path = location.pathname;
+        const inReels = path.indexOf('/reel/') === 0 || path.indexOf('/videos/') !== -1 && !!document.querySelector('.vertically-snappable video');
+        const active = inReels ? activeVideo() : null;
+
+        // hide-icons button: next to the download button when it exists
+        if (active) {
+            if (!hideBtn || !hideBtn.isConnected) buildHideBtn();
+            const dl = document.querySelector('button[aria-label="Download content"]');
+            const r = dl && dl.getBoundingClientRect();
+            hideBtn.style.top = (r && r.width ? r.top : 70) + 'px';
+            hideBtn.style.left = (r && r.width ? Math.max(8, r.left - 48) : 297) + 'px';
+            hideBtn.style.display = 'flex';
+            markIcons(active);
+        } else {
+            if (hideBtn) hideBtn.style.display = 'none';
+            if (hideOn) {
+                hideOn = false;
+                document.documentElement.classList.remove('mb-hide-reel-ui');
+                if (hideBtn) { hideBtn.innerHTML = svg(EYE_OFF); hideBtn.style.opacity = '1'; }
+                markIcons(document.body);
+            }
+        }
+
+        // seek bar for reels that don't have Facebook's own
+        const v = path.indexOf('/reel/') === 0 ? active : null;
+        if (hideOn || !v || !v.paused || !isFinite(v.duration) || v.duration <= 0 || hasNativeSeek()) {
+            if (bar) bar.style.display = 'none';
+            return;
+        }
+        if (!bar || !bar.isConnected) build();
+        vid = v;
+        bar.style.display = 'block';
+        time.textContent = fmt(v.currentTime) + ' / ' + fmt(v.duration);
+        if (!dragging) seek.value = Math.round(v.currentTime / v.duration * 1000);
+        muteBtn.innerHTML = svg(v.muted ? ICON.mute : ICON.vol);
+    }, 250);
+})();

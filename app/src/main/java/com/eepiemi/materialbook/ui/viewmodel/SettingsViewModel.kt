@@ -24,6 +24,7 @@ import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_LOCKS
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_PORTRAIT_RATIO
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.REMOVE_ADS
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.COLLAPSING_TOOLBAR
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.REEL_CONTROLS
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.STICKY_NAVBAR
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MESSENGER_PACKAGE
 import com.eepiemi.materialbook.utils.DEFAULT_MESSENGER_PACKAGE
@@ -74,6 +75,11 @@ class SettingsViewModel(
     val stickyNavbar = dataStore.stickyNavbar.stateIn(
         scope = viewModelScope,
         initialValue = initialPrefs[STICKY_NAVBAR] ?: true,
+        started = SharingStarted.WhileSubscribed()
+    )
+    val reelControls = dataStore.reelControls.stateIn(
+        scope = viewModelScope,
+        initialValue = initialPrefs[REEL_CONTROLS] ?: true,
         started = SharingStarted.WhileSubscribed()
     )
     val collapsingToolbar = dataStore.collapsingToolbar.stateIn(
@@ -179,6 +185,12 @@ class SettingsViewModel(
     fun setImmersiveMode(immersiveMode: Boolean) {
         viewModelScope.launch {
             dataStore.setImmersiveMode(immersiveMode)
+        }
+    }
+
+    fun setReelControls(reelControls: Boolean) {
+        viewModelScope.launch {
+            dataStore.setReelControls(reelControls)
         }
     }
 

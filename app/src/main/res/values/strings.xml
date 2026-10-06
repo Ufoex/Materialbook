@@ -7,6 +7,8 @@
     <string name="copy_to_clipboard_title">Copy to clipboard</string>
     <string name="desktop_layout_title">Desktop layout</string>
     <string name="immersive_mode_title">Immersive mode</string>
+    <string name="reel_controls_title">Reel controls</string>
+    <string name="reel_controls_desc">Seek bar, time, fullscreen and volume on paused reels, plus a button to hide the icons</string>
     <string name="collapsing_toolbar_title">Collapsing toolbar</string>
     <string name="collapsing_toolbar_desc">Hide the top bars when scrolling down, show them when scrolling up (needs Sticky Navbar)</string>
     <string name="sticky_navbar_title">Sticky Navbar</string>
