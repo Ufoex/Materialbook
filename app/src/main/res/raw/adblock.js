@@ -83,8 +83,13 @@
         }
     }
 
+    // Feed ads only: skip the reel viewer (it mutates constantly and has no feed ads) and
+    // run at most once per frame instead of on every single mutation.
+    let feedAdsScheduled = false;
     const adsObserver = new MutationObserver(() => {
-        removeFeedAds();
+        if (window.location.pathname.indexOf('/reel') === 0 || feedAdsScheduled) return;
+        feedAdsScheduled = true;
+        requestAnimationFrame(() => { feedAdsScheduled = false; removeFeedAds(); });
     }).observe(document.body, {
         childList: true,
         subtree: true
@@ -218,37 +223,46 @@
     }
 
 
-    function removeReelAds(root = document) {
-        const containers = root.querySelectorAll('div.vertically-snappable');
+    // Reel ads. The scan is deliberately cheap and deferred: it used to run 70 regexes on
+    // every span of every reel inside each DOM mutation, which could block the page long
+    // enough for the reel viewer to stop loading more reels.
+    //  - runs at most every 300 ms, never inside the mutation callback itself
+    //  - only reels near the screen, and each reel at most 4 times
+    //  - only short texts (the sponsored label is short; captions are skipped)
+    function hideReelAd(container) {
+        container.dataset.adHidden = 'true';
+        // Stop the ad's video and keep it silent even if Facebook tries to autoplay it,
+        // then take the reel out of the layout: no placeholder, the next reel takes its place.
+        container.querySelectorAll('video').forEach(v => {
+            v.muted = true;
+            try { v.pause(); } catch (e) {}
+            v.addEventListener('play', () => { v.muted = true; v.pause(); });
+        });
+        container.style.setProperty('display', 'none', 'important');
+    }
 
-        let hiddenCount = 0;
-        containers.forEach((container, index) => {
-            // Skip if already hidden
-            if (container.dataset.adHidden === 'true') {
-                return;
-            }
-
-            const spans = container.querySelectorAll('span');
-
-            for (const span of spans) {
+    function scanReelAds() {
+        document.querySelectorAll('div.vertically-snappable').forEach(container => {
+            if (container.dataset.adHidden === 'true') return;
+            const checks = Number(container.dataset.adChecks || 0);
+            if (checks >= 4) return;
+            const r = container.getBoundingClientRect();
+            if (r.height === 0 || r.bottom < -window.innerHeight || r.top > 2 * window.innerHeight) return;
+            container.dataset.adChecks = String(checks + 1);
+            for (const span of container.querySelectorAll('span')) {
                 const text = span.textContent;
-
-                if (containsSponsoredText(text)) {
-
-                    // Mark as hidden to prevent re-processing
-                    container.dataset.adHidden = 'true';
-
-                    // Stop the ad's video, then take the whole reel out of the list: no
-                    // placeholder, the next reel simply takes its place.
-                    container.querySelectorAll('video').forEach(v => { try { v.pause(); } catch (e) {} });
-                    container.innerHTML = '';
-                    container.style.setProperty('display', 'none', 'important');
-
-                    hiddenCount++;
+                if (text && text.length <= 48 && containsSponsoredText(text)) {
+                    hideReelAd(container);
                     break;
                 }
             }
         });
+    }
+
+    let reelScanTimer = null;
+    function removeReelAds() {
+        if (reelScanTimer) return;
+        reelScanTimer = setTimeout(() => { reelScanTimer = null; scanReelAds(); }, 300);
     }
 
     // Initial cleanup
@@ -258,22 +272,11 @@
         const p = window.location.pathname;
         return p === '/' || p.indexOf('/reel') === 0;
     };
-    if (window.location.pathname.indexOf('/reel') === 0) removeReelAds(document);
-    const reelObserver = new MutationObserver(mutations => {
-        if (!onReelSurface()) return;
-
-        for (const mutation of mutations) {
-            for (const node of mutation.addedNodes) {
-                if (!(node instanceof HTMLElement)) continue;
-
-                // Check if the added node is a vertically-snappable container or contains one
-                if (node.matches('div.vertically-snappable')) {
-                    removeReelAds(node.parentElement || document);
-                } else if (node.querySelector('div.vertically-snappable')) {
-                    removeReelAds(node);
-                }
-            }
-        }
+    if (window.location.pathname.indexOf('/reel') === 0) removeReelAds();
+    // Any DOM change on a reel surface just schedules a (cheap, deferred) scan: labels
+    // can render after the reel container itself.
+    const reelObserver = new MutationObserver(() => {
+        if (onReelSurface()) removeReelAds();
     });
 
     reelObserver.observe(document.body, { childList: true, subtree: true });

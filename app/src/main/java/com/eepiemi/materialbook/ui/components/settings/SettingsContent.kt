@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Message
 import androidx.compose.material.icons.filled.BurstMode
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Diversity1
@@ -28,7 +29,6 @@ import androidx.compose.material.icons.outlined.Headphones
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material.icons.outlined.SwipeVertical
-import androidx.compose.material.icons.outlined.Message
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PanoramaWideAngle
 import androidx.compose.material.icons.outlined.PictureInPictureAlt
@@ -101,7 +101,7 @@ fun SettingsContent(
         SettingsGroup(
             items = listOf(
                 SettingsItem(
-                    icon = Icons.Outlined.Message,
+                    icon = Icons.AutoMirrored.Outlined.Message,
                     title = stringResource(R.string.open_messenger_title),
                     supportingText = stringResource(R.string.open_messenger_desc),
                     isActive = null,
@@ -117,14 +117,14 @@ fun SettingsContent(
                     },
                 ),
                 SettingsItem(
-                    icon = Icons.Outlined.Message,
+                    icon = Icons.AutoMirrored.Outlined.Message,
                     title = stringResource(R.string.messages_desktop_title),
                     supportingText = stringResource(R.string.messages_desktop_desc),
                     isActive = messagesDesktop.value,
                     onClick = { viewModel.setMessagesDesktop(!messagesDesktop.value) },
                 ),
                 SettingsItem(
-                    icon = Icons.Outlined.Message,
+                    icon = Icons.AutoMirrored.Outlined.Message,
                     title = stringResource(R.string.messenger_title),
                     supportingText = messengerPackage.value,
                     isActive = null,

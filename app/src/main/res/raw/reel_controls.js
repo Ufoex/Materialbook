@@ -82,7 +82,7 @@
     const EYE_OFF = 'M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.804 11.804 0 001 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2z';
     const FIT_FULL = 'M3 5v4h2V5h4V3H5c-1.1 0-2 .9-2 2zm2 10H3v4c0 1.1.9 2 2 2h4v-2H5v-4zm14 4h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4zm0-16h-4v2h4v4h2V5c0-1.1-.9-2-2-2z';
     const FIT_FILL = 'M19 12h-2v3h-3v2h5v-5zM7 9h3V7H5v5h2V9zm14-6H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16.01H3V4.99h18v14.02z';
-    let hideBtn, fitBtn, hideOn = false, fit = null;
+    let hideBtn, fitBtn, hideOn = false, fit = null, hasMarks = false;
 
     const style = document.createElement('style');
     style.textContent = 'html.mb-hide-reel-ui [data-mb-hid]{opacity:0 !important;pointer-events:none !important}' +
@@ -108,6 +108,9 @@
     //  - data-mb-fade: invisible but still tappable (anything that holds the
     //    tap-to-pause surface, so pausing keeps working)
     const markIcons = (v) => {
+        // Nothing marked and hide mode off: skip the DOM query (this runs every 250 ms).
+        if (!hideOn && !hasMarks) return;
+        hasMarks = hideOn;
         document.querySelectorAll('[data-mb-hid],[data-mb-fade],[data-mb-gone],[data-mb-scale]').forEach(e => {
             e.removeAttribute('data-mb-hid');
             e.removeAttribute('data-mb-fade');

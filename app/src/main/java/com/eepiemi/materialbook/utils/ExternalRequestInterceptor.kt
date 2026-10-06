@@ -26,8 +26,10 @@ class ExternalRequestInterceptor(
         // the caller switches the user agent and loads the desktop page.
         if (isMessagesWebUrl(request.url) || isMessengerUrl(request.url)) {
             if (isMessagesDesktopActive()) {
-                val web = request.url.startsWith("http", ignoreCase = true)
-                return if (web) WebRequestInterceptResult.Allow else WebRequestInterceptResult.Reject
+                // Already on the desktop Messages page: let it navigate. Anything else that
+                // points at Messages (m.me, messenger.com, deep links) is re-mapped below.
+                if (!request.url.startsWith("http", ignoreCase = true)) return WebRequestInterceptResult.Reject
+                if (isDesktopMessagesUrl(request.url)) return WebRequestInterceptResult.Allow
             }
             if (tryOpenMessagesDesktop(request.url)) return WebRequestInterceptResult.Reject
         }
