@@ -64,5 +64,7 @@ limitations in `FORK_CHANGES.md`.
 ## Repo housekeeping
 
 - Plan files (`*_PLAN.md`) and `spike.log` are working notes; don't commit them.
+- The `stats` branch is data-only (weekly release download counts written by
+  `download-stats.yml`); never merge it into `main`.
 - On Windows, `git worktree remove` can fail with "Filename too long"; delete
   the folder with PowerShell, then `git worktree prune`.
