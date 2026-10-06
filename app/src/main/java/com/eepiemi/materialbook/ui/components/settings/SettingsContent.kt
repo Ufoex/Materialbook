@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.AspectRatio
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.DesktopWindows
+import androidx.compose.material.icons.outlined.Message
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Headphones
@@ -62,6 +63,7 @@ fun SettingsContent(
     var isPipRatioDialog by rememberSaveable { mutableStateOf(false) }
 
     val removeAds = viewModel.removeAds.collectAsState()
+    val messagesDesktop = viewModel.messagesDesktop.collectAsState()
     val enableDownloadContent = viewModel.enableDownloadContent.collectAsState()
     val enableCopyToClipboard = viewModel.enableCopyToClipboard.collectAsState()
     val desktopLayout = viewModel.desktopLayout.collectAsState()
@@ -88,6 +90,13 @@ fun SettingsContent(
                     supportingText = stringResource(R.string.hide_sponsored_ads_from_your_feed),
                     isActive = removeAds.value,
                     onClick = { viewModel.setRemoveAds(!removeAds.value) },
+                ),
+                SettingsItem(
+                    icon = Icons.Outlined.Message,
+                    title = stringResource(R.string.messages_desktop_title),
+                    supportingText = stringResource(R.string.messages_desktop_desc),
+                    isActive = messagesDesktop.value,
+                    onClick = { viewModel.setMessagesDesktop(!messagesDesktop.value) },
                 ),
                 SettingsItem(
                     icon = Icons.Outlined.FileDownload,

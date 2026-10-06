@@ -29,6 +29,7 @@ class SettingsDataStore(private val context: Context) {
         val HIDE_STORIES = booleanPreferencesKey("hide_stories")
         val HIDE_PEOPLE_YOU_MAY_KNOW = booleanPreferencesKey("hide_people_you_may_know")
         val HIDE_GROUPS = booleanPreferencesKey("hide_groups")
+        val MESSAGES_DESKTOP = booleanPreferencesKey("messages_desktop")
         val PIP_ENABLED = booleanPreferencesKey("pip_enabled")
         val PIP_PORTRAIT_RATIO = stringPreferencesKey("pip_portrait_ratio")
         val PIP_LOCKSCREEN_AUDIO = booleanPreferencesKey("pip_lockscreen_audio")
@@ -121,6 +122,11 @@ class SettingsDataStore(private val context: Context) {
     val hidePeopleYouMayKnow = context.dataStore.data.map { it[HIDE_PEOPLE_YOU_MAY_KNOW] ?: false }
     suspend fun setHidePeopleYouMayKnow(hidePeopleYouMayKnow: Boolean) {
         context.dataStore.edit { it[HIDE_PEOPLE_YOU_MAY_KNOW] = hidePeopleYouMayKnow }
+    }
+
+    val messagesDesktop = context.dataStore.data.map { it[MESSAGES_DESKTOP] ?: true }
+    suspend fun setMessagesDesktop(messagesDesktop: Boolean) {
+        context.dataStore.edit { it[MESSAGES_DESKTOP] = messagesDesktop }
     }
 
     val hideGroups = context.dataStore.data.map { it[HIDE_GROUPS] ?: false }

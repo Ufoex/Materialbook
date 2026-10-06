@@ -10,6 +10,7 @@ import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.DESKTOP_L
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.ENABLE_COPY_TO_CLIPBOARD
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.ENABLE_DOWNLOAD_CONTENT
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_GROUPS
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MESSAGES_DESKTOP
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_PEOPLE_YOU_MAY_KNOW
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_REELS
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_STORIES
@@ -104,6 +105,11 @@ class SettingsViewModel(
     val hidePeopleYouMayKnow = dataStore.hidePeopleYouMayKnow.stateIn(
         scope = viewModelScope,
         initialValue = initialPrefs[HIDE_PEOPLE_YOU_MAY_KNOW] ?: false,
+        started = SharingStarted.WhileSubscribed()
+    )
+    val messagesDesktop = dataStore.messagesDesktop.stateIn(
+        scope = viewModelScope,
+        initialValue = initialPrefs[MESSAGES_DESKTOP] ?: true,
         started = SharingStarted.WhileSubscribed()
     )
     val hideGroups = dataStore.hideGroups.stateIn(
@@ -202,6 +208,12 @@ class SettingsViewModel(
     fun setHidePeopleYouMayKnow(hidePeopleYouMayKnow: Boolean) {
         viewModelScope.launch {
             dataStore.setHidePeopleYouMayKnow(hidePeopleYouMayKnow)
+        }
+    }
+
+    fun setMessagesDesktop(messagesDesktop: Boolean) {
+        viewModelScope.launch {
+            dataStore.setMessagesDesktop(messagesDesktop)
         }
     }
 
