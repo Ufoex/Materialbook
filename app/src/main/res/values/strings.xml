@@ -7,6 +7,8 @@
     <string name="copy_to_clipboard_title">Copy to clipboard</string>
     <string name="desktop_layout_title">Desktop layout</string>
     <string name="immersive_mode_title">Immersive mode</string>
+    <string name="auto_scroll_reels_title">Auto-scroll reels</string>
+    <string name="auto_scroll_reels_desc">Go to the next reel when the current one ends (a button in the reel viewer pauses it)</string>
     <string name="reel_controls_title">Reel controls</string>
     <string name="reel_controls_desc">Seek bar, time, fullscreen and volume on paused reels, plus a button to hide the icons</string>
     <string name="collapsing_toolbar_title">Collapsing toolbar</string>

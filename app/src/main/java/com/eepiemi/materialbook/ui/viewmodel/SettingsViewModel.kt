@@ -23,6 +23,7 @@ import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_ENABL
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_LOCKSCREEN_AUDIO
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_PORTRAIT_RATIO
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.REMOVE_ADS
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.AUTO_SCROLL_REELS
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.COLLAPSING_TOOLBAR
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.REEL_CONTROLS
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.STICKY_NAVBAR
@@ -75,6 +76,11 @@ class SettingsViewModel(
     val stickyNavbar = dataStore.stickyNavbar.stateIn(
         scope = viewModelScope,
         initialValue = initialPrefs[STICKY_NAVBAR] ?: true,
+        started = SharingStarted.WhileSubscribed()
+    )
+    val autoScrollReels = dataStore.autoScrollReels.stateIn(
+        scope = viewModelScope,
+        initialValue = initialPrefs[AUTO_SCROLL_REELS] ?: false,
         started = SharingStarted.WhileSubscribed()
     )
     val reelControls = dataStore.reelControls.stateIn(
@@ -185,6 +191,12 @@ class SettingsViewModel(
     fun setImmersiveMode(immersiveMode: Boolean) {
         viewModelScope.launch {
             dataStore.setImmersiveMode(immersiveMode)
+        }
+    }
+
+    fun setAutoScrollReels(autoScrollReels: Boolean) {
+        viewModelScope.launch {
+            dataStore.setAutoScrollReels(autoScrollReels)
         }
     }
 

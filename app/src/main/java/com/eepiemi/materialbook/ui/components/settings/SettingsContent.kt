@@ -28,6 +28,7 @@ import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Headphones
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.PlayCircle
+import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SwipeVertical
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PanoramaWideAngle
@@ -84,6 +85,7 @@ fun SettingsContent(
     val stickyNavbar = viewModel.stickyNavbar.collectAsState()
     val collapsingToolbar = viewModel.collapsingToolbar.collectAsState()
     val reelControls = viewModel.reelControls.collectAsState()
+    val autoScrollReels = viewModel.autoScrollReels.collectAsState()
     val pinchToZoom = viewModel.pinchToZoom.collectAsState()
     val materialYou = viewModel.materialYou.collectAsState()
     val amoledBlack = viewModel.amoledBlack.collectAsState()
@@ -205,6 +207,13 @@ fun SettingsContent(
                     supportingText = stringResource(R.string.keep_the_navigation_bar_visible_while_scrolling),
                     isActive = stickyNavbar.value,
                     onClick = { viewModel.setStickyNavbar(!stickyNavbar.value) }
+                ),
+                SettingsItem(
+                    icon = Icons.Outlined.SkipNext,
+                    title = stringResource(R.string.auto_scroll_reels_title),
+                    supportingText = stringResource(R.string.auto_scroll_reels_desc),
+                    isActive = autoScrollReels.value,
+                    onClick = { viewModel.setAutoScrollReels(!autoScrollReels.value) }
                 ),
                 SettingsItem(
                     icon = Icons.Outlined.PlayCircle,
