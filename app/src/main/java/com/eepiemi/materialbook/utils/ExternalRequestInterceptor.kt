@@ -9,7 +9,6 @@ class ExternalRequestInterceptor(
     private val handleExternalUrl: (String) -> Unit,
     private val tryOpenMessenger: (String) -> Boolean = { false },
     private val tryOpenMessagesDesktop: (String) -> Boolean = { false },
-    private val isMessagesDesktopActive: () -> Boolean = { false },
 ) : RequestInterceptor {
 
     override fun onInterceptUrlRequest(
@@ -21,18 +20,10 @@ class ExternalRequestInterceptor(
             return WebRequestInterceptResult.Allow
         }
 
-        // Any attempt to open Messages/Messenger (web page, fb-messenger://, intent://,
-        // m.me, messenger.com) is shown in desktop mode inside the app when enabled;
-        // the caller switches the user agent and loads the desktop page.
-        if (isMessagesWebUrl(request.url) || isMessengerUrl(request.url)) {
-            if (isMessagesDesktopActive()) {
-                // Already on the desktop Messages page: let it navigate. Anything else that
-                // points at Messages (m.me, messenger.com, deep links) is re-mapped below.
-                if (!request.url.startsWith("http", ignoreCase = true)) return WebRequestInterceptResult.Reject
-                if (isDesktopMessagesUrl(request.url)) return WebRequestInterceptResult.Allow
-            }
-            if (tryOpenMessagesDesktop(request.url)) return WebRequestInterceptResult.Reject
-        }
+        // Messages/Messenger entry points open in the Messages layer (desktop site in its own
+        // WebView) when enabled, so this page stays where it is underneath.
+        if (request.isForMainFrame && isMessagesLink(request.url) && tryOpenMessagesDesktop(request.url))
+            return WebRequestInterceptResult.Reject
 
         // Messenger deep links can never render anything useful in-WebView: fire the app,
         // go back so no dead entry stays in history, and Reject the request.

@@ -122,6 +122,11 @@ class SettingsViewModel(
         initialValue = initialPrefs[HIDE_PEOPLE_YOU_MAY_KNOW] ?: false,
         started = SharingStarted.WhileSubscribed()
     )
+    val messagesDesktop = dataStore.messagesDesktop.stateIn(
+        scope = viewModelScope,
+        initialValue = initialPrefs[MESSAGES_DESKTOP] ?: true,
+        started = SharingStarted.WhileSubscribed()
+    )
     val hideGroups = dataStore.hideGroups.stateIn(
         scope = viewModelScope,
         initialValue = initialPrefs[HIDE_GROUPS] ?: false,
@@ -130,11 +135,6 @@ class SettingsViewModel(
     val braveBlockList = dataStore.braveBlockList.stateIn(
         scope = viewModelScope,
         initialValue = initialPrefs[BRAVE_BLOCK_LIST] ?: true,
-        started = SharingStarted.WhileSubscribed()
-    )
-    val messagesDesktop = dataStore.messagesDesktop.stateIn(
-        scope = viewModelScope,
-        initialValue = initialPrefs[MESSAGES_DESKTOP] ?: true,
         started = SharingStarted.WhileSubscribed()
     )
     val messengerPackage = dataStore.messengerPackage.stateIn(
@@ -248,6 +248,12 @@ class SettingsViewModel(
         }
     }
 
+    fun setMessagesDesktop(messagesDesktop: Boolean) {
+        viewModelScope.launch {
+            dataStore.setMessagesDesktop(messagesDesktop)
+        }
+    }
+
     fun setHideGroups(hideGroups: Boolean) {
         viewModelScope.launch {
             dataStore.setHideGroups(hideGroups)
@@ -257,12 +263,6 @@ class SettingsViewModel(
     fun setMessengerPackage(messengerPackage: String) {
         viewModelScope.launch {
             dataStore.setMessengerPackage(messengerPackage.ifBlank { DEFAULT_MESSENGER_PACKAGE })
-        }
-    }
-
-    fun setMessagesDesktop(messagesDesktop: Boolean) {
-        viewModelScope.launch {
-            dataStore.setMessagesDesktop(messagesDesktop)
         }
     }
 

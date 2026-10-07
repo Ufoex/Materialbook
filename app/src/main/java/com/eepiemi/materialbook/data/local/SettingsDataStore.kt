@@ -139,6 +139,11 @@ class SettingsDataStore(private val context: Context) {
         context.dataStore.edit { it[HIDE_PEOPLE_YOU_MAY_KNOW] = hidePeopleYouMayKnow }
     }
 
+    val messagesDesktop = context.dataStore.data.map { it[MESSAGES_DESKTOP] ?: true }
+    suspend fun setMessagesDesktop(messagesDesktop: Boolean) {
+        context.dataStore.edit { it[MESSAGES_DESKTOP] = messagesDesktop }
+    }
+
     val hideGroups = context.dataStore.data.map { it[HIDE_GROUPS] ?: false }
     suspend fun setHideGroups(hideGroups: Boolean) {
         context.dataStore.edit { it[HIDE_GROUPS] = hideGroups }
@@ -168,11 +173,6 @@ class SettingsDataStore(private val context: Context) {
     val braveBlockList = context.dataStore.data.map { it[BRAVE_BLOCK_LIST] ?: true }
     suspend fun setBraveBlockList(braveBlockList: Boolean) {
         context.dataStore.edit { it[BRAVE_BLOCK_LIST] = braveBlockList }
-    }
-
-    val messagesDesktop = context.dataStore.data.map { it[MESSAGES_DESKTOP] ?: true }
-    suspend fun setMessagesDesktop(messagesDesktop: Boolean) {
-        context.dataStore.edit { it[MESSAGES_DESKTOP] = messagesDesktop }
     }
 
     val messengerPackage = context.dataStore.data.map { it[MESSENGER_PACKAGE] ?: DEFAULT_MESSENGER_PACKAGE }

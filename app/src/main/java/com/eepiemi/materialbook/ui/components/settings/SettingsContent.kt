@@ -70,6 +70,7 @@ fun SettingsContent(
     viewModel: SettingsViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val messengerRedirectToast = stringResource(R.string.messenger_redirect_toast)
     var isOpenDialog by rememberSaveable { mutableStateOf(false) }
     var isPipRatioDialog by rememberSaveable { mutableStateOf(false) }
     var isMessengerDialog by rememberSaveable { mutableStateOf(false) }
@@ -110,7 +111,7 @@ fun SettingsContent(
                         if (!ok) {
                             Toast.makeText(
                                 context,
-                                context.getString(R.string.messenger_redirect_toast),
+                                messengerRedirectToast,
                                 Toast.LENGTH_SHORT
                             ).show()
                         }

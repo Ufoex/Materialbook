@@ -40,11 +40,11 @@ class MainViewModel(
     ) {
         val scripts = listOf(
             Script(true, R.raw.scripts, "scripts.js"), // always apply
+            Script(settings.messagesDesktop.value, R.raw.messages_tab, "messages_tab.js"),
             Script(settings.removeAds.value, R.raw.adblock, "adblock.js"),
             Script(settings.enableDownloadContent.value, R.raw.download_content, "download_content.js"),
             Script(settings.enableCopyToClipboard.value, R.raw.copy_to_clipboard, "copy_to_clipboard.js"),
             Script(true, R.raw.copy_post_text, "copy_post_text.js"),
-            Script(settings.messagesDesktop.value, R.raw.messages_tab, "messages_tab.js"),
             Script(settings.stickyNavbar.value, R.raw.sticky_navbar, "sticky_navbar.js"),
             Script(settings.reelControls.value, R.raw.reel_controls, "reel_controls.js"),
             // Needs the bars pinned by the sticky navbar script.

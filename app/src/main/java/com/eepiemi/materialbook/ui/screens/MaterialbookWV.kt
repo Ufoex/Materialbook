@@ -23,7 +23,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -59,13 +59,11 @@ import com.eepiemi.materialbook.utils.jsBridge.DownloadBridge
 import com.eepiemi.materialbook.utils.jsBridge.MaterialbookSettings
 import com.eepiemi.materialbook.utils.jsBridge.ThemeChange
 import com.eepiemi.materialbook.utils.jsBridge.MaterialYouBridge
-import com.eepiemi.materialbook.utils.jsBridge.MessagesBridge
 import com.eepiemi.materialbook.utils.jsBridge.PipBridge
 import com.eepiemi.materialbook.audio.PipHandback
 import com.eepiemi.materialbook.utils.effectiveDesktop
-import com.eepiemi.materialbook.utils.isDesktopMessagesUrl
+import com.eepiemi.materialbook.utils.fbRedirectSanitizer
 import com.eepiemi.materialbook.utils.messagesDesktopUrl
-import com.eepiemi.materialbook.utils.isLeavingMessages
 import com.eepiemi.materialbook.utils.openMessenger
 import com.eepiemi.materialbook.utils.openExternalUrl
 import com.eepiemi.materialbook.utils.rememberAutoDesktop
@@ -689,38 +687,41 @@ fun MaterialbookWebView(
     val messengerPkg by settingsVM.messengerPackage.collectAsState()
     // Stable holder: navigator may keep the first interceptor, so read latest at call time.
     val currentMessengerPkg by rememberUpdatedState(messengerPkg)
-    // Desktop-mode override that applies only while the Messages section is open.
+
+    val isDesktop by settingsVM.desktopLayout.collectAsState()
+    val isAutoDesktop = rememberAutoDesktop()
+    val isEffectiveDesktop = effectiveDesktop(isDesktop, isAutoDesktop)
+
+    val openExternalLink: (String) -> Unit = { externalUrl ->
+        val opened = openExternalUrl(context, externalUrl)
+        if (!opened) {
+            Toast.makeText(
+                context,
+                resources.getString(R.string.open_external_failed_toast),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    // Messages in desktop mode: Messages links open in MessagesLayer, a separate desktop
+    // WebView over this one, so this page (and its scroll position) stays as it is. Not
+    // used when this view is already the desktop site (Desktop layout, large screens),
+    // which shows Messages by itself. Saved so the layer comes back after recreation.
     val messagesDesktopSetting by settingsVM.messagesDesktop.collectAsState()
     val currentMessagesDesktopSetting by rememberUpdatedState(messagesDesktopSetting)
-    // Survives Activity recreation so the user agent matches the restored page.
-    var messagesDesktop by rememberSaveable { mutableStateOf(false) }
-    // Page to open for a fresh Messages request (null once handled; not saved, so a restored
-    // page is never reloaded just because the Activity was recreated).
-    var messagesTarget by remember { mutableStateOf<String?>(null) }
-    // Bumped from the JS bridge when the desktop site navigates out of Messages in-page.
-    var leftMessagesSignal by remember { mutableIntStateOf(0) }
+    val currentIsEffectiveDesktop by rememberUpdatedState(isEffectiveDesktop)
+    var messagesLayerUrl by rememberSaveable { mutableStateOf<String?>(null) }
     val navigator = rememberWebViewNavigator(
         requestInterceptor = ExternalRequestInterceptor(
-            handleExternalUrl = { externalUrl ->
-                val opened = openExternalUrl(context, externalUrl)
-                if (!opened) {
-                    Toast.makeText(
-                        context,
-                        resources.getString(R.string.open_external_failed_toast),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            },
             tryOpenMessagesDesktop = { messagesUrl ->
-                if (currentMessagesDesktopSetting) {
-                    messagesDesktop = true
-                    messagesTarget = messagesDesktopUrl(messagesUrl)
+                if (currentMessagesDesktopSetting && !currentIsEffectiveDesktop) {
+                    messagesLayerUrl = messagesDesktopUrl(messagesUrl)
                     true
                 } else {
                     false
                 }
             },
-            isMessagesDesktopActive = { messagesDesktop },
+            handleExternalUrl = openExternalLink,
             tryOpenMessenger = { messengerUrl ->
                 val ok = openMessenger(context, messengerUrl, currentMessengerPkg)
                 if (!ok) {
@@ -900,8 +901,6 @@ fun MaterialbookWebView(
 
     // allow exiting while scrolling to top.
     var exitScroll by remember { mutableStateOf(false) }
-    // Needed by the Back handler below, which runs before the layout settings are read.
-    val autoDesktopForBack = rememberAutoDesktop()
     BackHandler {
         if (exitScroll) {
             activity?.finish()
@@ -911,18 +910,6 @@ fun MaterialbookWebView(
                 when (backHandled) {
                     "false" -> {
                         if (navigator.canGoBack) {
-                            // Going back out of Messages: restore the normal user agent first, so
-                            // the page behind it is fetched/restored as the mobile site (and keeps
-                            // its scroll position) instead of being served as desktop and reloaded.
-                            if (messagesDesktop) {
-                                val history = state.nativeWebView.copyBackForwardList()
-                                val previous = history.getItemAtIndex(history.currentIndex - 1)?.url
-                                if (previous == null || !isDesktopMessagesUrl(previous)) {
-                                    messagesDesktop = false
-                                    state.nativeWebView.settings.userAgentString =
-                                        if (effectiveDesktop(settingsVM.desktopLayout.value, autoDesktopForBack)) DESKTOP_USER_AGENT else ""
-                                }
-                            }
                             navigator.navigateBack()
                         } else {
                             activity?.finish()
@@ -941,10 +928,6 @@ fun MaterialbookWebView(
             exitScroll = false
         }
     }
-
-    val isDesktop by settingsVM.desktopLayout.collectAsState()
-    val isAutoDesktop = rememberAutoDesktop()
-    val isEffectiveDesktop = effectiveDesktop(isDesktop, isAutoDesktop)
 
     val braveBlockList by settingsVM.braveBlockList.collectAsState()
     LaunchedEffect(braveBlockList) {
@@ -1135,44 +1118,23 @@ fun MaterialbookWebView(
     }
 
 
-    LaunchedEffect(isEffectiveDesktop, messagesDesktop) {
-        val userAgent = if (isEffectiveDesktop || messagesDesktop) DESKTOP_USER_AGENT else ""
-        state.nativeWebView.settings.userAgentString = userAgent
+    LaunchedEffect(isEffectiveDesktop) {
+        val userAgent = if (isEffectiveDesktop) DESKTOP_USER_AGENT else ""
+        // The WebView is created during layout, so on a cold start this can run first:
+        // the library applies webSettings when it creates it, and a live WebView is
+        // updated directly.
+        state.webSettings.customUserAgentString = userAgent.ifEmpty { null }
+        runCatching { state.nativeWebView }.getOrNull()?.settings?.userAgentString = userAgent
     }
 
-    // Messages requested: switch to the desktop UA first, then open that conversation/inbox.
-    LaunchedEffect(messagesTarget) {
-        val target = messagesTarget ?: return@LaunchedEffect
-        messagesTarget = null
-        state.nativeWebView.settings.userAgentString = DESKTOP_USER_AGENT
-        navigator.loadUrl(target)
-    }
-
-    // Left the Messages section: back to the normal user agent. Reload only when the page in
-    // front of us is still the desktop site (an in-page navigation of the desktop site, or a
-    // page that had to be fetched again). The Back button restores the user agent before it
-    // navigates (see the BackHandler), so it lands on the mobile site and needs no reload.
-    // loadUrl is not used because the page is already on the destination URL and it would
-    // push a duplicate history entry.
-    val leaveMessages = {
-        messagesDesktop = false
-        state.nativeWebView.settings.userAgentString =
-            if (isEffectiveDesktop) DESKTOP_USER_AGENT else ""
-        navigator.evaluateJavaScript("(!!document.querySelector('html[id=\"facebook\"]')).toString()") { isDesktopPage ->
-            if (isDesktopPage.contains("true")) navigator.reload()
+    // The page underneath keeps running while the Messages layer is open: pause its videos
+    // so a playing reel doesn't go on behind the chat.
+    LaunchedEffect(messagesLayerUrl) {
+        if (messagesLayerUrl != null && state.loadingState is LoadingState.Finished) {
+            navigator.evaluateJavaScript(
+                "document.querySelectorAll('video').forEach(function(v) { v.pause(); });"
+            ) {}
         }
-    }
-    // (a) real page loads, which compose-webview reports through lastLoadedUrl. Wait for the
-    // load to finish so the check above looks at the new document, not the one being left.
-    val lastLoadedUrl = state.lastLoadedUrl
-    val pageFinished = state.loadingState is LoadingState.Finished
-    LaunchedEffect(lastLoadedUrl, pageFinished) {
-        val u = lastLoadedUrl ?: return@LaunchedEffect
-        if (pageFinished && messagesDesktop && isLeavingMessages(u)) leaveMessages()
-    }
-    // (b) in-page navigations of the desktop single-page app, reported by messages_tab.js
-    LaunchedEffect(leftMessagesSignal) {
-        if (leftMessagesSignal > 0 && messagesDesktop) leaveMessages()
     }
 
     // needed to consume extra padding when keyboard is open
@@ -1182,20 +1144,22 @@ fun MaterialbookWebView(
     val primaryColor = colorScheme.primary.toArgb()
     val onPrimaryColor  = colorScheme.onPrimary.toArgb()
 
+    val pageModifier = Modifier
+        .fillMaxSize()
+        .background(themeColor)
+        .then(
+            if (isImmersiveMode) {
+                Modifier.padding(bottom = imeHeight)
+            } else {
+                Modifier.padding(
+                    top = barsInsets.calculateTopPadding(),
+                    bottom = maxOf(barsInsets.calculateBottomPadding(), imeHeight)
+                )
+            }
+        )
+
     WebView(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(themeColor)
-            .then(
-                if (isImmersiveMode) {
-                    Modifier.padding(bottom = imeHeight)
-                } else {
-                    Modifier.padding(
-                        top = barsInsets.calculateTopPadding(),
-                        bottom = maxOf(barsInsets.calculateBottomPadding(), imeHeight)
-                    )
-                }
-            ),
+        modifier = pageModifier,
         state = state,
         navigator = navigator,
         platformWebViewParams = appWebViewParams(fullscreen),
@@ -1244,10 +1208,6 @@ fun MaterialbookWebView(
                     "MaterialYouBridge"
                 )
                 addJavascriptInterface(
-                    MessagesBridge { leftMessagesSignal++ },
-                    "MessagesBridge"
-                )
-                addJavascriptInterface(
                     PipBridge(onVideoPlayingChanged, onPipPageVisible),
                     "PipBridge"
                 )
@@ -1264,4 +1224,26 @@ fun MaterialbookWebView(
             }
         }
     )
+
+    messagesLayerUrl?.let { layerUrl ->
+        // A new Messages link while the layer is open (a notification, say) recreates it.
+        key(layerUrl) {
+            MessagesLayer(
+                url = layerUrl,
+                userScripts = userScripts,
+                fullscreen = fullscreen,
+                isFullscreen = isFullscreen,
+                modifier = pageModifier,
+                background = themeColor,
+                primaryColor = primaryColor,
+                onPrimaryColor = onPrimaryColor,
+                onClose = { messagesLayerUrl = null },
+                onOpenInMain = { pageUrl ->
+                    messagesLayerUrl = null
+                    navigator.loadUrl(pageUrl)
+                },
+                onExternalUrl = { externalUrl -> openExternalLink(fbRedirectSanitizer(externalUrl)) }
+            )
+        }
+    }
 }

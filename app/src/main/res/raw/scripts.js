@@ -137,8 +137,47 @@
            } else return "exit";
         }
 
+        // Messenger chat windows on the desktop site aren't role="dialog": each is a
+        // fixed-position box holding a message composer, so the checks below would
+        // see nothing open and Back would leave the page (or close the app). Close
+        // the last one instead: the right-most button of its header row is "Close
+        // chat" in every language. Messages scrolled up under the header have
+        // buttons there too, so only buttons that are actually on top count.
+        function closeChatWindow() {
+            const windows = [];
+            document.querySelectorAll('[contenteditable="true"]').forEach((editor) => {
+                let box = editor.parentElement;
+                while (box && box !== document.body && getComputedStyle(box).position !== 'fixed')
+                    box = box.parentElement;
+                if (box && box !== document.body && !box.closest('[role="dialog"]') &&
+                        box.getBoundingClientRect().width > 0 && !windows.includes(box))
+                    windows.push(box);
+            });
+            const chat = windows[windows.length - 1];
+            if (!chat) return false;
+            const top = chat.getBoundingClientRect().top;
+            let close = null, closeX = -Infinity;
+            chat.querySelectorAll('[role="button"]').forEach((button) => {
+                const rect = button.getBoundingClientRect();
+                if (rect.width === 0 || rect.top < top || rect.top >= top + 56 || rect.left <= closeX)
+                    return;
+                const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                if (hit && button.contains(hit)) {
+                    close = button;
+                    closeX = rect.left;
+                }
+            });
+            if (!close) return false;
+            close.click();
+            return true;
+        }
+
         if (window.isDesktopMode()) {
-            if (window.isFeed() && !isMenu && dialogs.length === 1)
+            if (!isMenu && !dialogs.length && closeChatWindow())
+                return "true";
+            // The desktop feed used to keep one role="dialog" element around at
+            // rest; it now has none, so "nothing open" means no dialog at all.
+            if (window.isFeed() && !isMenu && !dialogs.length)
                 return scrollToTop();
             else if (isMenu || dialogs.length > 1) {
                 const escapeEvent = new KeyboardEvent('keydown', {
@@ -441,6 +480,53 @@ if (!window._mbBannerObserver) {
         new MutationObserver(() => notify())
             .observe(meta, { attributes: true, attributeFilter: ['content'] });
     }
+})();
+
+// File Download Script
+// Saves a blob only when the page starts a download with it: a blob: URL on an
+// <a download> link that is clicked. Pages create blob URLs for plenty of other
+// things (desktop Messenger decrypts every photo of an encrypted chat into one),
+// and those must never end up in the public Downloads folder.
+(function() {
+    if (window._downloadBridgeInitialized) return;
+    window._downloadBridgeInitialized = true;
+    const blobs = new Map();
+    const originalCreateObjectURL = URL.createObjectURL;
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+    // The blob URL already keeps its blob alive until revoked, so the map
+    // holds nothing longer than the page itself does.
+    URL.createObjectURL = function(obj) {
+        const url = originalCreateObjectURL.call(URL, obj);
+        if (obj instanceof Blob) blobs.set(url, obj);
+        return url;
+    };
+    URL.revokeObjectURL = function(url) {
+        blobs.delete(url);
+        return originalRevokeObjectURL.call(URL, url);
+    };
+
+    const save = function(anchor) {
+        if (!anchor || !anchor.hasAttribute('download')) return;
+        const blob = blobs.get(anchor.href);
+        if (!blob) return;
+        const reader = new FileReader();
+        reader.onloadend = function() {
+            if (reader.result)
+                DownloadBridge.downloadBase64File(reader.result, blob.type);
+        };
+        reader.readAsDataURL(blob);
+    };
+    // Links in the document, clicked by the user or by script.
+    document.addEventListener('click', function(e) {
+        save(e.target.closest && e.target.closest('a'));
+    }, true);
+    // Detached links clicked by script (the usual way to trigger a download);
+    // connected ones are already handled by the listener above.
+    const originalClick = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function() {
+        if (!this.isConnected) save(this);
+        return originalClick.call(this);
+    };
 })();
 
 // Image load fix for media viewer

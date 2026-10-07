@@ -1,0 +1,41 @@
+name: Download stats
+
+# Weekly snapshot of GitHub release download counts. Appends one row per
+# release to downloads.csv on the `stats` branch, which is data-only and kept
+# off main so these commits never trigger a release.
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout stats branch
+        uses: actions/checkout@v7
+        with:
+          ref: stats
+
+      - name: Append download counts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          today=$(date -u +%F)
+          [ -f downloads.csv ] || echo "date,tag,downloads" > downloads.csv
+          gh api --paginate "repos/${{ github.repository }}/releases?per_page=100" \
+            --jq '.[] | [.tag_name, ([.assets[].download_count] | add // 0)] | @tsv' |
+            while IFS=$'\t' read -r tag count; do
+              echo "$today,$tag,$count"
+            done >> downloads.csv
+
+      - name: Commit snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add downloads.csv
+          git commit -m "stats: download snapshot $(date -u +%F)"
+          git push
