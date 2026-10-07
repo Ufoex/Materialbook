@@ -183,8 +183,10 @@ the app using the desktop site, only for that section.
 - The desktop user agent applies only while Messages is open. Leaving it, either by a
   real page load or by an in-page navigation of the desktop single-page app
   (reported by `messages_tab.js` through `MessagesBridge`, since WebView does not report
-  `pushState`/`popstate` as page loads), switches back to the normal user agent and
-  reloads the page (no duplicate history entry).
+  `pushState`/`popstate` as page loads), switches back to the normal user agent. The page
+  is reloaded only if it is still the desktop site, with `navigator.reload()` so no
+  duplicate history entry is added. A Back that lands on the cached mobile page just
+  restores the user agent and keeps the page, including its scroll position.
 - `messages_tab.js` hooks the Messages tab so the "Download Messenger" page never
   flashes; it recognises the tab by its English label or its icon glyph. There is no
   position check on purpose: if Facebook changed both, matching by position could hijack
@@ -255,6 +257,10 @@ leaving the app while a Facebook video or Reel is playing.
   PiP use.
 
 ## Known limitations
+
+- Messages in desktop mode: leaving Messages through the desktop site's own navigation (for
+  example its Facebook logo) reloads the destination in the mobile layout, so the scroll
+  position of that page is not kept. Back to a cached mobile page does keep it.
 
 - On Reels specifically, Facebook's own web player can re-pause a video
   shortly after it's resumed from the PiP overlay's Play button. Facebook's
