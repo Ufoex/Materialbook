@@ -45,6 +45,10 @@ user-visible change.
   (`SCRIPT_SRC` in `fetchScripts.kt`), falling back to the bundled copy. A
   push to `main` changes them in every installed app on its next launch, and
   a local build still runs `main`'s version of a script that exists there.
+- Messages in desktop mode opens `MessagesLayer` (`ui/screens/MessagesLayer.kt`), a
+  second WebView with the desktop user agent over the main one. The main view never
+  switches user agent for Messages, so keep layer-specific behaviour in the layer and
+  its own script (`messages_layer.js`). Each WebView is a separate DevTools target.
 - All PiP, lock-screen audio and fullscreen logs use the tag `AstryxbookPiP`:
   `adb logcat AstryxbookPiP:D *:S`.
 - `WebView.setWebContentsDebuggingEnabled(true)` is unconditional on purpose.

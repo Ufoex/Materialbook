@@ -30,15 +30,29 @@ fun isMessagesLink(url: String): Boolean {
     return isFacebookHost(host) && path.startsWith("/messages")
 }
 
-/**
- * True for a regular Facebook page outside the Messages section, where the
- * desktop-mode override ends. Login/checkpoint pages are excluded because the
- * desktop Messages page may bounce through them.
- */
-fun isLeavingMessages(url: String): Boolean {
-    val (host, path) = hostAndPath(url) ?: return false
-    if (!isFacebookHost(host)) return false
-    return listOf("/messages", "/messenger", "/login", "/checkpoint").none { path.startsWith(it) }
+/** Where a main-frame navigation inside the Messages layer goes. */
+sealed interface MessagesLayerRoute {
+    /** Stays in the layer as is (the desktop Messages page, login/checkpoint, subframes). */
+    data object Allow : MessagesLayerRoute
+
+    /** Another form of a Messages link: open its desktop equivalent in the layer instead. */
+    data class Remap(val url: String) : MessagesLayerRoute
+
+    /** A regular Facebook page: close the layer and open it in the main (mobile) view. */
+    data class OpenInMain(val url: String) : MessagesLayerRoute
+
+    /** Not Facebook: hand it to the system, as the main view does. */
+    data class External(val url: String) : MessagesLayerRoute
+}
+
+fun messagesLayerRoute(url: String, isMainFrame: Boolean): MessagesLayerRoute {
+    if (!isMainFrame || isDesktopMessagesUrl(url)) return MessagesLayerRoute.Allow
+    if (isMessagesLink(url)) return MessagesLayerRoute.Remap(messagesDesktopUrl(url))
+    val (host, path) = hostAndPath(url) ?: return MessagesLayerRoute.External(url)
+    if (!isFacebookHost(host)) return MessagesLayerRoute.External(url)
+    // The desktop Messages page may bounce through these before showing the inbox.
+    if (path.startsWith("/login") || path.startsWith("/checkpoint")) return MessagesLayerRoute.Allow
+    return MessagesLayerRoute.OpenInMain(url)
 }
 
 /** The desktop Messages page (the one loaded with the desktop user agent). */

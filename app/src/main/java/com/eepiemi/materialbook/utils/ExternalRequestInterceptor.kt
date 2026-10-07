@@ -8,7 +8,6 @@ import com.multiplatform.webview.web.WebViewNavigator
 class ExternalRequestInterceptor(
     private val handleExternalUrl: (String) -> Unit,
     private val tryOpenMessagesDesktop: (String) -> Boolean = { false },
-    private val isMessagesDesktopActive: () -> Boolean = { false },
 ) : RequestInterceptor {
 
     override fun onInterceptUrlRequest(
@@ -16,17 +15,10 @@ class ExternalRequestInterceptor(
         navigator: WebViewNavigator
     ): WebRequestInterceptResult {
 
-        // Messages/Messenger entry points are shown in desktop mode inside the app when
-        // enabled; the caller switches the user agent and loads the desktop page.
-        if (request.isForMainFrame && isMessagesLink(request.url)) {
-            if (isMessagesDesktopActive()) {
-                // Already on the desktop Messages page: let it navigate. Anything else that
-                // points at Messages (m.me, messenger.com, deep links) is re-mapped below.
-                if (!request.url.startsWith("http", ignoreCase = true)) return WebRequestInterceptResult.Reject
-                if (isDesktopMessagesUrl(request.url)) return WebRequestInterceptResult.Allow
-            }
-            if (tryOpenMessagesDesktop(request.url)) return WebRequestInterceptResult.Reject
-        }
+        // Messages/Messenger entry points open in the Messages layer (desktop site in its own
+        // WebView) when enabled, so this page stays where it is underneath.
+        if (request.isForMainFrame && isMessagesLink(request.url) && tryOpenMessagesDesktop(request.url))
+            return WebRequestInterceptResult.Reject
 
         val internalUrlRegex = Regex(
             """https?://(?!(?:l|lm)\.)[^/]*(?:facebook|messenger)\.com/.*"""
