@@ -134,7 +134,44 @@
            } else return "exit";
         }
 
+        // Messenger chat windows on the desktop site aren't role="dialog": each is a
+        // fixed-position box holding a message composer, so the checks below would
+        // see nothing open and Back would leave the page (or close the app). Close
+        // the last one instead: the right-most button of its header row is "Close
+        // chat" in every language. Messages scrolled up under the header have
+        // buttons there too, so only buttons that are actually on top count.
+        function closeChatWindow() {
+            const windows = [];
+            document.querySelectorAll('[contenteditable="true"]').forEach((editor) => {
+                let box = editor.parentElement;
+                while (box && box !== document.body && getComputedStyle(box).position !== 'fixed')
+                    box = box.parentElement;
+                if (box && box !== document.body && !box.closest('[role="dialog"]') &&
+                        box.getBoundingClientRect().width > 0 && !windows.includes(box))
+                    windows.push(box);
+            });
+            const chat = windows[windows.length - 1];
+            if (!chat) return false;
+            const top = chat.getBoundingClientRect().top;
+            let close = null, closeX = -Infinity;
+            chat.querySelectorAll('[role="button"]').forEach((button) => {
+                const rect = button.getBoundingClientRect();
+                if (rect.width === 0 || rect.top < top || rect.top >= top + 56 || rect.left <= closeX)
+                    return;
+                const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                if (hit && button.contains(hit)) {
+                    close = button;
+                    closeX = rect.left;
+                }
+            });
+            if (!close) return false;
+            close.click();
+            return true;
+        }
+
         if (window.isDesktopMode()) {
+            if (!isMenu && !dialogs.length && closeChatWindow())
+                return "true";
             if (window.isFeed() && !isMenu && dialogs.length === 1)
                 return scrollToTop();
             else if (isMenu || dialogs.length > 1) {

@@ -98,6 +98,10 @@ would mostly be noise. See GitHub Releases for the actual per-version diffs.
   opened. It now saves a blob only when the page starts a real download (a
   clicked `<a download>` link pointing at it). The app's own media download
   button is unaffected. Covered by `FileDownloadJsTest`.
+- Desktop layout: Back with a Messenger chat window open over the feed closed
+  the app, because chat windows aren't marked as dialogs. Back now closes the
+  chat window (the right-most visible button of its header, "Close chat" in
+  any language). Covered by `BackHandlerJsTest`.
 
 ## CI/CD
 
