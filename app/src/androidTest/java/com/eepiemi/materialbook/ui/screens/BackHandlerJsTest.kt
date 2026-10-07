@@ -132,9 +132,42 @@ class BackHandlerJsTest {
         h.eval("backHandlerNB()")
         h.eval("window.__clicked = null;")
 
-        // No chat left and no dialog: the page handles Back as before.
-        assertEquals("false", h.eval("backHandlerNB()").unquoted())
+        // No chat left and nothing else open on the feed (already at the top):
+        // the usual feed handling, i.e. leave the app.
+        assertEquals("exit", h.eval("backHandlerNB()").unquoted())
         assertEquals("null", h.eval("window.__clicked"))
+    }
+
+    @Test
+    fun desktopFeedScrolledDown_withNothingOpen_scrollsToTop() {
+        val h = Harness()
+        h.load("<div style='height:5000px;'></div>")
+        h.eval("window.scrollTo(0, 1500);")
+
+        assertEquals("scrolling", h.eval("backHandlerNB()").unquoted())
+    }
+
+    @Test
+    fun desktopFeedAtTop_withNothingOpen_exits() {
+        val h = Harness()
+        h.load("<div style='height:5000px;'></div>")
+
+        assertEquals("exit", h.eval("backHandlerNB()").unquoted())
+    }
+
+    @Test
+    fun desktopFeedWithOneDialog_isNotTreatedAsNothingOpen() {
+        val h = Harness()
+        h.load(
+            """
+            <div style='height:5000px;'></div>
+            <div role="dialog" style="position:fixed; inset:0;"></div>
+            """.trimIndent()
+        )
+        h.eval("window.scrollTo(0, 1500);")
+
+        // Not the feed's "scroll to top / exit": left to the page's own history.
+        assertEquals("false", h.eval("backHandlerNB()").unquoted())
     }
 
     @Test
