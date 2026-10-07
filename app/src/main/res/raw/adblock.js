@@ -216,10 +216,10 @@
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
+    // One combined regex instead of ~70 separate tests per text.
+    const sponsoredCombined = new RegExp(sponsoredWordRegexes.map(re => `(?:${re.source})`).join('|'), 'i');
     function containsSponsoredText(text) {
-        const lower = text.toLowerCase();
-        for (const re of sponsoredWordRegexes) if (re.test(lower)) return true;
-        return false;
+        return sponsoredCombined.test(text.toLowerCase());
     }
 
 
@@ -227,7 +227,8 @@
     // every span of every reel inside each DOM mutation, which could block the page long
     // enough for the reel viewer to stop loading more reels.
     //  - runs at most every 300 ms, never inside the mutation callback itself
-    //  - only reels near the screen, and each reel at most 4 times
+    //  - only reels on or next to the screen (the label can appear late, when the reel
+    //    loads, so a reel is re-checked on every scan while it is near)
     //  - only short texts (the sponsored label is short; captions are skipped)
     function hideReelAd(container) {
         container.dataset.adHidden = 'true';
@@ -244,11 +245,8 @@
     function scanReelAds() {
         document.querySelectorAll('div.vertically-snappable').forEach(container => {
             if (container.dataset.adHidden === 'true') return;
-            const checks = Number(container.dataset.adChecks || 0);
-            if (checks >= 4) return;
             const r = container.getBoundingClientRect();
             if (r.height === 0 || r.bottom < -window.innerHeight || r.top > 2 * window.innerHeight) return;
-            container.dataset.adChecks = String(checks + 1);
             for (const span of container.querySelectorAll('span')) {
                 const text = span.textContent;
                 if (text && text.length <= 48 && containsSponsoredText(text)) {
@@ -268,11 +266,10 @@
     // Initial cleanup
     // Reels are watched on the feed ("/") and in the reel viewer ("/reel/<id>"); the
     // viewer used to be skipped by the off-feed guard, so its ads were never removed.
-    const onReelSurface = () => {
-        const p = window.location.pathname;
-        return p === '/' || p.indexOf('/reel') === 0;
-    };
-    if (window.location.pathname.indexOf('/reel') === 0) removeReelAds();
+    // Other video viewers (/<user>/videos/<id>, /watch...) use the same reel list, so any
+    // page that has one is covered: the scan itself is a no-op when there is no reel list.
+    const onReelSurface = () => true;
+    removeReelAds();
     // Any DOM change on a reel surface just schedules a (cheap, deferred) scan: labels
     // can render after the reel container itself.
     const reelObserver = new MutationObserver(() => {
