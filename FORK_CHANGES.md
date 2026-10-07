@@ -92,6 +92,12 @@ would mostly be noise. See GitHub Releases for the actual per-version diffs.
   doesn't see that `fullscreenchange`; focus mode is applied once
   fullscreen has ended, and on return the event is replayed once the window
   has settled, so Facebook lays out at the full size.
+- Privacy fix: the upstream file-download hook in `scripts.js` saved every
+  blob a page created to the public Downloads folder. On the desktop site
+  that included the decrypted photos of every encrypted Messenger chat you
+  opened. It now saves a blob only when the page starts a real download (a
+  clicked `<a download>` link pointing at it). The app's own media download
+  button is unaffected. Covered by `FileDownloadJsTest`.
 
 ## CI/CD
 

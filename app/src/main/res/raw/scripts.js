@@ -378,17 +378,48 @@ observer.observe(document.body, { childList: true, subtree: true });
 })();
 
 // File Download Script
+// Saves a blob only when the page starts a download with it: a blob: URL on an
+// <a download> link that is clicked. Pages create blob URLs for plenty of other
+// things (desktop Messenger decrypts every photo of an encrypted chat into one),
+// and those must never end up in the public Downloads folder.
 (function() {
     if (window._downloadBridgeInitialized) return;
     window._downloadBridgeInitialized = true;
+    const blobs = new Map();
     const originalCreateObjectURL = URL.createObjectURL;
-    URL.createObjectURL = function(blob) {
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+    // The blob URL already keeps its blob alive until revoked, so the map
+    // holds nothing longer than the page itself does.
+    URL.createObjectURL = function(obj) {
+        const url = originalCreateObjectURL.call(URL, obj);
+        if (obj instanceof Blob) blobs.set(url, obj);
+        return url;
+    };
+    URL.revokeObjectURL = function(url) {
+        blobs.delete(url);
+        return originalRevokeObjectURL.call(URL, url);
+    };
+
+    const save = function(anchor) {
+        if (!anchor || !anchor.hasAttribute('download')) return;
+        const blob = blobs.get(anchor.href);
+        if (!blob) return;
         const reader = new FileReader();
         reader.onloadend = function() {
             if (reader.result)
                 DownloadBridge.downloadBase64File(reader.result, blob.type);
         };
         reader.readAsDataURL(blob);
-        return originalCreateObjectURL(blob);
+    };
+    // Links in the document, clicked by the user or by script.
+    document.addEventListener('click', function(e) {
+        save(e.target.closest && e.target.closest('a'));
+    }, true);
+    // Detached links clicked by script (the usual way to trigger a download);
+    // connected ones are already handled by the listener above.
+    const originalClick = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function() {
+        if (!this.isConnected) save(this);
+        return originalClick.call(this);
     };
 })();
