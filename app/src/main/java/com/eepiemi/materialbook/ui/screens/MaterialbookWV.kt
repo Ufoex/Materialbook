@@ -63,6 +63,7 @@ import com.eepiemi.materialbook.utils.jsBridge.MessagesBridge
 import com.eepiemi.materialbook.utils.jsBridge.PipBridge
 import com.eepiemi.materialbook.audio.PipHandback
 import com.eepiemi.materialbook.utils.effectiveDesktop
+import com.eepiemi.materialbook.utils.isDesktopMessagesUrl
 import com.eepiemi.materialbook.utils.messagesDesktopUrl
 import com.eepiemi.materialbook.utils.isLeavingMessages
 import com.eepiemi.materialbook.utils.openMessenger
@@ -899,6 +900,8 @@ fun MaterialbookWebView(
 
     // allow exiting while scrolling to top.
     var exitScroll by remember { mutableStateOf(false) }
+    // Needed by the Back handler below, which runs before the layout settings are read.
+    val autoDesktopForBack = rememberAutoDesktop()
     BackHandler {
         if (exitScroll) {
             activity?.finish()
@@ -908,6 +911,18 @@ fun MaterialbookWebView(
                 when (backHandled) {
                     "false" -> {
                         if (navigator.canGoBack) {
+                            // Going back out of Messages: restore the normal user agent first, so
+                            // the page behind it is fetched/restored as the mobile site (and keeps
+                            // its scroll position) instead of being served as desktop and reloaded.
+                            if (messagesDesktop) {
+                                val history = state.nativeWebView.copyBackForwardList()
+                                val previous = history.getItemAtIndex(history.currentIndex - 1)?.url
+                                if (previous == null || !isDesktopMessagesUrl(previous)) {
+                                    messagesDesktop = false
+                                    state.nativeWebView.settings.userAgentString =
+                                        if (effectiveDesktop(settingsVM.desktopLayout.value, autoDesktopForBack)) DESKTOP_USER_AGENT else ""
+                                }
+                            }
                             navigator.navigateBack()
                         } else {
                             activity?.finish()

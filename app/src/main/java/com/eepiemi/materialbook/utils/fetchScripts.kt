@@ -34,7 +34,7 @@ data class Script(
 
 // Debug use only: force bundled scripts so local JS edits verify on-device
 // without pushing to GitHub first. Release keeps remote fetch + fallback.
-const val USE_LOCAL_SCRIPTS = false
+const val USE_LOCAL_SCRIPTS = true
 
 suspend fun fetchScripts(
     scripts: List<Script>,
