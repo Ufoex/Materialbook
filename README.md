@@ -34,7 +34,7 @@ Almost all the code was written by the people below; this repo only merges it an
 | Original author | Project | What it contributed |
 |---|---|---|
 | [eepiemi](https://github.com/eepiemi) | [Materialbook](https://github.com/eepiemi/Materialbook) | The base app |
-| [ofirc73](https://github.com/ofirc73) | [AstryxBook](https://github.com/ofirc73/AstryxBook) | PiP for reels, lock-screen audio, fullscreen video, portrait on phones |
+| [ofirc73](https://github.com/ofirc73) | [AstryxBook](https://github.com/ofirc73/AstryxBook) | PiP for reels, lock-screen audio, fullscreen video, portrait on phones, the Messages layer, safer file downloads |
 | [dh6k](https://github.com/dh6k) | [Materialbook_fork](https://github.com/dh6k/Materialbook_fork) | Messenger redirect, external links, adblock hardening, photo viewer and feed performance fixes |
 | [farhun1](https://github.com/farhun1) | [BraveBook](https://github.com/farhun1/BraveBook) | Brave block list ad/tracker blocking, hide group posts |
 | [Kdomy](https://github.com/Kdomy) | [LiteBook](https://github.com/Kdomy/LiteBook) | Copy post text, reliable video/reel downloads, AMOLED login fix |
