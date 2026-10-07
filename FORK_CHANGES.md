@@ -184,13 +184,15 @@ the app using the desktop site, only for that section.
   real page load or by an in-page navigation of the desktop single-page app
   (reported by `messages_tab.js` through `MessagesBridge`, since WebView does not report
   `pushState`/`popstate` as page loads), switches back to the normal user agent. The page
-  is reloaded only if it is still the desktop site, with `navigator.reload()` so no
-  duplicate history entry is added. A Back that lands on the cached mobile page just
-  restores the user agent and keeps the page, including its scroll position.
+  is reloaded (`navigator.reload()`, so no duplicate history entry is added) only if it is
+  still the desktop site. The Back button restores the user agent before navigating, so
+  going back out of Messages is a plain back navigation with no extra reload.
 - `messages_tab.js` hooks the Messages tab so the "Download Messenger" page never
   flashes; it recognises the tab by its English label or its icon glyph. There is no
   position check on purpose: if Facebook changed both, matching by position could hijack
-  another tab, and a miss only leaves the "Download Messenger" page as before.
+  another tab, and a miss only leaves the "Download Messenger" page as before. It also
+  drops the same-URL `pushState` calls Facebook's own tab handler makes right after the
+  touch, which would otherwise leave a duplicate feed entry behind Messages.
 - Setting **Messages in desktop mode** (off by default, opt-in). Off keeps the previous
   behavior, including `fb-messenger://` and `intent://` links reaching the Messenger app.
   The flag is saved across Activity recreation.
@@ -258,9 +260,11 @@ leaving the app while a Facebook video or Reel is playing.
 
 ## Known limitations
 
-- Messages in desktop mode: leaving Messages through the desktop site's own navigation (for
-  example its Facebook logo) reloads the destination in the mobile layout, so the scroll
-  position of that page is not kept. Back to a cached mobile page does keep it.
+- Messages in desktop mode: Messages needs a different user agent, so it is a separate
+  document. Going Back to the feed loads it again (mobile, no extra reload) and Facebook
+  rebuilds the feed from the top, so the previous scroll position is not kept. Leaving
+  Messages through the desktop site's own navigation (for example its Facebook logo)
+  reloads the destination in the mobile layout.
 
 - On Reels specifically, Facebook's own web player can re-pause a video
   shortly after it's resumed from the PiP overlay's Play button. Facebook's
