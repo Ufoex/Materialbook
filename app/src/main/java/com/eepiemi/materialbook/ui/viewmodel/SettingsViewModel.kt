@@ -109,7 +109,7 @@ class SettingsViewModel(
     )
     val messagesDesktop = dataStore.messagesDesktop.stateIn(
         scope = viewModelScope,
-        initialValue = initialPrefs[MESSAGES_DESKTOP] ?: true,
+        initialValue = initialPrefs[MESSAGES_DESKTOP] ?: false,
         started = SharingStarted.WhileSubscribed()
     )
     val hideGroups = dataStore.hideGroups.stateIn(

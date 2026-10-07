@@ -172,8 +172,9 @@ deliberately out of scope — external, unfixable from here.
 
 ## Messages in desktop mode
 
-Facebook Lite no longer renders Messages on mobile ("Download Messenger" page). The
-Messages section is now shown inside the app using the desktop site, only for that section.
+Facebook's mobile site (`m.facebook.com`) no longer renders Messages (it shows a
+"Download Messenger" page). When the setting is on, the Messages section is shown inside
+the app using the desktop site, only for that section.
 
 - Every Messages/Messenger entry point (the Messages tab, `facebook.com/messages`,
   `m.me`, `messenger.com`, `fb-messenger://`, `intent://`) opens the desktop Messages
@@ -185,10 +186,12 @@ Messages section is now shown inside the app using the desktop site, only for th
   `pushState`/`popstate` as page loads), switches back to the normal user agent and
   reloads the page (no duplicate history entry).
 - `messages_tab.js` hooks the Messages tab so the "Download Messenger" page never
-  flashes; it recognises the tab by its icon glyph or its position (third of six), so it
-  does not depend on the interface language.
-- Setting **Messages in desktop mode** (on by default). Off restores the previous
-  behavior. The flag is saved across Activity recreation.
+  flashes; it recognises the tab by its English label or its icon glyph. There is no
+  position check on purpose: if Facebook changed both, matching by position could hijack
+  another tab, and a miss only leaves the "Download Messenger" page as before.
+- Setting **Messages in desktop mode** (off by default, opt-in). Off keeps the previous
+  behavior, including `fb-messenger://` and `intent://` links reaching the Messenger app.
+  The flag is saved across Activity recreation.
 - `MessagesDesktopTest` covers the URL helpers.
 
 ## Picture-in-Picture

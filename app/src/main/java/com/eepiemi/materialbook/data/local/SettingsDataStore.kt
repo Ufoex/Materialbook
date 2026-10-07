@@ -124,7 +124,7 @@ class SettingsDataStore(private val context: Context) {
         context.dataStore.edit { it[HIDE_PEOPLE_YOU_MAY_KNOW] = hidePeopleYouMayKnow }
     }
 
-    val messagesDesktop = context.dataStore.data.map { it[MESSAGES_DESKTOP] ?: true }
+    val messagesDesktop = context.dataStore.data.map { it[MESSAGES_DESKTOP] ?: false }
     suspend fun setMessagesDesktop(messagesDesktop: Boolean) {
         context.dataStore.edit { it[MESSAGES_DESKTOP] = messagesDesktop }
     }
