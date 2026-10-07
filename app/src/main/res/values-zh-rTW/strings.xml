@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="apply_immediately">立即應用？</string>
     <string name="remove_ads_title">移除廣告</string>
@@ -34,4 +35,8 @@
     <string name="pip_lockscreen_audio_title">螢幕鎖定時繼續播放音訊</string>
     <string name="pip_lockscreen_audio_summary">子母畫面模式下，螢幕關閉後仍繼續播放音訊</string>
     <string name="lockscreen_audio_media_title">Facebook 影片</string>
+    <string name="copy_to_clipboard_title">複製到剪貼簿</string>
+    <string name="material_you_title">Material You</string>
+    <string name="image_copied_to_clipboard">圖片已複製到剪貼簿</string>
+    <string name="copy_failed_invalid_data">複製失敗：資料無效</string>
 </resources>

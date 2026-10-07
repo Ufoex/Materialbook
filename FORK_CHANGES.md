@@ -28,6 +28,9 @@ would mostly be noise. See GitHub Releases for the actual per-version diffs.
 - Local badge assets (`download.svg`, `open_issue.svg`) and the store
   listing icon/banner recolored to match; downloads badge swapped from an
   opaque third-party worker to a themed, GitHub-API-backed shields.io badge.
+- Weekly download history: `download-stats.yml` appends each release's
+  GitHub download count to `downloads.csv` on the data-only `stats` branch
+  (Mondays, or on demand from the Actions tab). No tracking in the app.
 
 ## Localization
 
@@ -36,6 +39,8 @@ would mostly be noise. See GitHub Releases for the actual per-version diffs.
   branding and current PiP ratio strings.
 - Updated every existing translated locale with the new PiP aspect-ratio
   title and options.
+- Pulled the upstream Traditional Chinese (`zh-rTW`) update: clipboard copy and
+  Material You strings, without upstream's Materialbook-branded strings.
 
 ## Android compatibility
 
@@ -87,6 +92,20 @@ would mostly be noise. See GitHub Releases for the actual per-version diffs.
   doesn't see that `fullscreenchange`; focus mode is applied once
   fullscreen has ended, and on return the event is replayed once the window
   has settled, so Facebook lays out at the full size.
+- Privacy fix: the upstream file-download hook in `scripts.js` saved every
+  blob a page created to the public Downloads folder. On the desktop site
+  that included the decrypted photos of every encrypted Messenger chat you
+  opened. It now saves a blob only when the page starts a real download (a
+  clicked `<a download>` link pointing at it). The app's own media download
+  button is unaffected. Covered by `FileDownloadJsTest`.
+- Desktop layout: Back with a Messenger chat window open over the feed closed
+  the app, because chat windows aren't marked as dialogs. Back now closes the
+  chat window (the right-most visible button of its header, "Close chat" in
+  any language). Covered by `BackHandlerJsTest`.
+- Desktop layout: Back on the feed closed the app right away instead of
+  scrolling to the top first. The check expected one dialog element on the
+  feed at rest, which Facebook's desktop feed no longer has. Back now scrolls
+  a scrolled feed to the top, and leaves the app from the top, as on mobile.
 
 ## CI/CD
 

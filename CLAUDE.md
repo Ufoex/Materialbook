@@ -40,6 +40,11 @@ user-visible change.
   restyle or resize the video's ancestor elements: Facebook's reels controller
   watches them and pauses the reel. Add new PiP behaviour as separate scripts
   and effects instead of editing focus mode.
+- The page scripts in `res/raw` (except the PiP ones loaded directly in
+  `MaterialbookWV.kt`) are fetched at runtime from `main` on GitHub
+  (`SCRIPT_SRC` in `fetchScripts.kt`), falling back to the bundled copy. A
+  push to `main` changes them in every installed app on its next launch, and
+  a local build still runs `main`'s version of a script that exists there.
 - All PiP, lock-screen audio and fullscreen logs use the tag `AstryxbookPiP`:
   `adb logcat AstryxbookPiP:D *:S`.
 - `WebView.setWebContentsDebuggingEnabled(true)` is unconditional on purpose.
@@ -64,5 +69,7 @@ limitations in `FORK_CHANGES.md`.
 ## Repo housekeeping
 
 - Plan files (`*_PLAN.md`) and `spike.log` are working notes; don't commit them.
+- The `stats` branch is data-only (weekly release download counts written by
+  `download-stats.yml`); never merge it into `main`.
 - On Windows, `git worktree remove` can fail with "Filename too long"; delete
   the folder with PowerShell, then `git worktree prune`.
