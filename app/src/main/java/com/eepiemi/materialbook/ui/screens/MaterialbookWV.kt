@@ -23,6 +23,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -60,6 +61,8 @@ import com.eepiemi.materialbook.utils.jsBridge.MaterialYouBridge
 import com.eepiemi.materialbook.utils.jsBridge.PipBridge
 import com.eepiemi.materialbook.audio.PipHandback
 import com.eepiemi.materialbook.utils.effectiveDesktop
+import com.eepiemi.materialbook.utils.fbRedirectSanitizer
+import com.eepiemi.materialbook.utils.messagesDesktopUrl
 import com.eepiemi.materialbook.utils.rememberAutoDesktop
 import com.eepiemi.materialbook.utils.rememberImeHeight
 import kotlinx.coroutines.delay
@@ -678,19 +681,44 @@ fun MaterialbookWebView(
     val resources = LocalResources.current
 
     val state = rememberSaveableWebViewState(url)
-    val navigator = rememberWebViewNavigator(
-        requestInterceptor = ExternalRequestInterceptor { externalUrl ->
-            val intent = Intent(Intent.ACTION_VIEW, externalUrl.toUri())
-            runCatching {
-                context.startActivity(intent)
-            }.onFailure {
-                Toast.makeText(
-                    context,
-                    resources.getString(R.string.not_supported),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+
+    val isDesktop by settingsVM.desktopLayout.collectAsState()
+    val isAutoDesktop = rememberAutoDesktop()
+    val isEffectiveDesktop = effectiveDesktop(isDesktop, isAutoDesktop)
+
+    val openExternalUrl: (String) -> Unit = { externalUrl ->
+        val intent = Intent(Intent.ACTION_VIEW, externalUrl.toUri())
+        runCatching {
+            context.startActivity(intent)
+        }.onFailure {
+            Toast.makeText(
+                context,
+                resources.getString(R.string.not_supported),
+                Toast.LENGTH_SHORT
+            ).show()
         }
+    }
+
+    // Messages in desktop mode: Messages links open in MessagesLayer, a separate desktop
+    // WebView over this one, so this page (and its scroll position) stays as it is. Not
+    // used when this view is already the desktop site (Desktop layout, large screens),
+    // which shows Messages by itself. Saved so the layer comes back after recreation.
+    val messagesDesktopSetting by settingsVM.messagesDesktop.collectAsState()
+    val currentMessagesDesktopSetting by rememberUpdatedState(messagesDesktopSetting)
+    val currentIsEffectiveDesktop by rememberUpdatedState(isEffectiveDesktop)
+    var messagesLayerUrl by rememberSaveable { mutableStateOf<String?>(null) }
+    val navigator = rememberWebViewNavigator(
+        requestInterceptor = ExternalRequestInterceptor(
+            tryOpenMessagesDesktop = { messagesUrl ->
+                if (currentMessagesDesktopSetting && !currentIsEffectiveDesktop) {
+                    messagesLayerUrl = messagesDesktopUrl(messagesUrl)
+                    true
+                } else {
+                    false
+                }
+            },
+            handleExternalUrl = openExternalUrl
+        )
     )
 
     LaunchedEffect(navigator) {
@@ -876,10 +904,6 @@ fun MaterialbookWebView(
         }
     }
 
-    val isDesktop by settingsVM.desktopLayout.collectAsState()
-    val isAutoDesktop = rememberAutoDesktop()
-    val isEffectiveDesktop = effectiveDesktop(isDesktop, isAutoDesktop)
-
     var isLoading by rememberSaveable { mutableStateOf(true) }
     val isError = state.errorsForCurrentRequest.lastOrNull()?.isFromMainFrame == true
 
@@ -1062,7 +1086,21 @@ fun MaterialbookWebView(
 
     LaunchedEffect(isEffectiveDesktop) {
         val userAgent = if (isEffectiveDesktop) DESKTOP_USER_AGENT else ""
-        state.nativeWebView.settings.userAgentString = userAgent
+        // The WebView is created during layout, so on a cold start this can run first:
+        // the library applies webSettings when it creates it, and a live WebView is
+        // updated directly.
+        state.webSettings.customUserAgentString = userAgent.ifEmpty { null }
+        runCatching { state.nativeWebView }.getOrNull()?.settings?.userAgentString = userAgent
+    }
+
+    // The page underneath keeps running while the Messages layer is open: pause its videos
+    // so a playing reel doesn't go on behind the chat.
+    LaunchedEffect(messagesLayerUrl) {
+        if (messagesLayerUrl != null && state.loadingState is LoadingState.Finished) {
+            navigator.evaluateJavaScript(
+                "document.querySelectorAll('video').forEach(function(v) { v.pause(); });"
+            ) {}
+        }
     }
 
     // needed to consume extra padding when keyboard is open
@@ -1072,20 +1110,22 @@ fun MaterialbookWebView(
     val primaryColor = colorScheme.primary.toArgb()
     val onPrimaryColor  = colorScheme.onPrimary.toArgb()
 
+    val pageModifier = Modifier
+        .fillMaxSize()
+        .background(themeColor)
+        .then(
+            if (isImmersiveMode) {
+                Modifier.padding(bottom = imeHeight)
+            } else {
+                Modifier.padding(
+                    top = barsInsets.calculateTopPadding(),
+                    bottom = maxOf(barsInsets.calculateBottomPadding(), imeHeight)
+                )
+            }
+        )
+
     WebView(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(themeColor)
-            .then(
-                if (isImmersiveMode) {
-                    Modifier.padding(bottom = imeHeight)
-                } else {
-                    Modifier.padding(
-                        top = barsInsets.calculateTopPadding(),
-                        bottom = maxOf(barsInsets.calculateBottomPadding(), imeHeight)
-                    )
-                }
-            ),
+        modifier = pageModifier,
         state = state,
         navigator = navigator,
         platformWebViewParams = appWebViewParams(fullscreen),
@@ -1146,4 +1186,26 @@ fun MaterialbookWebView(
             }
         }
     )
+
+    messagesLayerUrl?.let { layerUrl ->
+        // A new Messages link while the layer is open (a notification, say) recreates it.
+        key(layerUrl) {
+            MessagesLayer(
+                url = layerUrl,
+                userScripts = userScripts,
+                fullscreen = fullscreen,
+                isFullscreen = isFullscreen,
+                modifier = pageModifier,
+                background = themeColor,
+                primaryColor = primaryColor,
+                onPrimaryColor = onPrimaryColor,
+                onClose = { messagesLayerUrl = null },
+                onOpenInMain = { pageUrl ->
+                    messagesLayerUrl = null
+                    navigator.loadUrl(pageUrl)
+                },
+                onExternalUrl = { externalUrl -> openExternalUrl(fbRedirectSanitizer(externalUrl)) }
+            )
+        }
+    }
 }

@@ -189,6 +189,41 @@ Lock-screen audio, fullscreen and auto-desktop have their own suites:
 Facebook's own player behavior (the re-pause limitation below) is
 deliberately out of scope — external, unfixable from here.
 
+## Messages in desktop mode
+
+Facebook's mobile site (`m.facebook.com`) no longer has Messages: its Messages tab sends
+you to the Messenger app, then to an "Open Messenger" page whose button leads to Google
+Play. When the setting is on, Messages opens inside the app instead, on the desktop
+site, in its own layer over the page you were on. Contributed by Ufoex (PR 6); the
+separate layer was added on top.
+
+- **Messages layer** (`MessagesLayer.kt`): a second WebView with the desktop user agent,
+  drawn over the main one. The main view keeps its mobile page and scroll position
+  underneath, and its videos are paused while the layer is open. Back steps through the
+  layer's own history (a conversation back to the chat list), then closes the layer and
+  you're back exactly where you were in the feed. The layer's WebView is destroyed when it
+  closes.
+- Every Messages/Messenger entry point (the Messages tab, `facebook.com/messages`,
+  `m.me`, `messenger.com`, `fb-messenger://`, `intent://`) opens the layer. Links that
+  point at a conversation keep it (`/messages/t/<id>`, `m.me/<name>`,
+  `messenger.com/t/<id>`, `fb-messenger://user/<id>`); anything else opens the inbox.
+- Leaving Messages from inside the layer (a profile, the home page) closes the layer and
+  opens that page in the main, mobile view: page loads go through the layer's request
+  interceptor (`messagesLayerRoute`), in-page navigations of the desktop single-page app
+  are reported by `messages_layer.js` through `MessagesBridge`. Non-Facebook links go to
+  the system as in the main view.
+- The layer gets the same page scripts as the main view (download hook, theme and so on),
+  plus `messages_layer.js` from the bundled resource.
+- `messages_tab.js` hooks the Messages tab so it opens the layer directly; it recognises
+  the tab by its English label or its icon glyph. There is no position check on purpose:
+  if Facebook changed both, matching by position could hijack another tab, and a miss
+  still ends in the layer through the tab's intercepted `fb-messenger://threads` link.
+- Setting **Messages in desktop mode** (off by default, opt-in). Off keeps the previous
+  behavior, including `fb-messenger://` and `intent://` links reaching the Messenger app.
+  Not used when the whole app is already on the desktop site (Desktop layout, large
+  screens), which shows Messages by itself.
+- `MessagesDesktopTest` covers the URL helpers and the layer's routing.
+
 ## Picture-in-Picture
 
 New feature, opt-in (off by default): shrinks into a floating window when

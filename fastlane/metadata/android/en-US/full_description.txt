@@ -24,6 +24,7 @@ Off by default (opt-in):
     <li>Hides the system bars</li>
     <li>Allows pinch-to-zoom anywhere</li>
     <li>Lets the user access Messenger (Desktop layout only)</li>
+    <li>Opens Messages inside the app on the desktop site, in its own layer over the feed</li>
     <li>Supports Picture-in-Picture for playing Facebook videos and Reels, with a native resume button</li>
     <li>Keeps a Picture-in-Picture video's audio playing when the screen locks, with lock-screen controls</li>
 </ul>

@@ -16,6 +16,7 @@ import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_STOR
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_SUGGESTED
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.IMMERSIVE_MODE
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MATERIAL_YOU
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MESSAGES_DESKTOP
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PINCH_TO_ZOOM
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_ENABLED
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_LOCKSCREEN_AUDIO
@@ -104,6 +105,11 @@ class SettingsViewModel(
     val hidePeopleYouMayKnow = dataStore.hidePeopleYouMayKnow.stateIn(
         scope = viewModelScope,
         initialValue = initialPrefs[HIDE_PEOPLE_YOU_MAY_KNOW] ?: false,
+        started = SharingStarted.WhileSubscribed()
+    )
+    val messagesDesktop = dataStore.messagesDesktop.stateIn(
+        scope = viewModelScope,
+        initialValue = initialPrefs[MESSAGES_DESKTOP] ?: false,
         started = SharingStarted.WhileSubscribed()
     )
     val hideGroups = dataStore.hideGroups.stateIn(
@@ -202,6 +208,12 @@ class SettingsViewModel(
     fun setHidePeopleYouMayKnow(hidePeopleYouMayKnow: Boolean) {
         viewModelScope.launch {
             dataStore.setHidePeopleYouMayKnow(hidePeopleYouMayKnow)
+        }
+    }
+
+    fun setMessagesDesktop(messagesDesktop: Boolean) {
+        viewModelScope.launch {
+            dataStore.setMessagesDesktop(messagesDesktop)
         }
     }
 
