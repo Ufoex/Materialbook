@@ -172,7 +172,9 @@
         if (window.isDesktopMode()) {
             if (!isMenu && !dialogs.length && closeChatWindow())
                 return "true";
-            if (window.isFeed() && !isMenu && dialogs.length === 1)
+            // The desktop feed used to keep one role="dialog" element around at
+            // rest; it now has none, so "nothing open" means no dialog at all.
+            if (window.isFeed() && !isMenu && !dialogs.length)
                 return scrollToTop();
             else if (isMenu || dialogs.length > 1) {
                 const escapeEvent = new KeyboardEvent('keydown', {

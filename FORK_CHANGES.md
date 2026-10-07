@@ -102,6 +102,10 @@ would mostly be noise. See GitHub Releases for the actual per-version diffs.
   the app, because chat windows aren't marked as dialogs. Back now closes the
   chat window (the right-most visible button of its header, "Close chat" in
   any language). Covered by `BackHandlerJsTest`.
+- Desktop layout: Back on the feed closed the app right away instead of
+  scrolling to the top first. The check expected one dialog element on the
+  feed at rest, which Facebook's desktop feed no longer has. Back now scrolls
+  a scrolled feed to the top, and leaves the app from the top, as on mobile.
 
 ## CI/CD
 
