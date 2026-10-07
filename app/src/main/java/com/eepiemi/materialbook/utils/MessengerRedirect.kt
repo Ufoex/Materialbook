@@ -60,7 +60,7 @@ private fun facebookHost(url: String): Boolean {
     return isFb && !host.startsWith("l.") && !host.startsWith("lm.")
 }
 
-/** facebook.com/messages* web page (the one Facebook Lite refuses to render on mobile). */
+/** facebook.com/messages* web page (the one Facebook's mobile site refuses to render). */
 fun isMessagesWebUrl(url: String): Boolean {
     if (!facebookHost(url)) return false
     return (runCatching { java.net.URI(url).path }.getOrNull() ?: "").startsWith("/messages")
