@@ -11,6 +11,15 @@
     <string name="auto_scroll_reels_desc">Go to the next reel when the current one ends (a button in the reel viewer pauses it)</string>
     <string name="reel_background_audio_title">Reel audio with screen off</string>
     <string name="reel_background_audio_desc">Adds a button in the reel viewer (off by default) that keeps the reel\'s audio playing when the screen turns off</string>
+    <string name="auto_update_check_title">Check for updates on start</string>
+    <string name="auto_update_check_desc">Looks for a new version when the app opens</string>
+    <string name="check_update_now_title">Check for updates now</string>
+    <string name="check_update_now_desc">Current version %1$s</string>
+    <string name="update_up_to_date">You have the latest version</string>
+    <string name="update_available_title">Update available</string>
+    <string name="update_available_desc">Version %1$s is available (you have %2$s). Download the APK and open it to install.</string>
+    <string name="update_download">Download</string>
+    <string name="update_later">Later</string>
     <string name="reel_controls_title">Reel controls</string>
     <string name="reel_controls_desc">Seek bar, time, fullscreen and volume on paused reels, plus a button to hide the icons</string>
     <string name="collapsing_toolbar_title">Collapsing toolbar</string>

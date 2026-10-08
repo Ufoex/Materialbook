@@ -21,7 +21,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import com.eepiemi.materialbook.utils.Release
+import com.eepiemi.materialbook.utils.UpdateDialog
+import com.eepiemi.materialbook.utils.checkForUpdate
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -298,7 +303,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val intentUrl = urlState.value
+            var update by remember { mutableStateOf<Release?>(null) }
+            LaunchedEffect(Unit) {
+                if (settingsVM.autoUpdateCheck.value) update = checkForUpdate()
+            }
             MaterialbookTheme {
+                update?.let { UpdateDialog(it) { update = null } }
                 MaterialbookWebView(
                     url = intentUrl
                         ?: "https://facebook.com/",

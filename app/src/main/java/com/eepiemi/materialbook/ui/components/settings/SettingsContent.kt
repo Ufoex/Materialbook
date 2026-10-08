@@ -48,6 +48,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -59,7 +60,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.SystemUpdate
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import com.eepiemi.materialbook.BuildConfig
 import com.eepiemi.materialbook.R
+import com.eepiemi.materialbook.utils.Release
+import com.eepiemi.materialbook.utils.UpdateDialog
+import com.eepiemi.materialbook.utils.checkForUpdate
 import com.eepiemi.materialbook.ui.viewmodel.SettingsViewModel
 import com.eepiemi.materialbook.utils.effectiveDesktop
 import com.eepiemi.materialbook.utils.rememberAutoDesktop
@@ -86,6 +95,10 @@ fun SettingsContent(
     val stickyNavbar = viewModel.stickyNavbar.collectAsState()
     val collapsingToolbar = viewModel.collapsingToolbar.collectAsState()
     val reelControls = viewModel.reelControls.collectAsState()
+    val autoUpdateCheck = viewModel.autoUpdateCheck.collectAsState()
+    val scope = rememberCoroutineScope()
+    var update by remember { mutableStateOf<Release?>(null) }
+    val upToDateToast = stringResource(R.string.update_up_to_date)
     val autoScrollReels = viewModel.autoScrollReels.collectAsState()
     val reelBackgroundAudio = viewModel.reelBackgroundAudio.collectAsState()
     val pinchToZoom = viewModel.pinchToZoom.collectAsState()
@@ -103,6 +116,30 @@ fun SettingsContent(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        SettingsGroup(
+            items = listOf(
+                SettingsItem(
+                    icon = Icons.Outlined.SystemUpdate,
+                    title = stringResource(R.string.auto_update_check_title),
+                    supportingText = stringResource(R.string.auto_update_check_desc),
+                    isActive = autoUpdateCheck.value,
+                    onClick = { viewModel.setAutoUpdateCheck(!autoUpdateCheck.value) }
+                ),
+                SettingsItem(
+                    icon = Icons.Outlined.Refresh,
+                    title = stringResource(R.string.check_update_now_title),
+                    supportingText = stringResource(R.string.check_update_now_desc, BuildConfig.VERSION_NAME),
+                    isActive = null,
+                    onClick = {
+                        scope.launch {
+                            update = checkForUpdate()
+                            if (update == null) Toast.makeText(context, upToDateToast, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                )
+            )
+        )
+
         SettingsGroup(
             items = listOf(
                 SettingsItem(
@@ -295,6 +332,8 @@ fun SettingsContent(
         }
 
     }
+
+    update?.let { UpdateDialog(it) { update = null } }
 
     if (isOpenDialog) {
         HideOptionsDialog(

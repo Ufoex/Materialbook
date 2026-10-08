@@ -27,6 +27,7 @@ import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.AUTO_SCRO
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.COLLAPSING_TOOLBAR
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.REEL_BACKGROUND_AUDIO
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.REEL_CONTROLS
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.AUTO_UPDATE_CHECK
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.STICKY_NAVBAR
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MESSENGER_PACKAGE
 import com.eepiemi.materialbook.utils.DEFAULT_MESSENGER_PACKAGE
@@ -87,6 +88,11 @@ class SettingsViewModel(
     val reelBackgroundAudio = dataStore.reelBackgroundAudio.stateIn(
         scope = viewModelScope,
         initialValue = initialPrefs[REEL_BACKGROUND_AUDIO] ?: false,
+        started = SharingStarted.WhileSubscribed()
+    )
+    val autoUpdateCheck = dataStore.autoUpdateCheck.stateIn(
+        scope = viewModelScope,
+        initialValue = initialPrefs[AUTO_UPDATE_CHECK] ?: true,
         started = SharingStarted.WhileSubscribed()
     )
     val reelControls = dataStore.reelControls.stateIn(
@@ -209,6 +215,12 @@ class SettingsViewModel(
     fun setReelBackgroundAudio(reelBackgroundAudio: Boolean) {
         viewModelScope.launch {
             dataStore.setReelBackgroundAudio(reelBackgroundAudio)
+        }
+    }
+
+    fun setAutoUpdateCheck(autoUpdateCheck: Boolean) {
+        viewModelScope.launch {
+            dataStore.setAutoUpdateCheck(autoUpdateCheck)
         }
     }
 
