@@ -703,3 +703,13 @@ if (!window._mbBannerObserver) {
   scanViewer();
   scheduleRescan();
 })();
+
+// Composer text in Facebook's dark mode: the textarea inherits black text over its black
+// background (the post box in groups and on the feed), so what you type can't be seen.
+(() => {
+    if (document.getElementById('mb-dark-textbox')) return;
+    const s = document.createElement('style');
+    s.id = 'mb-dark-textbox';
+    s.textContent = '.dark-mode textarea.textbox{color:#e4e6eb !important;caret-color:#e4e6eb !important}';
+    document.head.appendChild(s);
+})();
