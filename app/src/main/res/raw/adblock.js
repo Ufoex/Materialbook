@@ -230,6 +230,43 @@
     //  - only reels on or next to the screen (the label can appear late, when the reel
     //    loads, so a reel is re-checked on every scan while it is near)
     //  - only short texts (the sponsored label is short; captions are skipped)
+    // Keep the reel on screen where it is. Facebook rebuilds the reel list (a like, more reels
+    // loading), which drops our display:none: the ads come back, the list gets taller above the
+    // reel being watched, and the viewer shows another reel (and restarts its video) until the
+    // scan hides the ads again. Hiding an ad has the same effect. Ads have no stable id to
+    // hide them again in time, so instead the scroll is corrected whenever the list changes.
+    let anchorReel = null, lastScroll = 0;
+    const reelList = () => document.querySelectorAll('div.vertically-snappable');
+    const reelVideoId = (c) => c.querySelector('[data-video-id]')?.dataset.videoId || '';
+    function pickAnchor() {
+        let best = null, area = 0;
+        reelList().forEach(c => {
+            const r = c.getBoundingClientRect();
+            const h = Math.max(0, Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0));
+            if (h > area) { area = h; best = c; }
+        });
+        return best && { el: best, id: reelVideoId(best), top: best.getBoundingClientRect().top };
+    }
+    function restoreAnchor() {
+        const scroller = document.querySelector('div.vscroller-snap');
+        // While the user is scrolling the position is moving on purpose: leave it alone.
+        if (!scroller || !anchorReel || performance.now() - lastScroll < 150) return;
+        let el = anchorReel.el;
+        if (!el.isConnected || el.style.display === 'none') {
+            el = anchorReel.id && [...reelList()].find(c => c.style.display !== 'none' && reelVideoId(c) === anchorReel.id);
+        }
+        if (!el) { anchorReel = null; return; }
+        const delta = el.getBoundingClientRect().top - anchorReel.top;
+        if (Math.abs(delta) > 2) scroller.scrollTop += delta;
+        anchorReel.el = el;
+    }
+    let anchorFrame = 0;
+    document.addEventListener('scroll', () => {
+        lastScroll = performance.now();
+        if (anchorFrame) return;
+        anchorFrame = requestAnimationFrame(() => { anchorFrame = 0; anchorReel = pickAnchor(); });
+    }, { capture: true, passive: true });
+
     function hideReelAd(container) {
         container.dataset.adHidden = 'true';
         // Stop the ad's video and keep it silent even if Facebook tries to autoplay it,
@@ -240,6 +277,7 @@
             v.addEventListener('play', () => { v.muted = true; v.pause(); });
         });
         container.style.setProperty('display', 'none', 'important');
+        restoreAnchor();
     }
 
     function scanReelAds() {
@@ -272,7 +310,12 @@
     removeReelAds();
     // Any DOM change on a reel surface just schedules a (cheap, deferred) scan: labels
     // can render after the reel container itself.
-    const reelObserver = new MutationObserver(() => {
+    const reelObserver = new MutationObserver((mutations) => {
+        // Reels added or removed by Facebook (runs before the next paint).
+        if (anchorReel && mutations.some(m => [...m.addedNodes, ...m.removedNodes].some(n =>
+            n instanceof HTMLElement && (n.matches('div.vertically-snappable') || n.querySelector('div.vertically-snappable'))))) {
+            restoreAnchor();
+        }
         if (onReelSurface()) removeReelAds();
     });
 

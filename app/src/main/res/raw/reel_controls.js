@@ -274,6 +274,32 @@
         document.body.appendChild(hideBtn);
     };
 
+    // Thumbnail -> video: Facebook hides the poster (class "hidden") the moment the video starts
+    // playing, a hard cut. A copy of the poster stays on top for a moment and fades out instead.
+    new MutationObserver((muts) => {
+        const p = location.pathname;
+        if (p.indexOf('/reel/') !== 0 && p.indexOf('/videos/') === -1) return;
+        for (const m of muts) {
+            const img = m.target;
+            if (img.tagName !== 'IMG' || !img.classList.contains('hidden') || (m.oldValue || '').split(' ').indexOf('hidden') !== -1) continue;
+            const media = img.parentElement;
+            if (!media || !media.closest('.vertically-snappable')) continue;
+            // Resuming a paused video also hides the poster: only fade it when the video starts from the beginning.
+            const vid = media.closest('.vertically-snappable').querySelector('video');
+            if (vid && vid.currentTime > 0.5) continue;
+            const r = media.getBoundingClientRect();
+            if (!r.width || r.bottom <= 0 || r.top >= innerHeight) continue; // not the reel on screen
+            const copy = new Image();
+            copy.src = img.currentSrc || img.src;
+            copy.className = img.className.replace('hidden', '').trim();
+            copy.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;pointer-events:none;' +
+                'opacity:1;transition:opacity .3s ease-out';
+            media.appendChild(copy);
+            requestAnimationFrame(() => requestAnimationFrame(() => { copy.style.opacity = '0'; }));
+            setTimeout(() => copy.remove(), 500);
+        }
+    }).observe(document.body, { attributes: true, attributeOldValue: true, attributeFilter: ['class'], subtree: true });
+
     setInterval(() => {
         const path = location.pathname;
         const inReels = path.indexOf('/reel/') === 0 || path.indexOf('/videos/') !== -1 && !!document.querySelector('.vertically-snappable video');
