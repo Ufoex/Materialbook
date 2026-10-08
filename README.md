@@ -38,6 +38,7 @@ Almost all the code was written by the people below; this repo only merges it an
 | [dh6k](https://github.com/dh6k) | [Materialbook_fork](https://github.com/dh6k/Materialbook_fork) | Messenger redirect, external links, adblock hardening, photo viewer and feed performance fixes |
 | [farhun1](https://github.com/farhun1) | [BraveBook](https://github.com/farhun1/BraveBook) | Brave block list ad/tracker blocking, hide group posts |
 | [Kdomy](https://github.com/Kdomy) | [LiteBook](https://github.com/Kdomy/LiteBook) | Copy post text, reliable video/reel downloads, AMOLED login fix |
+| [Ufoex](https://github.com/Ufoex) | This fork | Reel controls, auto-scroll and screen-off audio for reels, a steadier reel viewer, collapsing toolbar, update check |
 
 See [FORK_CHANGES.md](./FORK_CHANGES.md) for the details. Material You theming and AMOLED Black ship off by default (from AstryxBook); both are toggles in Settings.
 
@@ -51,6 +52,8 @@ On by default:
 *  Blocks sponsored ads
 *  Keeps the navigation bar at the top
 *  Downloads media or copies it to the clipboard
+*  Checks GitHub for a new version when the app opens (Settings → *Check for updates on start*); *Check for updates now* does it on demand, and the dialog downloads the new APK
+*  Reel controls: time, seek bar, fullscreen and volume on paused reels, a button to hide the reel icons and one to switch between filling the screen and showing the whole video
 
 Off by default (opt-in):
 *  Uses Material You colors instead of Facebook's blues (Facebook's own blue is the default theme)
@@ -62,6 +65,9 @@ Off by default (opt-in):
     *  Groups
     *  People you may know
 *  Hides the system bars (immersive mode)
+*  Auto-scrolls reels: goes to the next reel when the current one ends, with a button in the reel viewer to pause it
+*  Keeps a reel's audio playing with the screen off, with a button in the reel viewer
+*  Collapsing toolbar: the top bars hide when scrolling down and return when scrolling up (needs Sticky Navbar)
 *  Allows pinch-to-zoom anywhere
 *  Lets you access Messenger (Desktop layout only)
 *  Opens Messages inside the app on the desktop site, in its own layer over the feed, so Back returns you to where you were (Settings → *Messages in desktop mode*); links to a conversation keep it
@@ -69,6 +75,7 @@ Off by default (opt-in):
 *  Keeps a Picture-in-Picture video's audio playing when the screen locks
 
 Always on:
+*  Keeps the reel you are watching in place when Facebook rebuilds the reel list or an ad is hidden, and fades the thumbnail into the video when it starts
 *  Supports real fullscreen video, including landscape, from Facebook's fullscreen button
    (on phones the app otherwise stays in portrait, since Facebook's mobile site breaks in landscape)
 *  Supports English, Arabic, Bengali, German, Hebrew (`עברית`), Italian, Spanish, French, Portuguese, and Traditional Chinese
