@@ -82,8 +82,9 @@
     const EYE_OFF = 'M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.804 11.804 0 001 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2z';
     const FIT_FULL = 'M3 5v4h2V5h4V3H5c-1.1 0-2 .9-2 2zm2 10H3v4c0 1.1.9 2 2 2h4v-2H5v-4zm14 4h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4zm0-16h-4v2h4v4h2V5c0-1.1-.9-2-2-2z';
     const FIT_FILL = 'M19 12h-2v3h-3v2h5v-5zM7 9h3V7H5v5h2V9zm14-6H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16.01H3V4.99h18v14.02z';
+    const HEADSET = 'M12 1c-4.97 0-9 4.03-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2c0-3.87 3.13-7 7-7s7 3.13 7 7v2h-4v8h3c1.66 0 3-1.34 3-3v-7c0-4.97-4.03-9-9-9z';
     const SKIP_NEXT = 'M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z';
-    let hideBtn, fitBtn, autoBtn, hideOn = false, fit = null, hasMarks = false;
+    let hideBtn, fitBtn, autoBtn, audioBtn, hideOn = false, fit = null, hasMarks = false;
 
     const style = document.createElement('style');
     style.textContent = 'html.mb-hide-reel-ui [data-mb-hid]{opacity:0 !important;pointer-events:none !important}' +
@@ -238,6 +239,23 @@
         document.body.appendChild(autoBtn);
     };
 
+    // Keep-audio-with-screen-off for this session (off at every start); only drawn when the
+    // reel_bg_audio script is injected. reel_bg_audio.js reads its state.
+    const buildAudioBtn = () => {
+        audioBtn = document.createElement('div');
+        audioBtn.id = 'mb-reel-audio';
+        audioBtn.style.cssText = 'position:fixed;z-index:2147483000;width:40px;height:40px;border-radius:50%;' +
+            'background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;';
+        audioBtn.innerHTML = svg(HEADSET);
+        ['pointerdown', 'pointerup', 'touchstart', 'touchmove', 'touchend', 'mousedown', 'mouseup']
+            .forEach(t => audioBtn.addEventListener(t, e => e.stopPropagation()));
+        audioBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (window.__mbBgAudio) window.__mbBgAudio.enabled = !window.__mbBgAudio.enabled;
+        });
+        document.body.appendChild(audioBtn);
+    };
+
     const buildHideBtn = () => {
         hideBtn = document.createElement('div');
         hideBtn.id = 'mb-reel-hide';
@@ -261,6 +279,7 @@
         const inReels = path.indexOf('/reel/') === 0 || path.indexOf('/videos/') !== -1 && !!document.querySelector('.vertically-snappable video');
         const active = inReels ? activeVideo() : null;
 
+
         // hide-icons button: next to the download button when it exists
         if (active) {
             if (!hideBtn || !hideBtn.isConnected) buildHideBtn();
@@ -282,11 +301,19 @@
                 autoBtn.style.display = 'flex';
                 autoBtn.style.opacity = hideOn ? '0.35' : (window.__mbAutoScroll.enabled ? '1' : '0.45');
             } else if (autoBtn) autoBtn.style.display = 'none';
+            if (window.__mbBgAudio) {
+                if (!audioBtn || !audioBtn.isConnected) buildAudioBtn();
+                audioBtn.style.top = (parseFloat(hideBtn.style.top) + 48 * (window.__mbAutoScroll ? 3 : 2)) + 'px';
+                audioBtn.style.left = hideBtn.style.left;
+                audioBtn.style.display = 'flex';
+                audioBtn.style.opacity = hideOn ? '0.35' : (window.__mbBgAudio.enabled ? '1' : '0.45');
+            } else if (audioBtn) audioBtn.style.display = 'none';
             markIcons(active);
         } else {
             if (hideBtn) hideBtn.style.display = 'none';
             if (fitBtn) fitBtn.style.display = 'none';
             if (autoBtn) autoBtn.style.display = 'none';
+            if (audioBtn) audioBtn.style.display = 'none';
             if (fit !== null) setFit(null);
             if (hideOn) {
                 hideOn = false;

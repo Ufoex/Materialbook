@@ -25,6 +25,7 @@ import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_PORTR
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.REMOVE_ADS
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.AUTO_SCROLL_REELS
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.COLLAPSING_TOOLBAR
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.REEL_BACKGROUND_AUDIO
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.REEL_CONTROLS
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.STICKY_NAVBAR
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MESSENGER_PACKAGE
@@ -81,6 +82,11 @@ class SettingsViewModel(
     val autoScrollReels = dataStore.autoScrollReels.stateIn(
         scope = viewModelScope,
         initialValue = initialPrefs[AUTO_SCROLL_REELS] ?: false,
+        started = SharingStarted.WhileSubscribed()
+    )
+    val reelBackgroundAudio = dataStore.reelBackgroundAudio.stateIn(
+        scope = viewModelScope,
+        initialValue = initialPrefs[REEL_BACKGROUND_AUDIO] ?: false,
         started = SharingStarted.WhileSubscribed()
     )
     val reelControls = dataStore.reelControls.stateIn(
@@ -197,6 +203,12 @@ class SettingsViewModel(
     fun setAutoScrollReels(autoScrollReels: Boolean) {
         viewModelScope.launch {
             dataStore.setAutoScrollReels(autoScrollReels)
+        }
+    }
+
+    fun setReelBackgroundAudio(reelBackgroundAudio: Boolean) {
+        viewModelScope.launch {
+            dataStore.setReelBackgroundAudio(reelBackgroundAudio)
         }
     }
 

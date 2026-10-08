@@ -29,6 +29,7 @@ import androidx.compose.material.icons.outlined.Headphones
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material.icons.outlined.Headset
 import androidx.compose.material.icons.outlined.SwipeVertical
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PanoramaWideAngle
@@ -86,6 +87,7 @@ fun SettingsContent(
     val collapsingToolbar = viewModel.collapsingToolbar.collectAsState()
     val reelControls = viewModel.reelControls.collectAsState()
     val autoScrollReels = viewModel.autoScrollReels.collectAsState()
+    val reelBackgroundAudio = viewModel.reelBackgroundAudio.collectAsState()
     val pinchToZoom = viewModel.pinchToZoom.collectAsState()
     val materialYou = viewModel.materialYou.collectAsState()
     val amoledBlack = viewModel.amoledBlack.collectAsState()
@@ -214,6 +216,13 @@ fun SettingsContent(
                     supportingText = stringResource(R.string.auto_scroll_reels_desc),
                     isActive = autoScrollReels.value,
                     onClick = { viewModel.setAutoScrollReels(!autoScrollReels.value) }
+                ),
+                SettingsItem(
+                    icon = Icons.Outlined.Headset,
+                    title = stringResource(R.string.reel_background_audio_title),
+                    supportingText = stringResource(R.string.reel_background_audio_desc),
+                    isActive = reelBackgroundAudio.value,
+                    onClick = { viewModel.setReelBackgroundAudio(!reelBackgroundAudio.value) }
                 ),
                 SettingsItem(
                     icon = Icons.Outlined.PlayCircle,

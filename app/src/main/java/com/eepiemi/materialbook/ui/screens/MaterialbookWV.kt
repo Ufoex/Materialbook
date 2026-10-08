@@ -59,6 +59,7 @@ import com.eepiemi.materialbook.utils.jsBridge.DownloadBridge
 import com.eepiemi.materialbook.utils.jsBridge.MaterialbookSettings
 import com.eepiemi.materialbook.utils.jsBridge.ThemeChange
 import com.eepiemi.materialbook.utils.jsBridge.MaterialYouBridge
+import com.eepiemi.materialbook.utils.BackgroundAudioWebView
 import com.eepiemi.materialbook.utils.jsBridge.PipBridge
 import com.eepiemi.materialbook.audio.PipHandback
 import com.eepiemi.materialbook.utils.effectiveDesktop
@@ -1164,6 +1165,7 @@ fun MaterialbookWebView(
         navigator = navigator,
         platformWebViewParams = appWebViewParams(fullscreen),
         captureBackPresses = false,
+        factory = { BackgroundAudioWebView(it.context) },
         onCreated = { webView ->
 
             // Make Brave Block List active immediately, before the first request.
@@ -1207,6 +1209,7 @@ fun MaterialbookWebView(
                     MaterialYouBridge(primaryColor, onPrimaryColor),
                     "MaterialYouBridge"
                 )
+                (this as? BackgroundAudioWebView)?.let { addJavascriptInterface(it.Bridge(), "BgAudioBridge") }
                 addJavascriptInterface(
                     PipBridge(onVideoPlayingChanged, onPipPageVisible),
                     "PipBridge"

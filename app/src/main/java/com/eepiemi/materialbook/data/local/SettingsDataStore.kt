@@ -23,6 +23,7 @@ class SettingsDataStore(private val context: Context) {
         val IMMERSIVE_MODE = booleanPreferencesKey("immersive_mode")
         val STICKY_NAVBAR = booleanPreferencesKey("sticky_navbar")
         val AUTO_SCROLL_REELS = booleanPreferencesKey("auto_scroll_reels")
+        val REEL_BACKGROUND_AUDIO = booleanPreferencesKey("reel_background_audio")
         val REEL_CONTROLS = booleanPreferencesKey("reel_controls")
         val COLLAPSING_TOOLBAR = booleanPreferencesKey("collapsing_toolbar")
         val PINCH_TO_ZOOM = booleanPreferencesKey("pinch_to_zoom")
@@ -98,6 +99,11 @@ class SettingsDataStore(private val context: Context) {
     val autoScrollReels = context.dataStore.data.map { it[AUTO_SCROLL_REELS] ?: false }
     suspend fun setAutoScrollReels(autoScrollReels: Boolean) {
         context.dataStore.edit { it[AUTO_SCROLL_REELS] = autoScrollReels }
+    }
+
+    val reelBackgroundAudio = context.dataStore.data.map { it[REEL_BACKGROUND_AUDIO] ?: false }
+    suspend fun setReelBackgroundAudio(reelBackgroundAudio: Boolean) {
+        context.dataStore.edit { it[REEL_BACKGROUND_AUDIO] = reelBackgroundAudio }
     }
 
     val reelControls = context.dataStore.data.map { it[REEL_CONTROLS] ?: true }

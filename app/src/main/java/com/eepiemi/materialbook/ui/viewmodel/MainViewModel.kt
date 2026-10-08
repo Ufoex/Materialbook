@@ -47,6 +47,7 @@ class MainViewModel(
             Script(true, R.raw.copy_post_text, "copy_post_text.js"),
             Script(settings.stickyNavbar.value, R.raw.sticky_navbar, "sticky_navbar.js"),
             Script(settings.reelControls.value, R.raw.reel_controls, "reel_controls.js"),
+            Script(settings.reelBackgroundAudio.value, R.raw.reel_bg_audio, "reel_bg_audio.js"),
             Script(settings.autoScrollReels.value, R.raw.autoscroll_reels, "autoscroll_reels.js"),
             // Needs the bars pinned by the sticky navbar script.
             Script(settings.stickyNavbar.value && settings.collapsingToolbar.value, R.raw.collapsing_toolbar, "collapsing_toolbar.js"),
