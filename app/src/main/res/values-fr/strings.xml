@@ -92,4 +92,7 @@
     <string name="text_copied_to_clipboard">Texte copié dans le presse-papiers</string>
     <string name="hide_nav_bar_title">Masquer la barre de navigation</string>
     <string name="hide_nav_bar_desc">Masque les boutons à l\'écran ou la ligne de gestes ; balayez depuis le bord inférieur pour l\'afficher</string>
+    <string name="keep_in_memory_title">Garder l\'application en mémoire</string>
+    <string name="keep_in_memory_on">Autorisé : Android a moins de chances de fermer l\'application en arrière-plan</string>
+    <string name="keep_in_memory_off">Désactivé : Android peut fermer l\'application en arrière-plan et recharger la page. Appuyez pour autoriser</string>
 </resources>

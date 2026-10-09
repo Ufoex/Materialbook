@@ -93,4 +93,7 @@
     <string name="text_copied_to_clipboard">Testo copiato negli appunti</string>
     <string name="hide_nav_bar_title">Nascondi la barra di navigazione</string>
     <string name="hide_nav_bar_desc">Nasconde i pulsanti sullo schermo o la linea dei gesti; scorri dal bordo inferiore per mostrarla</string>
+    <string name="keep_in_memory_title">Mantieni l\'app in memoria</string>
+    <string name="keep_in_memory_on">Consentito: Android ha meno probabilità di chiudere l\'app in background</string>
+    <string name="keep_in_memory_off">Disattivato: Android può chiudere l\'app in background e ricaricare la pagina. Tocca per consentire</string>
 </resources>

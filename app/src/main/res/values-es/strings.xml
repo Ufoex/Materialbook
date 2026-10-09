@@ -92,4 +92,7 @@
     <string name="saved_to_movies">Guardado en Movies/Materialbook</string>
     <string name="hide_nav_bar_title">Ocultar barra de navegación</string>
     <string name="hide_nav_bar_desc">Oculta los botones en pantalla o la línea de gestos; desliza desde el borde inferior para mostrarla</string>
+    <string name="keep_in_memory_title">Mantener la app en memoria</string>
+    <string name="keep_in_memory_on">Permitido: es menos probable que Android cierre la app en segundo plano</string>
+    <string name="keep_in_memory_off">Desactivado: Android puede cerrar la app en segundo plano y recargar la página. Toca para permitirlo</string>
 </resources>

@@ -93,4 +93,7 @@
     <string name="text_copied_to_clipboard">文字已複製到剪貼簿</string>
     <string name="hide_nav_bar_title">隱藏導覽列</string>
     <string name="hide_nav_bar_desc">隱藏螢幕上的按鈕或手勢線；從底部邊緣滑動即可顯示</string>
+    <string name="keep_in_memory_title">讓應用程式留在記憶體</string>
+    <string name="keep_in_memory_on">已允許：Android 較不容易在背景關閉應用程式</string>
+    <string name="keep_in_memory_off">未允許：Android 可能在背景關閉應用程式並重新載入頁面。點一下以允許</string>
 </resources>

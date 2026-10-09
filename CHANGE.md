@@ -15,6 +15,9 @@
 * Feature: Hide navigation bar (setting): hides the on-screen buttons or the gesture line, keeping the status bar; swipe from the bottom edge to show it.
 * Feature: Settings translated to every language of the app (Arabic, Bengali, German, Spanish, French, Italian, Hebrew, Polish, Portuguese, Traditional Chinese).
 * Fix: Fullscreen video rotates by the sensor even when the system auto-rotate is off, instead of going back to portrait.
+* Feature: The update dialog shows the release notes (headings, bullets, bold) in a card and a progress bar while it downloads.
+* Feature: After Android closes the app in the background, it comes back to the page you were on instead of the Facebook home.
+* Feature: Keep the app in memory (Settings): opens the battery-optimization exemption so Android is less likely to close the app in the background.
 * Tweak: New applicationId `com.ufoex.materialbook`; runtime scripts are fetched from this repo.
 
 ---

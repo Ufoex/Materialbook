@@ -54,6 +54,7 @@ On by default:
 *  Blocks sponsored ads
 *  Keeps the navigation bar at the top
 *  Downloads media or copies it to the clipboard
+*  Returns to the page you were on after Android closes the app in the background, with a Settings row to exempt it from battery optimization
 *  Long-press the app icon for shortcuts to Messages, Search, Marketplace, Reels and Notifications
 *  Opens Facebook links from other apps, including `fb.me`, `fb.com` and the Facebook app's `fb://` links
 *  Checks GitHub for a new version when the app opens (Settings → *Check for updates on start*); *Check for updates now* does it on demand, and the dialog downloads the new APK

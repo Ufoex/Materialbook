@@ -94,4 +94,7 @@
     <string name="text_copied_to_clipboard">Skopiowano tekst do schowka</string>
     <string name="hide_nav_bar_title">Ukryj pasek nawigacji</string>
     <string name="hide_nav_bar_desc">Ukrywa przyciski na ekranie lub linię gestów; przesuń od dolnej krawędzi, aby go pokazać</string>
+    <string name="keep_in_memory_title">Trzymaj aplikację w pamięci</string>
+    <string name="keep_in_memory_on">Zezwolono: Android rzadziej zamknie aplikację w tle</string>
+    <string name="keep_in_memory_off">Wyłączone: Android może zamknąć aplikację w tle i przeładować stronę. Dotknij, aby zezwolić</string>
 </resources>

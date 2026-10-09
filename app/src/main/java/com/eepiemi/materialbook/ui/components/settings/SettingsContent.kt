@@ -62,6 +62,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import android.content.Intent
 import android.provider.Settings
+import android.os.PowerManager
+import androidx.compose.material.icons.outlined.BatteryChargingFull
+import androidx.core.net.toUri
 import androidx.activity.compose.LocalActivity
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.runtime.DisposableEffect
@@ -108,11 +111,13 @@ fun SettingsContent(
     val autoUpdateCheck = viewModel.autoUpdateCheck.collectAsState()
     // Re-read when coming back from the system settings screen.
     var notificationsOn by remember { mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled()) }
+    var batteryFree by remember { mutableStateOf(isBatteryFree(context)) }
     val owner = LocalActivity.current as? LifecycleOwner
     DisposableEffect(owner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 notificationsOn = NotificationManagerCompat.from(context).areNotificationsEnabled()
+                batteryFree = isBatteryFree(context)
             }
         }
         owner?.lifecycle?.addObserver(observer)
@@ -151,6 +156,20 @@ fun SettingsContent(
                         context.startActivity(
                             Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
                                 .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                        )
+                    }
+                ),
+                SettingsItem(
+                    icon = Icons.Outlined.BatteryChargingFull,
+                    title = stringResource(R.string.keep_in_memory_title),
+                    supportingText = stringResource(
+                        if (batteryFree) R.string.keep_in_memory_on else R.string.keep_in_memory_off
+                    ),
+                    isActive = null,
+                    onClick = {
+                        context.startActivity(
+                            if (batteryFree) Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                            else Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, "package:${context.packageName}".toUri())
                         )
                     }
                 ),
@@ -630,3 +649,6 @@ private fun PipRatioDialog(
         }
     }
 }
+private fun isBatteryFree(context: android.content.Context) =
+    (context.getSystemService(android.content.Context.POWER_SERVICE) as PowerManager)
+        .isIgnoringBatteryOptimizations(context.packageName)

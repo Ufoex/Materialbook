@@ -4,7 +4,32 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.SystemUpdate
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Surface
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,7 +56,7 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import org.json.JSONObject
 
-data class Release(val version: String, val pageUrl: String, val apkUrl: String)
+data class Release(val version: String, val pageUrl: String, val apkUrl: String, val notes: String = "")
 
 private const val LATEST = "https://api.github.com/repos/Ufoex/Materialbook/releases/latest"
 
@@ -41,9 +66,67 @@ suspend fun checkForUpdate(): Release? = runCatching {
         val json = JSONObject(client.get(LATEST).bodyAsText())
         val version = json.getString("tag_name").removePrefix("v")
         val apk = json.getJSONArray("assets").getJSONObject(0).getString("browser_download_url")
-        Release(version, json.getString("html_url"), apk).takeIf { isNewer(version, BuildConfig.VERSION_NAME) }
+        Release(version, json.getString("html_url"), apk, releaseNotes(json.optString("body"))).takeIf { isNewer(version, BuildConfig.VERSION_NAME) }
     }
 }.getOrNull()
+
+/** Release body (markdown) without the boilerplate lines (what the build includes, the compare link). */
+fun releaseNotes(body: String): String =
+    body.lines()
+        .filterNot { it.startsWith("Includes everything") || it.contains("Full Changelog") }
+        .joinToString("\n") { it.trimEnd() }
+        .replace(Regex("\n{3,}"), "\n\n")
+        .trim()
+
+sealed interface NoteLine {
+    data class Heading(val text: String) : NoteLine
+    data class Bullet(val text: String) : NoteLine
+    data class Para(val text: String) : NoteLine
+}
+
+/** The few markdown shapes the release notes use: `## heading`, `- bullet`, plain paragraphs. */
+fun parseNotes(notes: String): List<NoteLine> = notes.lines().filter { it.isNotBlank() }.map {
+    when {
+        it.startsWith("#") -> NoteLine.Heading(it.trimStart('#').trim())
+        Regex("^[-*]\\s+").containsMatchIn(it) -> NoteLine.Bullet(it.replace(Regex("^[-*]\\s+"), ""))
+        else -> NoteLine.Para(it.trim())
+    }
+}
+
+/** `**bold**` and `code` spans of one notes line. */
+private fun inline(text: String): AnnotatedString = buildAnnotatedString {
+    Regex("\\*\\*(.+?)\\*\\*|`(.+?)`").let { re ->
+        var last = 0
+        for (m in re.findAll(text)) {
+            append(text.substring(last, m.range.first))
+            val bold = m.groups[1]?.value
+            if (bold != null) withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) { append(bold) }
+            else withStyle(SpanStyle(fontFamily = FontFamily.Monospace)) { append(m.groups[2]!!.value) }
+            last = m.range.last + 1
+        }
+        append(text.substring(last))
+    }
+}
+
+@Composable
+private fun NotesList(notes: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        parseNotes(notes).forEach { line ->
+            when (line) {
+                is NoteLine.Heading -> Text(
+                    inline(line.text),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                is NoteLine.Bullet -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("\u2022", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    Text(inline(line.text), style = MaterialTheme.typography.bodyMedium)
+                }
+                is NoteLine.Para -> Text(inline(line.text), style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
 
 internal fun isNewer(remote: String, local: String): Boolean {
     val r = remote.split(".").map { it.toIntOrNull() ?: 0 }
@@ -80,11 +163,31 @@ fun UpdateDialog(release: Release, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = { if (!downloading) onDismiss() },
         title = { Text(stringResource(R.string.update_available_title)) },
+        icon = { Icon(Icons.Outlined.SystemUpdate, contentDescription = null) },
         text = {
-            Text(
-                if (downloading) stringResource(R.string.update_downloading)
-                else stringResource(R.string.update_available_desc, release.version, BuildConfig.VERSION_NAME)
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    stringResource(R.string.update_available_desc, release.version, BuildConfig.VERSION_NAME),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (downloading) {
+                    Text(stringResource(R.string.update_downloading), style = MaterialTheme.typography.labelLarge)
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                } else if (release.notes.isNotBlank()) {
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    ) {
+                        Box(
+                            Modifier
+                                .heightIn(max = 280.dp)
+                                .verticalScroll(rememberScrollState())
+                                .padding(16.dp)
+                        ) { NotesList(release.notes) }
+                    }
+                }
+            }
         },
         confirmButton = {
             TextButton(enabled = !downloading, onClick = {

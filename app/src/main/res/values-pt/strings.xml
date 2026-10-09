@@ -92,4 +92,7 @@
     <string name="text_copied_to_clipboard">Texto copiado para a área de transferência</string>
     <string name="hide_nav_bar_title">Ocultar barra de navegação</string>
     <string name="hide_nav_bar_desc">Oculta os botões na tela ou a linha de gestos; deslize a partir da borda inferior para mostrá-la</string>
+    <string name="keep_in_memory_title">Manter o app na memória</string>
+    <string name="keep_in_memory_on">Permitido: o Android tem menos chance de fechar o app em segundo plano</string>
+    <string name="keep_in_memory_off">Desativado: o Android pode fechar o app em segundo plano e recarregar a página. Toque para permitir</string>
 </resources>

@@ -93,4 +93,7 @@
     <string name="text_copied_to_clipboard">টেক্সট ক্লিপবোর্ডে কপি হয়েছে</string>
     <string name="hide_nav_bar_title">নেভিগেশন বার লুকান</string>
     <string name="hide_nav_bar_desc">স্ক্রিনের বোতাম বা জেসচার লাইন লুকায়; দেখাতে নিচের প্রান্ত থেকে সোয়াইপ করুন</string>
+    <string name="keep_in_memory_title">অ্যাপ মেমরিতে রাখুন</string>
+    <string name="keep_in_memory_on">অনুমোদিত: অ্যান্ড্রয়েড ব্যাকগ্রাউন্ডে অ্যাপ বন্ধ করার সম্ভাবনা কম</string>
+    <string name="keep_in_memory_off">বন্ধ: অ্যান্ড্রয়েড ব্যাকগ্রাউন্ডে অ্যাপ বন্ধ করে পেজ আবার লোড করতে পারে। অনুমতি দিতে ট্যাপ করুন</string>
 </resources>

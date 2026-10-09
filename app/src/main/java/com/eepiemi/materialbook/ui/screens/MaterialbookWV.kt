@@ -54,6 +54,7 @@ import com.eepiemi.materialbook.utils.BraveBlockList
 import com.eepiemi.materialbook.utils.ExternalRequestInterceptor
 import com.eepiemi.materialbook.utils.FullscreenController
 import com.eepiemi.materialbook.utils.appOrientation
+import com.eepiemi.materialbook.utils.isWebViewRenderable
 import com.eepiemi.materialbook.utils.appWebViewParams
 import com.eepiemi.materialbook.utils.jsBridge.ClipboardBridge
 import com.eepiemi.materialbook.utils.jsBridge.DownloadBridge
@@ -741,10 +742,19 @@ fun MaterialbookWebView(
 
     val initialUrl = rememberSaveable { mutableStateOf(url) }
 
+    // Android kills background apps to free memory (more so with battery savers). When the
+    // system brings the app back it recreates the activity with this saved value, so the
+    // page you were on loads again instead of the Facebook home. A fresh start has none.
+    var resumeUrl by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(state.lastLoadedUrl) {
+        state.lastLoadedUrl?.takeIf { it.startsWith("https://") && isWebViewRenderable(it) }
+            ?.let { resumeUrl = it }
+    }
+
     LaunchedEffect(navigator) {
         val bundle = state.viewState
         if (bundle == null) {
-            navigator.loadUrl(url)
+            navigator.loadUrl(resumeUrl ?: url)
         }
     }
 

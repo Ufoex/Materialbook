@@ -93,4 +93,7 @@
     <string name="text_copied_to_clipboard">הטקסט הועתק ללוח</string>
     <string name="hide_nav_bar_title">הסתרת סרגל הניווט</string>
     <string name="hide_nav_bar_desc">מסתיר את הכפתורים שעל המסך או את קו המחוות; החלקה מהקצה התחתון מציגה אותו</string>
+    <string name="keep_in_memory_title">שמירת האפליקציה בזיכרון</string>
+    <string name="keep_in_memory_on">מותר: סביר פחות שאנדרואיד תסגור את האפליקציה ברקע</string>
+    <string name="keep_in_memory_off">כבוי: אנדרואיד עלולה לסגור את האפליקציה ברקע ולטעון את הדף מחדש. הקש כדי לאפשר</string>
 </resources>

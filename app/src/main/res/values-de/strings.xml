@@ -92,4 +92,7 @@
     <string name="text_copied_to_clipboard">Text in die Zwischenablage kopiert</string>
     <string name="hide_nav_bar_title">Navigationsleiste ausblenden</string>
     <string name="hide_nav_bar_desc">Blendet die Bildschirmtasten oder die Gestenlinie aus; vom unteren Rand wischen, um sie anzuzeigen</string>
+    <string name="keep_in_memory_title">App im Speicher halten</string>
+    <string name="keep_in_memory_on">Erlaubt: Android beendet die App im Hintergrund seltener</string>
+    <string name="keep_in_memory_off">Aus: Android kann die App im Hintergrund beenden und die Seite neu laden. Zum Erlauben tippen</string>
 </resources>

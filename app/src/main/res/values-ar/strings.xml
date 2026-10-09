@@ -92,4 +92,7 @@
     <string name="saved_to_movies">تم الحفظ في Movies/Materialbook</string>
     <string name="hide_nav_bar_title">إخفاء شريط التنقل</string>
     <string name="hide_nav_bar_desc">يخفي أزرار الشاشة أو خط الإيماءات؛ اسحب من الحافة السفلية لإظهاره</string>
+    <string name="keep_in_memory_title">إبقاء التطبيق في الذاكرة</string>
+    <string name="keep_in_memory_on">مسموح: يقلّ احتمال إغلاق أندرويد للتطبيق في الخلفية</string>
+    <string name="keep_in_memory_off">متوقف: قد يغلق أندرويد التطبيق في الخلفية ويعيد تحميل الصفحة. المس للسماح</string>
 </resources>
