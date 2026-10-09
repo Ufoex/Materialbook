@@ -60,6 +60,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import android.content.Intent
+import android.provider.Settings
+import androidx.activity.compose.LocalActivity
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.runtime.DisposableEffect
+import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.runtime.rememberCoroutineScope
@@ -92,10 +101,23 @@ fun SettingsContent(
     val enableCopyToClipboard = viewModel.enableCopyToClipboard.collectAsState()
     val desktopLayout = viewModel.desktopLayout.collectAsState()
     val immersiveMode = viewModel.immersiveMode.collectAsState()
+    val hideNavBar = viewModel.hideNavBar.collectAsState()
     val stickyNavbar = viewModel.stickyNavbar.collectAsState()
     val collapsingToolbar = viewModel.collapsingToolbar.collectAsState()
     val reelControls = viewModel.reelControls.collectAsState()
     val autoUpdateCheck = viewModel.autoUpdateCheck.collectAsState()
+    // Re-read when coming back from the system settings screen.
+    var notificationsOn by remember { mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled()) }
+    val owner = LocalActivity.current as? LifecycleOwner
+    DisposableEffect(owner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                notificationsOn = NotificationManagerCompat.from(context).areNotificationsEnabled()
+            }
+        }
+        owner?.lifecycle?.addObserver(observer)
+        onDispose { owner?.lifecycle?.removeObserver(observer) }
+    }
     val scope = rememberCoroutineScope()
     var update by remember { mutableStateOf<Release?>(null) }
     val upToDateToast = stringResource(R.string.update_up_to_date)
@@ -118,6 +140,20 @@ fun SettingsContent(
     ) {
         SettingsGroup(
             items = listOf(
+                SettingsItem(
+                    icon = Icons.Outlined.Notifications,
+                    title = stringResource(R.string.notifications_title),
+                    supportingText = stringResource(
+                        if (notificationsOn) R.string.notifications_on else R.string.notifications_off
+                    ),
+                    isActive = null,
+                    onClick = {
+                        context.startActivity(
+                            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                        )
+                    }
+                ),
                 SettingsItem(
                     icon = Icons.Outlined.SystemUpdate,
                     title = stringResource(R.string.auto_update_check_title),
@@ -239,6 +275,13 @@ fun SettingsContent(
                     supportingText = stringResource(R.string.hide_system_bars_for_a_fullscreen_experience),
                     isActive = immersiveMode.value,
                     onClick = { viewModel.setImmersiveMode(!immersiveMode.value) }
+                ),
+                SettingsItem(
+                    icon = Icons.Outlined.PanoramaWideAngle,
+                    title = stringResource(R.string.hide_nav_bar_title),
+                    supportingText = stringResource(R.string.hide_nav_bar_desc),
+                    isActive = hideNavBar.value,
+                    onClick = { viewModel.setHideNavBar(!hideNavBar.value) }
                 ),
                 SettingsItem(
                     icon = Icons.Default.Padding,

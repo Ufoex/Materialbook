@@ -20,11 +20,13 @@ class SettingsDataStore(private val context: Context) {
         val ENABLE_DOWNLOAD_CONTENT = booleanPreferencesKey("enable_download_content")
         val ENABLE_COPY_TO_CLIPBOARD = booleanPreferencesKey("enable_copy_to_clipboard")
         val DESKTOP_LAYOUT = booleanPreferencesKey("desktop_layout")
+        val HIDE_NAV_BAR = booleanPreferencesKey("hide_nav_bar")
         val IMMERSIVE_MODE = booleanPreferencesKey("immersive_mode")
         val STICKY_NAVBAR = booleanPreferencesKey("sticky_navbar")
         val AUTO_SCROLL_REELS = booleanPreferencesKey("auto_scroll_reels")
         val REEL_BACKGROUND_AUDIO = booleanPreferencesKey("reel_background_audio")
         val AUTO_UPDATE_CHECK = booleanPreferencesKey("auto_update_check")
+        val NOTIFICATIONS_ASKED = booleanPreferencesKey("notifications_asked")
         val REEL_CONTROLS = booleanPreferencesKey("reel_controls")
         val COLLAPSING_TOOLBAR = booleanPreferencesKey("collapsing_toolbar")
         val PINCH_TO_ZOOM = booleanPreferencesKey("pinch_to_zoom")
@@ -87,6 +89,11 @@ class SettingsDataStore(private val context: Context) {
         context.dataStore.edit { it[DESKTOP_LAYOUT] = desktopLayout }
     }
 
+    val hideNavBar = context.dataStore.data.map { it[HIDE_NAV_BAR] ?: false }
+    suspend fun setHideNavBar(hideNavBar: Boolean) {
+        context.dataStore.edit { it[HIDE_NAV_BAR] = hideNavBar }
+    }
+
     val immersiveMode = context.dataStore.data.map { it[IMMERSIVE_MODE] ?: false}
     suspend fun setImmersiveMode(immersiveMode: Boolean) {
         context.dataStore.edit { it[IMMERSIVE_MODE] = immersiveMode }
@@ -110,6 +117,16 @@ class SettingsDataStore(private val context: Context) {
     val autoUpdateCheck = context.dataStore.data.map { it[AUTO_UPDATE_CHECK] ?: true }
     suspend fun setAutoUpdateCheck(autoUpdateCheck: Boolean) {
         context.dataStore.edit { it[AUTO_UPDATE_CHECK] = autoUpdateCheck }
+    }
+
+    /** True the first time it is called, false afterwards: the permission prompt is asked once. */
+    suspend fun takeFirstNotificationAsk(): Boolean {
+        var first = false
+        context.dataStore.edit {
+            first = it[NOTIFICATIONS_ASKED] != true
+            it[NOTIFICATIONS_ASKED] = true
+        }
+        return first
     }
 
     val reelControls = context.dataStore.data.map { it[REEL_CONTROLS] ?: true }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Materialbook</string>
-    <string name="network_error_description">Per utilizzare Materialbook, attiva i dati mobili o connettiti al Wi-Fi.</string>
-    <string name="materialbook_settings">Impostazioni Materialbook</string>
+    <string name="app_name">Faceboost</string>
+    <string name="network_error_description">Per utilizzare Faceboost, attiva i dati mobili o connettiti al Wi-Fi.</string>
+    <string name="materialbook_settings">Impostazioni Faceboost</string>
 </resources>

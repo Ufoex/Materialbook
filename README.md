@@ -1,5 +1,5 @@
 <p align="middle">
-    <img src='./fastlane/metadata/android/en-US/images/featureGraphic.png' alt="Materialbook banner" width="100%">
+    <img src='./fastlane/metadata/android/en-US/images/featureGraphic.png' alt="Faceboost banner" width="100%">
 </p>
 
 <h1 align="middle">
@@ -25,6 +25,8 @@
 <h2 align="middle">
     ✏️ About this repo
 </h2>
+
+The app is called **Faceboost** (formerly Materialbook; the package name and the repo keep the old name so updates keep working).
 
 This is **not an original project**. It is a collection repo where the changes from other
 [Materialbook](https://github.com/eepiemi/Materialbook) forks are brought together in one app.
@@ -52,6 +54,8 @@ On by default:
 *  Blocks sponsored ads
 *  Keeps the navigation bar at the top
 *  Downloads media or copies it to the clipboard
+*  Long-press the app icon for shortcuts to Messages, Search, Marketplace, Reels and Notifications
+*  Opens Facebook links from other apps, including `fb.me`, `fb.com` and the Facebook app's `fb://` links
 *  Checks GitHub for a new version when the app opens (Settings → *Check for updates on start*); *Check for updates now* does it on demand, and the dialog downloads the new APK
 *  Reel controls: time, seek bar, fullscreen and volume on paused reels, a button to hide the reel icons and one to switch between filling the screen and showing the whole video
 
@@ -64,7 +68,7 @@ Off by default (opt-in):
     *  Stories
     *  Groups
     *  People you may know
-*  Hides the system bars (immersive mode)
+*  Hides the system bars (immersive mode), or only the navigation bar / gesture line (Hide navigation bar)
 *  Auto-scrolls reels: goes to the next reel when the current one ends, with a button in the reel viewer to pause it
 *  Keeps a reel's audio playing with the screen off, with a button in the reel viewer
 *  Collapsing toolbar: the top bars hide when scrolling down and return when scrolling up (needs Sticky Navbar)
@@ -78,6 +82,7 @@ Always on:
 *  Keeps the reel you are watching in place when Facebook rebuilds the reel list or an ad is hidden, and fades the thumbnail into the video when it starts
 *  Supports real fullscreen video, including landscape, from Facebook's fullscreen button
    (on phones the app otherwise stays in portrait, since Facebook's mobile site breaks in landscape)
+*  Fullscreen video rotates by the sensor, even with the system auto-rotate off
 *  Supports English, Arabic, Bengali, German, Hebrew (`עברית`), Italian, Spanish, French, Portuguese, and Traditional Chinese
 *  And more!
 

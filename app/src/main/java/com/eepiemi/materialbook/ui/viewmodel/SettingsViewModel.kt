@@ -17,6 +17,7 @@ import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_REEL
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_STORIES
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_SUGGESTED
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.IMMERSIVE_MODE
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_NAV_BAR
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MATERIAL_YOU
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PINCH_TO_ZOOM
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PIP_ENABLED
@@ -68,6 +69,11 @@ class SettingsViewModel(
     val desktopLayout = dataStore.desktopLayout.stateIn(
         scope = viewModelScope,
         initialValue = initialPrefs[DESKTOP_LAYOUT] ?: false,
+        started = SharingStarted.WhileSubscribed()
+    )
+    val hideNavBar = dataStore.hideNavBar.stateIn(
+        scope = viewModelScope,
+        initialValue = initialPrefs[HIDE_NAV_BAR] ?: false,
         started = SharingStarted.WhileSubscribed()
     )
     val immersiveMode = dataStore.immersiveMode.stateIn(
@@ -200,6 +206,12 @@ class SettingsViewModel(
         }
     }
 
+    fun setHideNavBar(hideNavBar: Boolean) {
+        viewModelScope.launch {
+            dataStore.setHideNavBar(hideNavBar)
+        }
+    }
+
     fun setImmersiveMode(immersiveMode: Boolean) {
         viewModelScope.launch {
             dataStore.setImmersiveMode(immersiveMode)
@@ -223,6 +235,8 @@ class SettingsViewModel(
             dataStore.setAutoUpdateCheck(autoUpdateCheck)
         }
     }
+
+    suspend fun takeFirstNotificationAsk() = dataStore.takeFirstNotificationAsk()
 
     fun setReelControls(reelControls: Boolean) {
         viewModelScope.launch {

@@ -8,7 +8,7 @@
   config changes — just don't redefine these 3 keys in strings.xml again.
 -->
 <resources>
-    <string name="app_name">Materialbook</string>
-    <string name="network_error_description">To use Materialbook, turn on mobile data or connect to Wi-Fi.</string>
-    <string name="materialbook_settings">Materialbook settings</string>
+    <string name="app_name">Faceboost</string>
+    <string name="network_error_description">To use Faceboost, turn on mobile data or connect to Wi-Fi.</string>
+    <string name="materialbook_settings">Faceboost settings</string>
 </resources>

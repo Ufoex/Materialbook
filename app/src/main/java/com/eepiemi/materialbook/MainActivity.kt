@@ -6,7 +6,10 @@ import android.app.RemoteAction
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.activity.result.contract.ActivityResultContracts
 import android.content.IntentFilter
 import android.graphics.Rect
 import android.graphics.drawable.Icon
@@ -26,8 +29,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.eepiemi.materialbook.utils.Release
 import com.eepiemi.materialbook.utils.intentUrl
+import com.eepiemi.materialbook.utils.publishShortcuts
 import com.eepiemi.materialbook.utils.UpdateDialog
 import com.eepiemi.materialbook.utils.checkForUpdate
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -67,6 +72,7 @@ class MainActivity : ComponentActivity() {
 
     // VIEW intents delivered to an already-running instance (singleTop) update this.
     private val urlState = mutableStateOf<String?>(null)
+    private val urlNonce = mutableIntStateOf(0)
 
     // Live playback state reported by PipBridge — not settings-backed, so it
     // isn't part of SettingsViewModel; just a plain flag read at the one
@@ -274,6 +280,8 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        publishShortcuts(this)
+        askNotificationsOnce()
 
         // Phones browse in portrait; only HTML5 fullscreen video rotates (see
         // appOrientation and the fullscreen host in MaterialbookWebView).
@@ -313,6 +321,7 @@ class MainActivity : ComponentActivity() {
                 MaterialbookWebView(
                     url = intentUrl
                         ?: "https://facebook.com/",
+                    urlNonce = urlNonce.intValue,
                     settingsVM = settingsVM,
                     pipToggleTrigger = pipToggleTrigger,
                     pipEnteringTrigger = pipEnteringTrigger,
@@ -335,6 +344,19 @@ class MainActivity : ComponentActivity() {
         }
         lifecycleScope.launch {
             settingsVM.pipPortraitRatio.collect { reapplyPipParams() }
+        }
+    }
+
+    private val notificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+
+    // Android 13+: ask for notifications the first time the app opens. Later changes are in
+    // Settings (which opens the system notification settings).
+    private fun askNotificationsOnce() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) return
+        lifecycleScope.launch {
+            if (settingsVM.takeFirstNotificationAsk()) notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 
@@ -483,7 +505,10 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        intent.data?.toString()?.let { urlState.value = intentUrl(it) }
+        intent.data?.toString()?.let {
+            urlState.value = intentUrl(it)
+            urlNonce.intValue++
+        }
     }
 
     override fun onUserLeaveHint() {

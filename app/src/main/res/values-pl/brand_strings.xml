@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Faceboost</string>
+    <string name="network_error_description">Aby korzystać z Faceboost, włącz transmisję danych lub połącz się z Wi-Fi.</string>
+    <string name="materialbook_settings">Ustawienia Faceboost</string>
+</resources>

@@ -12,8 +12,9 @@ fun isAutoDesktopScreen(smallestScreenWidthDp: Int): Boolean = smallestScreenWid
 
 /**
  * Requested orientation for the activity. Phones stay portrait while
- * browsing and may rotate (following the user's auto-rotate setting) only
- * while a video is in HTML5 fullscreen: Facebook's mobile site handles a real
+ * browsing and may rotate only while a video is in HTML5 fullscreen, by the
+ * sensor even if the system auto-rotate is off (with it off, FULL_USER only
+ * offered Android's temporary rotate button, and the screen went back to portrait): Facebook's mobile site handles a real
  * landscape page badly (it skips the reel on rotation, and leaving fullscreen
  * in landscape leaves its viewer showing an oversized still frame instead of
  * the video, same in Chrome). Large screens (the auto-desktop ones) rotate
@@ -21,7 +22,7 @@ fun isAutoDesktopScreen(smallestScreenWidthDp: Int): Boolean = smallestScreenWid
  */
 fun appOrientation(smallestScreenWidthDp: Int, isFullscreen: Boolean): Int = when {
     isAutoDesktopScreen(smallestScreenWidthDp) -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-    isFullscreen -> ActivityInfo.SCREEN_ORIENTATION_FULL_USER
+    isFullscreen -> ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
     else -> ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT
 }
 

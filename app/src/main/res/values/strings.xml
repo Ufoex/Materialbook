@@ -20,9 +20,17 @@
     <string name="update_available_desc">Version %1$s is available (you have %2$s). Install it now?</string>
     <string name="update_install">Install</string>
     <string name="update_downloading">Downloading the update…</string>
-    <string name="update_allow_install">Allow Materialbook to install apps, then tap Install again</string>
+    <string name="update_allow_install">Allow Faceboost to install apps, then tap Install again</string>
     <string name="update_failed">Could not install it from the app, opening the download link</string>
     <string name="update_later">Later</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_on">Allowed. Tap to change them in Android settings</string>
+    <string name="notifications_off">Off. Tap to allow them in Android settings</string>
+    <string name="shortcut_messages">Messages</string>
+    <string name="shortcut_search">Search</string>
+    <string name="shortcut_marketplace">Marketplace</string>
+    <string name="shortcut_reels">Reels</string>
+    <string name="shortcut_notifications">Notifications</string>
     <string name="reel_controls_title">Reel controls</string>
     <string name="reel_controls_desc">Seek bar, time, fullscreen and volume on paused reels, plus a button to hide the icons</string>
     <string name="collapsing_toolbar_title">Collapsing toolbar</string>
@@ -77,11 +85,13 @@
     <string name="messenger_title">Messenger app</string>
     <string name="open_messenger_title">Open Messenger</string>
     <string name="open_messenger_desc">Launch the Messenger app</string>
-    <string name="messenger_redirect_toast">Please open Messenger in Materialbook Settings.</string>
+    <string name="messenger_redirect_toast">Please open Messenger in Faceboost Settings.</string>
     <string name="open_external_failed_toast">No app can open this link.</string>
     <string name="messenger_package_label">Package name</string>
     <string name="messenger_package_save">Save</string>
     <string name="messenger_package_reset">Reset</string>
     <string name="saved_to_movies">Saved to Movies/Materialbook</string>
     <string name="text_copied_to_clipboard">Text copied to clipboard</string>
+    <string name="hide_nav_bar_title">Hide navigation bar</string>
+    <string name="hide_nav_bar_desc">Hides the on-screen buttons or the gesture line; swipe from the bottom edge to show it</string>
 </resources>

@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -670,6 +671,7 @@ internal fun pipHandbackJs(positionMs: Long?, play: Boolean, rearm: Boolean): St
 @Composable
 fun MaterialbookWebView(
     url: String,
+    urlNonce: Int = 0,
     settingsVM: SettingsViewModel = viewModel(),
     pipToggleTrigger: Int = 0,
     pipEnteringTrigger: Int = 0,
@@ -746,10 +748,15 @@ fun MaterialbookWebView(
         }
     }
 
-    // A new VIEW intent while the app is already open (MainActivity is singleTop).
-    LaunchedEffect(url) {
-        if (url != initialUrl.value) {
+    // A new VIEW intent while the app is already open (MainActivity is singleTop). The nonce
+    // makes the same link twice in a row (a launcher shortcut) load again, and a Messages
+    // layer left open must not cover the page the link opens.
+    val lastNonce = remember { mutableIntStateOf(urlNonce) }
+    LaunchedEffect(url, urlNonce) {
+        if (url != initialUrl.value || urlNonce != lastNonce.intValue) {
             initialUrl.value = url
+            lastNonce.intValue = urlNonce
+            messagesLayerUrl = null
             navigator.loadUrl(url)
         }
     }
@@ -953,7 +960,10 @@ fun MaterialbookWebView(
     // Manual handling to fix visual & padding bug on settings dialog.
     var isImmersiveMode by rememberSaveable { mutableStateOf(settingsVM.immersiveMode.value) }
 
-    fun setWindow(immersive: Boolean) {
+    // Hide only the navigation bar (3-button bar, or the gesture line), keeping the status bar.
+    val hideNavBar by settingsVM.hideNavBar.collectAsState()
+
+    fun setWindow(immersive: Boolean, hideNav: Boolean = settingsVM.hideNavBar.value) {
         val window = activity?.window ?: return
         val windowInsetsController = WindowInsetsControllerCompat(window, window.decorView)
 
@@ -963,14 +973,21 @@ fun MaterialbookWebView(
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         } else {
             val isLight = ColorUtils.calculateLuminance(themeColor.toArgb()) > 0.5
-            windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
+            windowInsetsController.show(WindowInsetsCompat.Type.statusBars())
+            if (hideNav) {
+                windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars())
+                windowInsetsController.systemBarsBehavior =
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            } else {
+                windowInsetsController.show(WindowInsetsCompat.Type.navigationBars())
+            }
             windowInsetsController.isAppearanceLightStatusBars = isLight
             windowInsetsController.isAppearanceLightNavigationBars = isLight
         }
         isImmersiveMode = immersive
     }
 
-    LaunchedEffect(isImmersiveMode, themeColor.value) {
+    LaunchedEffect(isImmersiveMode, hideNavBar, themeColor.value) {
         setWindow(isImmersiveMode)
     }
 
@@ -1081,7 +1098,7 @@ fun MaterialbookWebView(
 
     var settingsToggle by rememberSaveable { mutableStateOf(false) }
     if (settingsToggle) {
-        setWindow(false)
+        setWindow(false, hideNav = false)
         SettingsDialog(
             onDismiss = {
                 setWindow(settingsVM.immersiveMode.value)
