@@ -96,4 +96,10 @@
     <string name="keep_in_memory_title">讓應用程式留在記憶體</string>
     <string name="keep_in_memory_on">已允許：Android 較不容易在背景關閉應用程式</string>
     <string name="keep_in_memory_off">未允許：Android 可能在背景關閉應用程式並重新載入頁面。點一下以允許</string>
-</resources>
+    <string name="notify_poll_title">Facebook 通知</string>
+    <string name="notify_poll_desc">大約每 15 分鐘檢查一次新訊息、通知和交友邀請並通知你，即使應用程式已關閉</string>
+    <string name="channel_alerts">Facebook 提醒</string>
+    <string name="notif_new_messages">新訊息</string>
+    <string name="notif_new_notifications">新通知</string>
+    <string name="notif_new_friends">新的交友邀請</string>
+    <string name="share_title">傳送方式…</string>\n    <string name="share_in_messages">訊息（在此應用程式）</string>\n    <string name="share_in_messenger_app">Messenger 應用程式</string>\n    <string name="share_on_facebook">發佈到 Facebook</string>\n    <string name="share_cancel">取消</string>\n    <string name="share_pick_chat">選擇要傳送的聊天</string>\n    <plurals name="share_files">\n        <item quantity="one">%d 個檔案</item>\n        <item quantity="other">%d 個檔案</item>\n    </plurals>\n</resources>

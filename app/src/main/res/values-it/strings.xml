@@ -96,4 +96,10 @@
     <string name="keep_in_memory_title">Mantieni l\'app in memoria</string>
     <string name="keep_in_memory_on">Consentito: Android ha meno probabilità di chiudere l\'app in background</string>
     <string name="keep_in_memory_off">Disattivato: Android può chiudere l\'app in background e ricaricare la pagina. Tocca per consentire</string>
-</resources>
+    <string name="notify_poll_title">Notifiche di Facebook</string>
+    <string name="notify_poll_desc">Controlla circa ogni 15 minuti nuovi messaggi, notifiche e richieste di amicizia e ti avvisa, anche con l\'app chiusa</string>
+    <string name="channel_alerts">Avvisi di Facebook</string>
+    <string name="notif_new_messages">Nuovi messaggi</string>
+    <string name="notif_new_notifications">Nuove notifiche</string>
+    <string name="notif_new_friends">Nuove richieste di amicizia</string>
+    <string name="share_title">Invia con…</string>\n    <string name="share_in_messages">Messaggi (in questa app)</string>\n    <string name="share_in_messenger_app">App Messenger</string>\n    <string name="share_on_facebook">Pubblica su Facebook</string>\n    <string name="share_cancel">Annulla</string>\n    <string name="share_pick_chat">Scegli una chat a cui inviarlo</string>\n    <plurals name="share_files">\n        <item quantity="one">%d file</item>\n        <item quantity="other">%d file</item>\n    </plurals>\n</resources>

@@ -713,3 +713,38 @@ if (!window._mbBannerObserver) {
     s.textContent = '.dark-mode textarea.textbox{color:#e4e6eb !important;caret-color:#e4e6eb !important}';
     document.head.appendChild(s);
 })();
+
+// Facebook's mobile site is server driven: after the page has been away for a few minutes
+// (frozen, its socket closed) the server starts a new session and sends the page to the Home.
+// When that happens by itself right after coming back, put the page where it was.
+(() => {
+    if (window._mbKeepPage) return;
+    window._mbKeepPage = true;
+    let before = null, hiddenAt = 0, visibleAt = 0, touched = true;
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            before = location.href;
+            hiddenAt = Date.now();
+        } else {
+            visibleAt = Date.now();
+            touched = false;
+        }
+    }, true);
+    ['touchstart', 'pointerdown', 'keydown'].forEach(e =>
+        document.addEventListener(e, () => { touched = true; }, true));
+    ['replaceState', 'pushState'].forEach(m => {
+        const orig = history[m];
+        history[m] = function (state, title, url) {
+            const result = orig.apply(this, arguments);
+            try {
+                if (before && !touched && visibleAt - hiddenAt > 60000 && Date.now() - visibleAt < 15000 &&
+                    new URL(url, location.href).pathname === '/' && new URL(before).pathname !== '/') {
+                    const back = before;
+                    before = null;
+                    location.replace(back);
+                }
+            } catch (e) {}
+            return result;
+        };
+    });
+})();

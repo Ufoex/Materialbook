@@ -5,6 +5,17 @@ import android.webkit.CookieManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.eepiemi.materialbook.utils.ShareBox
+import com.eepiemi.materialbook.utils.jsBridge.ShareBridge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.LinearProgressIndicator
@@ -112,7 +123,9 @@ fun MessagesLayer(
         if (loadingState is LoadingState.Finished) {
             val layerScript = resources.openRawResource(R.raw.messages_layer)
                 .bufferedReader().use { it.readText() }
-            navigator.evaluateJavaScript((userScripts ?: "") + "\n" + layerScript) {}
+            val shareScript = resources.openRawResource(R.raw.share_into_chat)
+                .bufferedReader().use { it.readText() }
+            navigator.evaluateJavaScript((userScripts ?: "") + "\n" + layerScript + "\n" + shareScript) {}
         }
     }
 
@@ -136,6 +149,7 @@ fun MessagesLayer(
                     }
                 }
                 webView.apply {
+                    addJavascriptInterface(ShareBridge(context) { webView.post { ShareBox.inChat = null } }, "ShareBridge")
                     addJavascriptInterface(DownloadBridge(context), "DownloadBridge")
                     addJavascriptInterface(ClipboardBridge(context), "ClipboardBridge")
                     addJavascriptInterface(MaterialYouBridge(primaryColor, onPrimaryColor), "MaterialYouBridge")
@@ -151,6 +165,23 @@ fun MessagesLayer(
                 }
             }
         )
+        // Sending something into a chat: pick the chat (or it is already open) and it is typed in.
+        if (ShareBox.inChat != null) {
+            Surface(
+                modifier = Modifier.align(Alignment.BottomCenter).padding(12.dp),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.inverseSurface,
+            ) {
+                Row(Modifier.padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        stringResource(R.string.share_pick_chat),
+                        color = MaterialTheme.colorScheme.inverseOnSurface,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    TextButton(onClick = { ShareBox.inChat = null }) { Text(stringResource(R.string.share_cancel)) }
+                }
+            }
+        }
         if (loadingState is LoadingState.Loading) {
             LinearProgressIndicator(
                 progress = { loadingState.progress },

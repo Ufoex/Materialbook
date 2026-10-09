@@ -95,4 +95,10 @@
     <string name="keep_in_memory_title">إبقاء التطبيق في الذاكرة</string>
     <string name="keep_in_memory_on">مسموح: يقلّ احتمال إغلاق أندرويد للتطبيق في الخلفية</string>
     <string name="keep_in_memory_off">متوقف: قد يغلق أندرويد التطبيق في الخلفية ويعيد تحميل الصفحة. المس للسماح</string>
-</resources>
+    <string name="notify_poll_title">إشعارات فيسبوك</string>
+    <string name="notify_poll_desc">يتحقق كل 15 دقيقة تقريباً من الرسائل والإشعارات وطلبات الصداقة الجديدة وينبّهك، حتى والتطبيق مغلق</string>
+    <string name="channel_alerts">تنبيهات فيسبوك</string>
+    <string name="notif_new_messages">رسائل جديدة</string>
+    <string name="notif_new_notifications">إشعارات جديدة</string>
+    <string name="notif_new_friends">طلبات صداقة جديدة</string>
+    <string name="share_title">إرسال عبر…</string>\n    <string name="share_in_messages">الرسائل (في هذا التطبيق)</string>\n    <string name="share_in_messenger_app">تطبيق ماسنجر</string>\n    <string name="share_on_facebook">النشر على فيسبوك</string>\n    <string name="share_cancel">إلغاء</string>\n    <string name="share_pick_chat">اختر محادثة لإرسال هذا</string>\n    <plurals name="share_files">\n        <item quantity="one">%d ملف</item>\n        <item quantity="other">%d ملفات</item>\n    </plurals>\n</resources>

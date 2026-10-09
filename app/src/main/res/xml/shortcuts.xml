@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Chats published as shortcuts (see publishChatShortcuts) show up in Android's share sheet. -->
+    <share-target android:targetClass="com.eepiemi.materialbook.MainActivity">
+        <data android:mimeType="text/plain" />
+        <data android:mimeType="image/*" />
+        <data android:mimeType="video/*" />
+        <category android:name="com.eepiemi.materialbook.category.SHARE_CHAT" />
+    </share-target>
+</shortcuts>

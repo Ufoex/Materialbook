@@ -96,4 +96,10 @@
     <string name="keep_in_memory_title">অ্যাপ মেমরিতে রাখুন</string>
     <string name="keep_in_memory_on">অনুমোদিত: অ্যান্ড্রয়েড ব্যাকগ্রাউন্ডে অ্যাপ বন্ধ করার সম্ভাবনা কম</string>
     <string name="keep_in_memory_off">বন্ধ: অ্যান্ড্রয়েড ব্যাকগ্রাউন্ডে অ্যাপ বন্ধ করে পেজ আবার লোড করতে পারে। অনুমতি দিতে ট্যাপ করুন</string>
-</resources>
+    <string name="notify_poll_title">ফেসবুক নোটিফিকেশন</string>
+    <string name="notify_poll_desc">প্রায় প্রতি ১৫ মিনিটে নতুন মেসেজ, নোটিফিকেশন ও ফ্রেন্ড রিকোয়েস্ট দেখে আপনাকে জানায়, অ্যাপ বন্ধ থাকলেও</string>
+    <string name="channel_alerts">ফেসবুক সতর্কতা</string>
+    <string name="notif_new_messages">নতুন মেসেজ</string>
+    <string name="notif_new_notifications">নতুন নোটিফিকেশন</string>
+    <string name="notif_new_friends">নতুন ফ্রেন্ড রিকোয়েস্ট</string>
+    <string name="share_title">এর মাধ্যমে পাঠান…</string>\n    <string name="share_in_messages">মেসেজ (এই অ্যাপে)</string>\n    <string name="share_in_messenger_app">মেসেঞ্জার অ্যাপ</string>\n    <string name="share_on_facebook">ফেসবুকে পোস্ট করুন</string>\n    <string name="share_cancel">বাতিল</string>\n    <string name="share_pick_chat">এটি পাঠাতে একটি চ্যাট বেছে নিন</string>\n    <plurals name="share_files">\n        <item quantity="one">%d টি ফাইল</item>\n        <item quantity="other">%d টি ফাইল</item>\n    </plurals>\n</resources>

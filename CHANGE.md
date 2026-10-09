@@ -18,6 +18,9 @@
 * Feature: The update dialog shows the release notes (headings, bullets, bold) in a card and a progress bar while it downloads.
 * Feature: After Android closes the app in the background, it comes back to the page you were on instead of the Facebook home.
 * Feature: Keep the app in memory (Settings): opens the battery-optimization exemption so Android is less likely to close the app in the background.
+* Feature: Share to the app: links, text, pictures and videos from other apps. A dialog offers Messages (in this app, typed into the chat you pick), the Messenger app, or posting the link on Facebook. Facebook's "Send as message" uses it too instead of jumping to the Messenger app. Your latest chats are also offered as contacts in Android's share sheet (not shown by every system share menu).
+* Feature: Facebook notifications (setting, off by default): about every 15 minutes, even with the app closed, it checks the counts on Facebook's tab bar and notifies of new messages, notifications and friend requests.
+* Fix: Facebook resets the page to its Home after the app has been in the background for a few minutes (its connection is lost when Android freezes the page); the app now takes you back to the page you were on.
 * Tweak: New applicationId `com.ufoex.materialbook`; runtime scripts are fetched from this repo.
 
 ---

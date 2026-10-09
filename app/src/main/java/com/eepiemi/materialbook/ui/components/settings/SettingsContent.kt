@@ -104,6 +104,7 @@ fun SettingsContent(
     val enableCopyToClipboard = viewModel.enableCopyToClipboard.collectAsState()
     val desktopLayout = viewModel.desktopLayout.collectAsState()
     val immersiveMode = viewModel.immersiveMode.collectAsState()
+    val notifyPoll = viewModel.notifyPoll.collectAsState()
     val hideNavBar = viewModel.hideNavBar.collectAsState()
     val stickyNavbar = viewModel.stickyNavbar.collectAsState()
     val collapsingToolbar = viewModel.collapsingToolbar.collectAsState()
@@ -158,6 +159,13 @@ fun SettingsContent(
                                 .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
                         )
                     }
+                ),
+                SettingsItem(
+                    icon = Icons.Outlined.Notifications,
+                    title = stringResource(R.string.notify_poll_title),
+                    supportingText = stringResource(R.string.notify_poll_desc),
+                    isActive = notifyPoll.value,
+                    onClick = { viewModel.setNotifyPoll(!notifyPoll.value) }
                 ),
                 SettingsItem(
                     icon = Icons.Outlined.BatteryChargingFull,

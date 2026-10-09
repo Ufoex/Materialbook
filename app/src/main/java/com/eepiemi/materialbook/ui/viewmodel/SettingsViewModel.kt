@@ -17,6 +17,8 @@ import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_REEL
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_STORIES
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_SUGGESTED
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.IMMERSIVE_MODE
+import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.NOTIFY_POLL
+import com.eepiemi.materialbook.utils.scheduleNotificationPoll
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.HIDE_NAV_BAR
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.MATERIAL_YOU
 import com.eepiemi.materialbook.data.local.SettingsDataStore.Companion.PINCH_TO_ZOOM
@@ -74,6 +76,11 @@ class SettingsViewModel(
     val hideNavBar = dataStore.hideNavBar.stateIn(
         scope = viewModelScope,
         initialValue = initialPrefs[HIDE_NAV_BAR] ?: false,
+        started = SharingStarted.WhileSubscribed()
+    )
+    val notifyPoll = dataStore.notifyPoll.stateIn(
+        scope = viewModelScope,
+        initialValue = initialPrefs[NOTIFY_POLL] ?: false,
         started = SharingStarted.WhileSubscribed()
     )
     val immersiveMode = dataStore.immersiveMode.stateIn(
@@ -209,6 +216,13 @@ class SettingsViewModel(
     fun setHideNavBar(hideNavBar: Boolean) {
         viewModelScope.launch {
             dataStore.setHideNavBar(hideNavBar)
+        }
+    }
+
+    fun setNotifyPoll(notifyPoll: Boolean) {
+        viewModelScope.launch {
+            dataStore.setNotifyPoll(notifyPoll)
+            scheduleNotificationPoll(getApplication(), notifyPoll)
         }
     }
 

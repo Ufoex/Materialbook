@@ -54,6 +54,13 @@ import com.eepiemi.materialbook.utils.BraveBlockList
 import com.eepiemi.materialbook.utils.ExternalRequestInterceptor
 import com.eepiemi.materialbook.utils.FullscreenController
 import com.eepiemi.materialbook.utils.appOrientation
+import com.eepiemi.materialbook.ui.components.ShareDialog
+import com.eepiemi.materialbook.utils.DEFAULT_MESSENGER_PACKAGE
+import com.eepiemi.materialbook.utils.MESSAGES_DESKTOP_URL
+import com.eepiemi.materialbook.utils.ShareBox
+import com.eepiemi.materialbook.utils.SharedContent
+import com.eepiemi.materialbook.utils.linkIn
+import com.eepiemi.materialbook.utils.sendWithMessengerApp
 import com.eepiemi.materialbook.utils.isWebViewRenderable
 import com.eepiemi.materialbook.utils.appWebViewParams
 import com.eepiemi.materialbook.utils.jsBridge.ClipboardBridge
@@ -726,6 +733,7 @@ fun MaterialbookWebView(
                 }
             },
             handleExternalUrl = openExternalLink,
+            onShareLink = { link -> ShareBox.pending = SharedContent(link, emptyList()) },
             tryOpenMessenger = { messengerUrl ->
                 val ok = openMessenger(context, messengerUrl, currentMessengerPkg)
                 if (!ok) {
@@ -745,6 +753,33 @@ fun MaterialbookWebView(
     // Android kills background apps to free memory (more so with battery savers). When the
     // system brings the app back it recreates the activity with this saved value, so the
     // page you were on loads again instead of the Facebook home. A fresh start has none.
+    // Something to send (shared to the app, or from Facebook's "Send as message"): pick where it
+    // goes; in a chat it is typed into the Messages layer once that chat is open.
+    val shareInChat = ShareBox.inChat
+    LaunchedEffect(shareInChat) {
+        if (shareInChat != null) {
+            messagesLayerUrl = shareInChat.threadId?.let { "https://www.facebook.com/messages/t/$it/" }
+                ?: messagesLayerUrl ?: MESSAGES_DESKTOP_URL
+        }
+    }
+    ShareBox.pending?.let { content ->
+        ShareDialog(
+            content = content,
+            messengerAppAvailable = context.packageManager.getLaunchIntentForPackage(currentMessengerPkg.ifBlank { DEFAULT_MESSENGER_PACKAGE }) != null,
+            canPostLink = linkIn(content.text) != null && content.files.isEmpty(),
+            onMessages = { ShareBox.pending = null; ShareBox.inChat = content },
+            onMessengerApp = {
+                ShareBox.pending = null
+                sendWithMessengerApp(context, content, currentMessengerPkg)
+            },
+            onPost = {
+                ShareBox.pending = null
+                linkIn(content.text)?.let { navigator.loadUrl("https://m.facebook.com/sharer.php?u=" + android.net.Uri.encode(it)) }
+            },
+            onDismiss = { ShareBox.pending = null },
+        )
+    }
+
     var resumeUrl by rememberSaveable { mutableStateOf<String?>(null) }
     LaunchedEffect(state.lastLoadedUrl) {
         state.lastLoadedUrl?.takeIf { it.startsWith("https://") && isWebViewRenderable(it) }

@@ -9,6 +9,7 @@ class ExternalRequestInterceptor(
     private val handleExternalUrl: (String) -> Unit,
     private val tryOpenMessenger: (String) -> Boolean = { false },
     private val tryOpenMessagesDesktop: (String) -> Boolean = { false },
+    private val onShareLink: (String) -> Unit = {},
 ) : RequestInterceptor {
 
     override fun onInterceptUrlRequest(
@@ -20,6 +21,11 @@ class ExternalRequestInterceptor(
             return WebRequestInterceptResult.Allow
         }
 
+        // "Send as message" in Facebook's share sheet: keep the link and ask where to send it.
+        shareLinkOf(request.url)?.let { link ->
+            onShareLink(link)
+            return WebRequestInterceptResult.Reject
+        }
         // Messages/Messenger entry points open in the Messages layer (desktop site in its own
         // WebView) when enabled, so this page stays where it is underneath.
         if (request.isForMainFrame && isMessagesLink(request.url) && tryOpenMessagesDesktop(request.url))

@@ -95,4 +95,10 @@
     <string name="keep_in_memory_title">App im Speicher halten</string>
     <string name="keep_in_memory_on">Erlaubt: Android beendet die App im Hintergrund seltener</string>
     <string name="keep_in_memory_off">Aus: Android kann die App im Hintergrund beenden und die Seite neu laden. Zum Erlauben tippen</string>
-</resources>
+    <string name="notify_poll_title">Facebook-Benachrichtigungen</string>
+    <string name="notify_poll_desc">Prüft etwa alle 15 Minuten auf neue Nachrichten, Benachrichtigungen und Freundschaftsanfragen und meldet sie, auch bei geschlossener App</string>
+    <string name="channel_alerts">Facebook-Hinweise</string>
+    <string name="notif_new_messages">Neue Nachrichten</string>
+    <string name="notif_new_notifications">Neue Benachrichtigungen</string>
+    <string name="notif_new_friends">Neue Freundschaftsanfragen</string>
+    <string name="share_title">Senden mit…</string>\n    <string name="share_in_messages">Nachrichten (in dieser App)</string>\n    <string name="share_in_messenger_app">Messenger-App</string>\n    <string name="share_on_facebook">Auf Facebook posten</string>\n    <string name="share_cancel">Abbrechen</string>\n    <string name="share_pick_chat">Chat zum Senden auswählen</string>\n    <plurals name="share_files">\n        <item quantity="one">%d Datei</item>\n        <item quantity="other">%d Dateien</item>\n    </plurals>\n</resources>

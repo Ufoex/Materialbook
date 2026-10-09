@@ -97,4 +97,10 @@
     <string name="keep_in_memory_title">Trzymaj aplikację w pamięci</string>
     <string name="keep_in_memory_on">Zezwolono: Android rzadziej zamknie aplikację w tle</string>
     <string name="keep_in_memory_off">Wyłączone: Android może zamknąć aplikację w tle i przeładować stronę. Dotknij, aby zezwolić</string>
-</resources>
+    <string name="notify_poll_title">Powiadomienia z Facebooka</string>
+    <string name="notify_poll_desc">Co około 15 minut sprawdza nowe wiadomości, powiadomienia i zaproszenia do znajomych i informuje o nich, nawet gdy aplikacja jest zamknięta</string>
+    <string name="channel_alerts">Alerty Facebooka</string>
+    <string name="notif_new_messages">Nowe wiadomości</string>
+    <string name="notif_new_notifications">Nowe powiadomienia</string>
+    <string name="notif_new_friends">Nowe zaproszenia do znajomych</string>
+    <string name="share_title">Wyślij przez…</string>\n    <string name="share_in_messages">Wiadomości (w tej aplikacji)</string>\n    <string name="share_in_messenger_app">Aplikacja Messenger</string>\n    <string name="share_on_facebook">Opublikuj na Facebooku</string>\n    <string name="share_cancel">Anuluj</string>\n    <string name="share_pick_chat">Wybierz czat, aby to wysłać</string>\n    <plurals name="share_files">\n        <item quantity="one">%d plik</item>\n        <item quantity="other">%d pliki</item>\n    </plurals>\n</resources>

@@ -96,4 +96,10 @@
     <string name="keep_in_memory_title">שמירת האפליקציה בזיכרון</string>
     <string name="keep_in_memory_on">מותר: סביר פחות שאנדרואיד תסגור את האפליקציה ברקע</string>
     <string name="keep_in_memory_off">כבוי: אנדרואיד עלולה לסגור את האפליקציה ברקע ולטעון את הדף מחדש. הקש כדי לאפשר</string>
-</resources>
+    <string name="notify_poll_title">התראות פייסבוק</string>
+    <string name="notify_poll_desc">בודק בערך כל 15 דקות אם יש הודעות, התראות ובקשות חברות חדשות ומתריע, גם כשהאפליקציה סגורה</string>
+    <string name="channel_alerts">התראות פייסבוק</string>
+    <string name="notif_new_messages">הודעות חדשות</string>
+    <string name="notif_new_notifications">התראות חדשות</string>
+    <string name="notif_new_friends">בקשות חברות חדשות</string>
+    <string name="share_title">שליחה באמצעות…</string>\n    <string name="share_in_messages">הודעות (באפליקציה הזו)</string>\n    <string name="share_in_messenger_app">אפליקציית Messenger</string>\n    <string name="share_on_facebook">פרסום בפייסבוק</string>\n    <string name="share_cancel">ביטול</string>\n    <string name="share_pick_chat">בחר שיחה לשליחה</string>\n    <plurals name="share_files">\n        <item quantity="one">%d קובץ</item>\n        <item quantity="other">%d קבצים</item>\n    </plurals>\n</resources>

@@ -55,6 +55,7 @@ On by default:
 *  Keeps the navigation bar at the top
 *  Downloads media or copies it to the clipboard
 *  Returns to the page you were on after Android closes the app in the background, with a Settings row to exempt it from battery optimization
+*  Appears in Android's share menu (links, text, pictures, videos) and sends them to a chat in the app or in the Messenger app
 *  Long-press the app icon for shortcuts to Messages, Search, Marketplace, Reels and Notifications
 *  Opens Facebook links from other apps, including `fb.me`, `fb.com` and the Facebook app's `fb://` links
 *  Checks GitHub for a new version when the app opens (Settings → *Check for updates on start*); *Check for updates now* does it on demand, and the dialog downloads the new APK
@@ -69,6 +70,7 @@ Off by default (opt-in):
     *  Stories
     *  Groups
     *  People you may know
+*  Notifies of new messages, notifications and friend requests about every 15 minutes (Settings → Facebook notifications)
 *  Hides the system bars (immersive mode), or only the navigation bar / gesture line (Hide navigation bar)
 *  Auto-scrolls reels: goes to the next reel when the current one ends, with a button in the reel viewer to pause it
 *  Keeps a reel's audio playing with the screen off, with a button in the reel viewer

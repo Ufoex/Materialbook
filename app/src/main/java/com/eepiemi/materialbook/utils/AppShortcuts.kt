@@ -29,5 +29,46 @@ fun publishShortcuts(context: Context) {
             .setIntent(Intent(Intent.ACTION_VIEW, it.url.toUri(), context, MainActivity::class.java))
             .build()
     }
-    runCatching { ShortcutManagerCompat.setDynamicShortcuts(context, list) }
+    // add (not set): the chat shortcuts for the share sheet live in the same list.
+    runCatching { ShortcutManagerCompat.addDynamicShortcuts(context, list) }
+}
+
+private const val SHARE_CATEGORY = "com.eepiemi.materialbook.category.SHARE_CHAT"
+
+/**
+ * The first chats of the inbox ([json] from share_into_chat.js: [{id, name, img}]) as sharing
+ * shortcuts: they appear as contacts in Android's share sheet. Picking one opens that chat
+ * with the shared content typed in.
+ */
+fun publishChatShortcuts(context: Context, json: String) {
+    val chats = runCatching { org.json.JSONArray(json) }.getOrNull() ?: return
+    kotlin.concurrent.thread {
+        val shortcuts = (0 until chats.length()).mapNotNull { i ->
+            val c = chats.getJSONObject(i)
+            val id = c.optString("id").takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            val avatar = runCatching {
+                java.net.URL(c.optString("img")).openStream().use { android.graphics.BitmapFactory.decodeStream(it) }
+            }.getOrNull()
+            ShortcutInfoCompat.Builder(context, "chat_$id")
+                .setShortLabel(c.optString("name"))
+                .setLongLived(true)
+                .setRank(10 + i)
+                .setCategories(setOf(SHARE_CATEGORY))
+                .setIcon(
+                    if (avatar != null) IconCompat.createWithAdaptiveBitmap(avatar)
+                    else IconCompat.createWithResource(context, R.drawable.ic_shortcut_messages)
+                )
+                .setIntent(
+                    Intent(Intent.ACTION_VIEW, "https://www.facebook.com/messages/t/$id/".toUri(), context, MainActivity::class.java)
+                )
+                .build()
+        }
+        runCatching {
+            val keep = shortcuts.map { it.id }.toSet()
+            val stale = ShortcutManagerCompat.getDynamicShortcuts(context)
+                .map { it.id }.filter { it.startsWith("chat_") && it !in keep }
+            if (stale.isNotEmpty()) ShortcutManagerCompat.removeDynamicShortcuts(context, stale)
+            ShortcutManagerCompat.addDynamicShortcuts(context, shortcuts)
+        }
+    }
 }

@@ -29,7 +29,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.eepiemi.materialbook.utils.Release
 import com.eepiemi.materialbook.utils.intentUrl
+import com.eepiemi.materialbook.utils.AppVisibility
+import com.eepiemi.materialbook.utils.ShareBox
+import com.eepiemi.materialbook.utils.sharedContentFrom
 import com.eepiemi.materialbook.utils.publishShortcuts
+import com.eepiemi.materialbook.utils.scheduleNotificationPoll
 import com.eepiemi.materialbook.utils.UpdateDialog
 import com.eepiemi.materialbook.utils.checkForUpdate
 import androidx.compose.runtime.mutableIntStateOf
@@ -281,6 +285,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         publishShortcuts(this)
+        scheduleNotificationPoll(this, settingsVM.notifyPoll.value)
         askNotificationsOnce()
 
         // Phones browse in portrait; only HTML5 fullscreen video rotates (see
@@ -309,6 +314,7 @@ class MainActivity : ComponentActivity() {
         )
 
         urlState.value = intent?.data?.toString()?.let(::intentUrl)
+        receiveShare(intent)
 
         setContent {
             val intentUrl = urlState.value
@@ -347,6 +353,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Something shared to the app (a link, text, pictures): the page host asks what to do with it.
+    private fun receiveShare(intent: Intent?) {
+        val content = sharedContentFrom(intent) ?: return
+        if (content.threadId != null) ShareBox.inChat = content else ShareBox.pending = content
+    }
+
     private val notificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
@@ -364,7 +376,13 @@ class MainActivity : ComponentActivity() {
     // becoming visible again (unlock while in PiP, or back to full screen).
     override fun onStart() {
         super.onStart()
+        AppVisibility.background = false
         handBack("onStart")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        AppVisibility.background = true
     }
 
     override fun onResume() {
@@ -505,6 +523,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        receiveShare(intent)
         intent.data?.toString()?.let {
             urlState.value = intentUrl(it)
             urlNonce.intValue++

@@ -21,6 +21,7 @@ class SettingsDataStore(private val context: Context) {
         val ENABLE_COPY_TO_CLIPBOARD = booleanPreferencesKey("enable_copy_to_clipboard")
         val DESKTOP_LAYOUT = booleanPreferencesKey("desktop_layout")
         val HIDE_NAV_BAR = booleanPreferencesKey("hide_nav_bar")
+        val NOTIFY_POLL = booleanPreferencesKey("notify_poll")
         val IMMERSIVE_MODE = booleanPreferencesKey("immersive_mode")
         val STICKY_NAVBAR = booleanPreferencesKey("sticky_navbar")
         val AUTO_SCROLL_REELS = booleanPreferencesKey("auto_scroll_reels")
@@ -92,6 +93,11 @@ class SettingsDataStore(private val context: Context) {
     val hideNavBar = context.dataStore.data.map { it[HIDE_NAV_BAR] ?: false }
     suspend fun setHideNavBar(hideNavBar: Boolean) {
         context.dataStore.edit { it[HIDE_NAV_BAR] = hideNavBar }
+    }
+
+    val notifyPoll = context.dataStore.data.map { it[NOTIFY_POLL] ?: false }
+    suspend fun setNotifyPoll(notifyPoll: Boolean) {
+        context.dataStore.edit { it[NOTIFY_POLL] = notifyPoll }
     }
 
     val immersiveMode = context.dataStore.data.map { it[IMMERSIVE_MODE] ?: false}
