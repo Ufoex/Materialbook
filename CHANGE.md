@@ -5,7 +5,7 @@
 * Feature: Merged the improvements of the AstryxBook, dh6k, BraveBook and LiteBook forks (see FORK_CHANGES.md).
 * Feature: Auto-scroll reels (setting): goes to the next reel when the current one ends; a button in the reel viewer pauses it.
 * Feature: Reel audio with the screen off (setting, off by default): adds an audio button to the reel viewer that keeps the reel playing when the screen turns off.
-* Feature: Check for updates on start (setting, on by default) and a Check now button in Settings; a dialog offers the new APK.
+* Feature: Check for updates on start (setting, on by default) and a Check now button in Settings; the dialog downloads the new APK and opens the system installer (Android asks once to allow installing from Materialbook).
 * Fix: Reels no longer jump to another reel when Facebook rebuilds the list; the thumbnail fades out only when a video starts, not when it resumes.
 * Fix: The text typed in the post box (groups and others) is visible in Facebook's dark mode instead of black on black.
 * Tweak: New applicationId `com.ufoex.materialbook`; runtime scripts are fetched from this repo.
