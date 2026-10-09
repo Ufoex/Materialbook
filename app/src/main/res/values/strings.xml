@@ -17,8 +17,11 @@
     <string name="check_update_now_desc">Current version %1$s</string>
     <string name="update_up_to_date">You have the latest version</string>
     <string name="update_available_title">Update available</string>
-    <string name="update_available_desc">Version %1$s is available (you have %2$s). Download the APK and open it to install.</string>
-    <string name="update_download">Download</string>
+    <string name="update_available_desc">Version %1$s is available (you have %2$s). Install it now?</string>
+    <string name="update_install">Install</string>
+    <string name="update_downloading">Downloading the update…</string>
+    <string name="update_allow_install">Allow Materialbook to install apps, then tap Install again</string>
+    <string name="update_failed">Could not install it from the app, opening the download link</string>
     <string name="update_later">Later</string>
     <string name="reel_controls_title">Reel controls</string>
     <string name="reel_controls_desc">Seek bar, time, fullscreen and volume on paused reels, plus a button to hide the icons</string>
