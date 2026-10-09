@@ -7,6 +7,7 @@
 * Feature: Reel audio with the screen off (setting, off by default): adds an audio button to the reel viewer that keeps the reel playing when the screen turns off.
 * Feature: Check for updates on start (setting, on by default) and a Check now button in Settings; a dialog offers the new APK.
 * Fix: Reels no longer jump to another reel when Facebook rebuilds the list; the thumbnail fades out only when a video starts, not when it resumes.
+* Fix: The text typed in the post box (groups and others) is visible in Facebook's dark mode instead of black on black.
 * Tweak: New applicationId `com.ufoex.materialbook`; runtime scripts are fetched from this repo.
 
 ---
