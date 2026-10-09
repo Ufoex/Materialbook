@@ -21,6 +21,8 @@
 * Feature: Share to the app: links, text, pictures and videos from other apps. A dialog offers Messages (in this app, typed into the chat you pick), the Messenger app, or posting the link on Facebook. Facebook's "Send as message" uses it too instead of jumping to the Messenger app. Your latest chats are also offered as contacts in Android's share sheet (not shown by every system share menu).
 * Feature: Facebook notifications (setting, off by default): about every 15 minutes, even with the app closed, it checks the counts on Facebook's tab bar and notifies of new messages, notifications and friend requests.
 * Fix: Facebook resets the page to its Home after the app has been in the background for a few minutes (its connection is lost when Android freezes the page); the app now takes you back to the page you were on.
+* Tweak: Messenger settings: "Messages in desktop mode" became **Use an external Messenger app** (off by default = Messages opens inside the app). Turning it on shows a Messenger app row with a list of the installed compatible apps (instead of typing a package name).
+* Tweak: Sharing to the app no longer asks where to send: it goes to the in-app Messages (you pick the chat) or, with the external option on, straight to the chosen Messenger app. The "Post on Facebook" choice was removed.
 * Tweak: New applicationId `com.ufoex.materialbook`; runtime scripts are fetched from this repo.
 
 ---

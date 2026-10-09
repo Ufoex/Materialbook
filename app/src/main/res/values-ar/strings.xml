@@ -101,4 +101,7 @@
     <string name="notif_new_messages">رسائل جديدة</string>
     <string name="notif_new_notifications">إشعارات جديدة</string>
     <string name="notif_new_friends">طلبات صداقة جديدة</string>
-    <string name="share_title">إرسال عبر…</string>\n    <string name="share_in_messages">الرسائل (في هذا التطبيق)</string>\n    <string name="share_in_messenger_app">تطبيق ماسنجر</string>\n    <string name="share_on_facebook">النشر على فيسبوك</string>\n    <string name="share_cancel">إلغاء</string>\n    <string name="share_pick_chat">اختر محادثة لإرسال هذا</string>\n    <plurals name="share_files">\n        <item quantity="one">%d ملف</item>\n        <item quantity="other">%d ملفات</item>\n    </plurals>\n</resources>
+    <string name="share_title">إرسال عبر…</string>\n    <string name="share_in_messages">الرسائل (في هذا التطبيق)</string>\n    <string name="share_in_messenger_app">تطبيق ماسنجر</string>\n    <string name="share_on_facebook">النشر على فيسبوك</string>\n    <string name="share_cancel">إلغاء</string>\n    <string name="share_pick_chat">اختر محادثة لإرسال هذا</string>\n    <plurals name="share_files">\n        <item quantity="one">%d ملف</item>\n        <item quantity="other">%d ملفات</item>\n    </plurals>\n    <string name="use_external_messenger_title">استخدام تطبيق ماسنجر خارجي</string>
+    <string name="use_external_messenger_desc">متوقف: تُفتح الرسائل داخل هذا التطبيق. مفعّل: تذهب الرسائل وما تشاركه هنا إلى تطبيق ماسنجر الذي تختاره</string>
+    <string name="messenger_none_installed">لا يوجد تطبيق ماسنجر متوافق مثبّت</string>
+</resources>

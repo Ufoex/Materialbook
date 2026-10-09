@@ -54,12 +54,9 @@ import com.eepiemi.materialbook.utils.BraveBlockList
 import com.eepiemi.materialbook.utils.ExternalRequestInterceptor
 import com.eepiemi.materialbook.utils.FullscreenController
 import com.eepiemi.materialbook.utils.appOrientation
-import com.eepiemi.materialbook.ui.components.ShareDialog
-import com.eepiemi.materialbook.utils.DEFAULT_MESSENGER_PACKAGE
 import com.eepiemi.materialbook.utils.MESSAGES_DESKTOP_URL
 import com.eepiemi.materialbook.utils.ShareBox
 import com.eepiemi.materialbook.utils.SharedContent
-import com.eepiemi.materialbook.utils.linkIn
 import com.eepiemi.materialbook.utils.sendWithMessengerApp
 import com.eepiemi.materialbook.utils.isWebViewRenderable
 import com.eepiemi.materialbook.utils.appWebViewParams
@@ -762,22 +759,15 @@ fun MaterialbookWebView(
                 ?: messagesLayerUrl ?: MESSAGES_DESKTOP_URL
         }
     }
-    ShareBox.pending?.let { content ->
-        ShareDialog(
-            content = content,
-            messengerAppAvailable = context.packageManager.getLaunchIntentForPackage(currentMessengerPkg.ifBlank { DEFAULT_MESSENGER_PACKAGE }) != null,
-            canPostLink = linkIn(content.text) != null && content.files.isEmpty(),
-            onMessages = { ShareBox.pending = null; ShareBox.inChat = content },
-            onMessengerApp = {
-                ShareBox.pending = null
-                sendWithMessengerApp(context, content, currentMessengerPkg)
-            },
-            onPost = {
-                ShareBox.pending = null
-                linkIn(content.text)?.let { navigator.loadUrl("https://m.facebook.com/sharer.php?u=" + android.net.Uri.encode(it)) }
-            },
-            onDismiss = { ShareBox.pending = null },
-        )
+    // Where shared things go follows the Messenger setting: the in-app Messages (default) or the
+    // external Messenger app chosen in Settings (falls back to the in-app Messages if it is gone).
+    val sharePending = ShareBox.pending
+    LaunchedEffect(sharePending) {
+        if (sharePending == null) return@LaunchedEffect
+        ShareBox.pending = null
+        val external = !currentMessagesDesktopSetting &&
+            sendWithMessengerApp(context, sharePending, currentMessengerPkg)
+        if (!external) ShareBox.inChat = sharePending
     }
 
     var resumeUrl by rememberSaveable { mutableStateOf<String?>(null) }

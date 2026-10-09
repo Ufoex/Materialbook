@@ -101,4 +101,7 @@
     <string name="notif_new_messages">Neue Nachrichten</string>
     <string name="notif_new_notifications">Neue Benachrichtigungen</string>
     <string name="notif_new_friends">Neue Freundschaftsanfragen</string>
-    <string name="share_title">Senden mit…</string>\n    <string name="share_in_messages">Nachrichten (in dieser App)</string>\n    <string name="share_in_messenger_app">Messenger-App</string>\n    <string name="share_on_facebook">Auf Facebook posten</string>\n    <string name="share_cancel">Abbrechen</string>\n    <string name="share_pick_chat">Chat zum Senden auswählen</string>\n    <plurals name="share_files">\n        <item quantity="one">%d Datei</item>\n        <item quantity="other">%d Dateien</item>\n    </plurals>\n</resources>
+    <string name="share_title">Senden mit…</string>\n    <string name="share_in_messages">Nachrichten (in dieser App)</string>\n    <string name="share_in_messenger_app">Messenger-App</string>\n    <string name="share_on_facebook">Auf Facebook posten</string>\n    <string name="share_cancel">Abbrechen</string>\n    <string name="share_pick_chat">Chat zum Senden auswählen</string>\n    <plurals name="share_files">\n        <item quantity="one">%d Datei</item>\n        <item quantity="other">%d Dateien</item>\n    </plurals>\n    <string name="use_external_messenger_title">Externe Messenger-App verwenden</string>
+    <string name="use_external_messenger_desc">Aus: Nachrichten öffnen sich in dieser App. An: Nachrichten und hier Geteiltes gehen an die gewählte Messenger-App</string>
+    <string name="messenger_none_installed">Keine kompatible Messenger-App installiert</string>
+</resources>

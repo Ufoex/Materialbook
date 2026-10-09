@@ -102,4 +102,7 @@
     <string name="notif_new_messages">নতুন মেসেজ</string>
     <string name="notif_new_notifications">নতুন নোটিফিকেশন</string>
     <string name="notif_new_friends">নতুন ফ্রেন্ড রিকোয়েস্ট</string>
-    <string name="share_title">এর মাধ্যমে পাঠান…</string>\n    <string name="share_in_messages">মেসেজ (এই অ্যাপে)</string>\n    <string name="share_in_messenger_app">মেসেঞ্জার অ্যাপ</string>\n    <string name="share_on_facebook">ফেসবুকে পোস্ট করুন</string>\n    <string name="share_cancel">বাতিল</string>\n    <string name="share_pick_chat">এটি পাঠাতে একটি চ্যাট বেছে নিন</string>\n    <plurals name="share_files">\n        <item quantity="one">%d টি ফাইল</item>\n        <item quantity="other">%d টি ফাইল</item>\n    </plurals>\n</resources>
+    <string name="share_title">এর মাধ্যমে পাঠান…</string>\n    <string name="share_in_messages">মেসেজ (এই অ্যাপে)</string>\n    <string name="share_in_messenger_app">মেসেঞ্জার অ্যাপ</string>\n    <string name="share_on_facebook">ফেসবুকে পোস্ট করুন</string>\n    <string name="share_cancel">বাতিল</string>\n    <string name="share_pick_chat">এটি পাঠাতে একটি চ্যাট বেছে নিন</string>\n    <plurals name="share_files">\n        <item quantity="one">%d টি ফাইল</item>\n        <item quantity="other">%d টি ফাইল</item>\n    </plurals>\n    <string name="use_external_messenger_title">বাইরের মেসেঞ্জার অ্যাপ ব্যবহার করুন</string>
+    <string name="use_external_messenger_desc">বন্ধ: মেসেজ এই অ্যাপের ভেতরেই খোলে। চালু: মেসেজ এবং এখানে শেয়ার করা সবকিছু আপনার বেছে নেওয়া মেসেঞ্জার অ্যাপে যায়</string>
+    <string name="messenger_none_installed">কোনো সামঞ্জস্যপূর্ণ মেসেঞ্জার অ্যাপ ইনস্টল করা নেই</string>
+</resources>

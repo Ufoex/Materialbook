@@ -101,4 +101,7 @@
     <string name="notif_new_messages">Novas mensagens</string>
     <string name="notif_new_notifications">Novas notificações</string>
     <string name="notif_new_friends">Novos pedidos de amizade</string>
-    <string name="share_title">Enviar com…</string>\n    <string name="share_in_messages">Mensagens (neste app)</string>\n    <string name="share_in_messenger_app">App do Messenger</string>\n    <string name="share_on_facebook">Publicar no Facebook</string>\n    <string name="share_cancel">Cancelar</string>\n    <string name="share_pick_chat">Escolha uma conversa para enviar</string>\n    <plurals name="share_files">\n        <item quantity="one">%d arquivo</item>\n        <item quantity="other">%d arquivos</item>\n    </plurals>\n</resources>
+    <string name="share_title">Enviar com…</string>\n    <string name="share_in_messages">Mensagens (neste app)</string>\n    <string name="share_in_messenger_app">App do Messenger</string>\n    <string name="share_on_facebook">Publicar no Facebook</string>\n    <string name="share_cancel">Cancelar</string>\n    <string name="share_pick_chat">Escolha uma conversa para enviar</string>\n    <plurals name="share_files">\n        <item quantity="one">%d arquivo</item>\n        <item quantity="other">%d arquivos</item>\n    </plurals>\n    <string name="use_external_messenger_title">Usar um app Messenger externo</string>
+    <string name="use_external_messenger_desc">Desativado: Mensagens abre dentro deste app. Ativado: Mensagens e o que você compartilhar aqui vão para o app Messenger escolhido</string>
+    <string name="messenger_none_installed">Nenhum app Messenger compatível instalado</string>
+</resources>

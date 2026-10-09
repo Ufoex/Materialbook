@@ -102,4 +102,7 @@
     <string name="notif_new_messages">新訊息</string>
     <string name="notif_new_notifications">新通知</string>
     <string name="notif_new_friends">新的交友邀請</string>
-    <string name="share_title">傳送方式…</string>\n    <string name="share_in_messages">訊息（在此應用程式）</string>\n    <string name="share_in_messenger_app">Messenger 應用程式</string>\n    <string name="share_on_facebook">發佈到 Facebook</string>\n    <string name="share_cancel">取消</string>\n    <string name="share_pick_chat">選擇要傳送的聊天</string>\n    <plurals name="share_files">\n        <item quantity="one">%d 個檔案</item>\n        <item quantity="other">%d 個檔案</item>\n    </plurals>\n</resources>
+    <string name="share_title">傳送方式…</string>\n    <string name="share_in_messages">訊息（在此應用程式）</string>\n    <string name="share_in_messenger_app">Messenger 應用程式</string>\n    <string name="share_on_facebook">發佈到 Facebook</string>\n    <string name="share_cancel">取消</string>\n    <string name="share_pick_chat">選擇要傳送的聊天</string>\n    <plurals name="share_files">\n        <item quantity="one">%d 個檔案</item>\n        <item quantity="other">%d 個檔案</item>\n    </plurals>\n    <string name="use_external_messenger_title">使用外部 Messenger 應用程式</string>
+    <string name="use_external_messenger_desc">關閉：訊息在此應用程式內開啟。開啟：訊息和在此分享的內容會交給你選擇的 Messenger 應用程式</string>
+    <string name="messenger_none_installed">未安裝相容的 Messenger 應用程式</string>
+</resources>

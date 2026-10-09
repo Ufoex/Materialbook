@@ -102,4 +102,7 @@
     <string name="notif_new_messages">הודעות חדשות</string>
     <string name="notif_new_notifications">התראות חדשות</string>
     <string name="notif_new_friends">בקשות חברות חדשות</string>
-    <string name="share_title">שליחה באמצעות…</string>\n    <string name="share_in_messages">הודעות (באפליקציה הזו)</string>\n    <string name="share_in_messenger_app">אפליקציית Messenger</string>\n    <string name="share_on_facebook">פרסום בפייסבוק</string>\n    <string name="share_cancel">ביטול</string>\n    <string name="share_pick_chat">בחר שיחה לשליחה</string>\n    <plurals name="share_files">\n        <item quantity="one">%d קובץ</item>\n        <item quantity="other">%d קבצים</item>\n    </plurals>\n</resources>
+    <string name="share_title">שליחה באמצעות…</string>\n    <string name="share_in_messages">הודעות (באפליקציה הזו)</string>\n    <string name="share_in_messenger_app">אפליקציית Messenger</string>\n    <string name="share_on_facebook">פרסום בפייסבוק</string>\n    <string name="share_cancel">ביטול</string>\n    <string name="share_pick_chat">בחר שיחה לשליחה</string>\n    <plurals name="share_files">\n        <item quantity="one">%d קובץ</item>\n        <item quantity="other">%d קבצים</item>\n    </plurals>\n    <string name="use_external_messenger_title">שימוש באפליקציית Messenger חיצונית</string>
+    <string name="use_external_messenger_desc">כבוי: ההודעות נפתחות בתוך האפליקציה הזו. פעיל: ההודעות וכל מה שמשתפים כאן עוברים לאפליקציית Messenger שבחרת</string>
+    <string name="messenger_none_installed">לא מותקנת אפליקציית Messenger תואמת</string>
+</resources>

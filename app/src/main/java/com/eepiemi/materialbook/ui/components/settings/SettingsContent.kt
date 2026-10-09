@@ -77,7 +77,10 @@ import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import com.eepiemi.materialbook.BuildConfig
+import androidx.core.graphics.drawable.toBitmap
 import com.eepiemi.materialbook.R
+import com.eepiemi.materialbook.utils.installedMessengerApps
+import androidx.compose.ui.graphics.asImageBitmap
 import com.eepiemi.materialbook.utils.Release
 import com.eepiemi.materialbook.utils.UpdateDialog
 import com.eepiemi.materialbook.utils.checkForUpdate
@@ -97,6 +100,7 @@ fun SettingsContent(
     var isOpenDialog by rememberSaveable { mutableStateOf(false) }
     var isPipRatioDialog by rememberSaveable { mutableStateOf(false) }
     var isMessengerDialog by rememberSaveable { mutableStateOf(false) }
+    val messengerApps = remember { installedMessengerApps(context) }
 
     val removeAds = viewModel.removeAds.collectAsState()
     val braveBlockList = viewModel.braveBlockList.collectAsState()
@@ -221,21 +225,25 @@ fun SettingsContent(
                         }
                     },
                 ),
+                // Default: Messages opens inside the app (desktop site). Turn this on to hand
+                // Messages, and what is shared to the app, to an external Messenger app instead.
                 SettingsItem(
                     icon = Icons.AutoMirrored.Outlined.Message,
-                    title = stringResource(R.string.messages_desktop_title),
-                    supportingText = stringResource(R.string.messages_desktop_desc),
-                    isActive = messagesDesktop.value,
+                    title = stringResource(R.string.use_external_messenger_title),
+                    supportingText = stringResource(R.string.use_external_messenger_desc),
+                    isActive = !messagesDesktop.value,
                     onClick = { viewModel.setMessagesDesktop(!messagesDesktop.value) },
                 ),
+            ) + if (!messagesDesktop.value) listOf(
                 SettingsItem(
                     icon = Icons.AutoMirrored.Outlined.Message,
                     title = stringResource(R.string.messenger_title),
-                    supportingText = messengerPackage.value,
+                    supportingText = messengerApps.firstOrNull { it.packageName == messengerPackage.value }?.label
+                        ?: messengerPackage.value,
                     isActive = null,
                     onClick = { isMessengerDialog = true },
                 )
-            )
+            ) else emptyList()
         )
 
         SettingsGroup(
@@ -430,10 +438,11 @@ fun SettingsContent(
         )
     }
     if (isMessengerDialog) {
-        MessengerPackageDialog(
+        MessengerAppDialog(
+            apps = messengerApps,
             current = messengerPackage.value,
             onDismiss = { isMessengerDialog = false },
-            onSave = {
+            onSelect = {
                 viewModel.setMessengerPackage(it)
                 isMessengerDialog = false
             },
@@ -441,49 +450,50 @@ fun SettingsContent(
     }
 }
 
+/** A select list of the installed Messenger apps compatible with Facebook's links. */
 @Composable
-private fun MessengerPackageDialog(
+private fun MessengerAppDialog(
+    apps: List<com.eepiemi.materialbook.utils.MessengerApp>,
     current: String,
     onDismiss: () -> Unit,
-    onSave: (String) -> Unit,
+    onSelect: (String) -> Unit,
 ) {
-    var text by rememberSaveable(current) { mutableStateOf(current) }
-    Dialog(onDismissRequest = onDismiss) {
-        Column(
-            modifier = Modifier
-                .clip(RoundedCornerShape(24.dp))
-                .background(color = MaterialTheme.colorScheme.surfaceContainer)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.messenger_title),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it.trim() },
-                label = { Text(stringResource(R.string.messenger_package_label)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(onClick = {
-                    text = com.eepiemi.materialbook.utils.DEFAULT_MESSENGER_PACKAGE
-                }) {
-                    Text(stringResource(R.string.messenger_package_reset))
-                }
-                TextButton(onClick = { onSave(text) }) {
-                    Text(stringResource(R.string.messenger_package_save))
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.messenger_title)) },
+        text = {
+            if (apps.isEmpty()) {
+                Text(stringResource(R.string.messenger_none_installed))
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    apps.forEach { app ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { onSelect(app.packageName) }
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            androidx.compose.material3.RadioButton(selected = app.packageName == current, onClick = { onSelect(app.packageName) })
+                            androidx.compose.foundation.Image(
+                                bitmap = app.icon.toBitmap(96, 96).asImageBitmap(),
+                                contentDescription = null,
+                                modifier = Modifier.size(36.dp),
+                            )
+                            Column {
+                                Text(app.label, style = MaterialTheme.typography.bodyLarge)
+                                Text(app.packageName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
                 }
             }
-        }
-    }
-
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.share_cancel)) } },
+    )
 }
 
 @Composable

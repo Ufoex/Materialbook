@@ -103,4 +103,7 @@
     <string name="notif_new_messages">New messages</string>
     <string name="notif_new_notifications">New notifications</string>
     <string name="notif_new_friends">New friend requests</string>
-    <string name="share_title">Send with…</string>\n    <string name="share_in_messages">Messages (in this app)</string>\n    <string name="share_in_messenger_app">Messenger app</string>\n    <string name="share_on_facebook">Post on Facebook</string>\n    <string name="share_cancel">Cancel</string>\n    <string name="share_pick_chat">Choose a chat to send this</string>\n    <plurals name="share_files">\n        <item quantity="one">%d file</item>\n        <item quantity="other">%d files</item>\n    </plurals>\n</resources>
+    <string name="share_title">Send with…</string>\n    <string name="share_in_messages">Messages (in this app)</string>\n    <string name="share_in_messenger_app">Messenger app</string>\n    <string name="share_on_facebook">Post on Facebook</string>\n    <string name="share_cancel">Cancel</string>\n    <string name="share_pick_chat">Choose a chat to send this</string>\n    <plurals name="share_files">\n        <item quantity="one">%d file</item>\n        <item quantity="other">%d files</item>\n    </plurals>\n    <string name="use_external_messenger_title">Use an external Messenger app</string>
+    <string name="use_external_messenger_desc">Off: Messages opens inside this app. On: Messages and anything shared here goes to the Messenger app you choose</string>
+    <string name="messenger_none_installed">No compatible Messenger app is installed</string>
+</resources>

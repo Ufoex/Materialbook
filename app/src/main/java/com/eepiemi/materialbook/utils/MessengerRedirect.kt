@@ -51,3 +51,28 @@ fun openMessenger(context: Context, url: String, packageName: String): Boolean {
         })
     }.isSuccess
 }
+
+/** An installed app that can act as the Messenger app: package, label and icon. */
+class MessengerApp(val packageName: String, val label: String, val icon: android.graphics.drawable.Drawable)
+
+/**
+ * Installed apps that handle Facebook's fb-messenger:// links (browsers also open m.me, so those do not count) plus the known
+ * Messenger packages, without this app itself.
+ */
+fun installedMessengerApps(context: Context): List<MessengerApp> {
+    val pm = context.packageManager
+    val fromLinks = listOf("fb-messenger://user/", "fb-messenger://threads/").flatMap { link ->
+        runCatching { pm.queryIntentActivities(Intent(Intent.ACTION_VIEW, link.toUri()), 0) }.getOrDefault(emptyList())
+            .map { it.activityInfo.packageName }
+    }
+    val known = listOf(DEFAULT_MESSENGER_PACKAGE, "com.facebook.mlite")
+        .filter { pm.getLaunchIntentForPackage(it) != null }
+    return (known + fromLinks).distinct()
+        .filter { it != context.packageName && pm.getLaunchIntentForPackage(it) != null }
+        .mapNotNull { pkg ->
+            runCatching {
+                val info = pm.getApplicationInfo(pkg, 0)
+                MessengerApp(pkg, pm.getApplicationLabel(info).toString(), pm.getApplicationIcon(info))
+            }.getOrNull()
+        }
+}
