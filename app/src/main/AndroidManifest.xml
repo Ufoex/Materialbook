@@ -72,6 +72,33 @@
                 <data android:host="fb.watch" />
                 <data android:scheme="https" />
                 <data android:host="facebook.com" />
+                <data android:scheme="https" />
+                <data android:host="web.facebook.com" />
+                <data android:scheme="https" />
+                <data android:host="mobile.facebook.com" />
+                <data android:scheme="https" />
+                <data android:host="touch.facebook.com" />
+                <data android:scheme="https" />
+                <data android:host="mbasic.facebook.com" />
+                <data android:scheme="https" />
+                <data android:host="fb.com" />
+                <data android:scheme="https" />
+                <data android:host="www.fb.com" />
+                <data android:scheme="https" />
+                <data android:host="fb.me" />
+                <data android:scheme="https" />
+                <data android:host="www.fb.me" />
+            </intent-filter>
+
+            <!-- Facebook app deep links: fb://profile/123, facebook://page/456 ... -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="fb" />
+                <data android:scheme="facebook" />
             </intent-filter>
 
         </activity>

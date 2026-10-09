@@ -5,6 +5,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import com.eepiemi.materialbook.utils.fbRedirectSanitizer
+import com.eepiemi.materialbook.utils.intentUrl
 import com.eepiemi.materialbook.utils.isWebViewRenderable
 
 class ExternalLinkTest {
@@ -21,6 +22,8 @@ class ExternalLinkTest {
             // fell through to the browser and reloaded Facebook in Brave.
             "https://www.facebook.com",
             "https://fb.watch/abc123/",
+            "https://fb.me/abc",
+            "https://www.fb.com/page",
         ).forEach { assertTrue(it, isWebViewRenderable(it)) }
     }
 
@@ -48,6 +51,22 @@ class ExternalLinkTest {
             "tel:+123456",
             "mailto:someone@example.com",
         ).forEach { assertFalse(it, isWebViewRenderable(it)) }
+    }
+
+    // The Facebook app's deep links become m.facebook.com pages; web links are untouched.
+    @Test
+    fun appDeepLinksMapToMobileWeb() {
+        mapOf(
+            "fb://profile/123" to "https://m.facebook.com/profile.php?id=123",
+            "facebook://group/45" to "https://m.facebook.com/groups/45",
+            "fb://page/678" to "https://m.facebook.com/678",
+            "fb://event/9" to "https://m.facebook.com/events/9",
+            "fb://reel/7" to "https://m.facebook.com/reel/7",
+            "fb://marketplace" to "https://m.facebook.com/marketplace/",
+            "fb://profile" to "https://m.facebook.com/",
+            "fb://unknownthing/1" to "https://m.facebook.com/",
+            "https://www.facebook.com/x" to "https://www.facebook.com/x",
+        ).forEach { (link, url) -> assertEquals(link, url, intentUrl(link)) }
     }
 
     // The old sanitizer re-encoded URL.query, so "hello%20world" came out as

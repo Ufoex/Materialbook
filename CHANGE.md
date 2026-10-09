@@ -8,6 +8,7 @@
 * Feature: Check for updates on start (setting, on by default) and a Check now button in Settings; the dialog downloads the new APK and opens the system installer (Android asks once to allow installing from Materialbook).
 * Fix: Reels no longer jump to another reel when Facebook rebuilds the list; the thumbnail fades out only when a video starts, not when it resumes.
 * Fix: The text typed in the post box (groups and others) is visible in Facebook's dark mode instead of black on black.
+* Feature: The app opens more Facebook links: web/mobile/touch/mbasic.facebook.com, fb.com, fb.me and the Facebook app's fb:// and facebook:// links (profile, page, group, event, reel, marketplace...).
 * Tweak: New applicationId `com.ufoex.materialbook`; runtime scripts are fetched from this repo.
 
 ---

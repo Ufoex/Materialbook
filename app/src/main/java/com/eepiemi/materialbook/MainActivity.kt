@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.eepiemi.materialbook.utils.Release
+import com.eepiemi.materialbook.utils.intentUrl
 import com.eepiemi.materialbook.utils.UpdateDialog
 import com.eepiemi.materialbook.utils.checkForUpdate
 import androidx.compose.runtime.mutableIntStateOf
@@ -299,7 +300,7 @@ class MainActivity : ComponentActivity() {
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
-        urlState.value = intent?.data?.toString()
+        urlState.value = intent?.data?.toString()?.let(::intentUrl)
 
         setContent {
             val intentUrl = urlState.value
@@ -482,7 +483,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        intent.data?.toString()?.let { urlState.value = it }
+        intent.data?.toString()?.let { urlState.value = intentUrl(it) }
     }
 
     override fun onUserLeaveHint() {
